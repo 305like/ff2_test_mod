@@ -1,3 +1,13 @@
+#if defined _ff2_hud_included
+    #endinput
+#endif
+#define _ff2_hud_included
+
+/**
+ * FF2 HUD System
+ * HUD management for boss health displays and custom HUD elements.
+ */
+
 #define MAX_HUD_INFO_LENGTH		80
 #define MAX_HUD_DISPLAY_LENGTH	128
 
@@ -44,14 +54,15 @@ stock KeyValues LoadHudConfig()
 	return kv;
 }
 
+
 stock int GetHudSetting(int client, char[] hudId)
 {
-	return FF2DB_GetHudSetting(client, hudId);
+    return DB_GetHudSetting(client, hudId);
 }
 
 stock void SetHudSetting(int client, char[] hudId, int value)
 {
-	FF2DB_SetHudSetting(client, hudId, value);
+    DB_SaveHudSetting(client, hudId, value);
 }
 
 // Native things

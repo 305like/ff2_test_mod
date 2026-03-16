@@ -1,3 +1,13 @@
+#if defined _ff2_character_included
+    #endinput
+#endif
+#define _ff2_character_included
+
+/**
+ * FF2 Character System
+ * Character configuration loading and selection.
+ */
+
 public int GetCharacterIndex(int boss)
 {
 	return character[boss];
@@ -508,4 +518,17 @@ void FindCompanion(int boss, int players, bool[] omit)
 	playersNeeded = 3;  //Reset the amount of players needed back to 3 after we're done
 }
 
-#include "ff2_module/character_native.sp"
+
+// ========================================================================
+// Native Implementations
+// ========================================================================
+
+public int Native_GetCharacterIndex(Handle plugin, int numParams)
+{
+	return GetCharacterIndex(GetNativeCell(1));
+}
+
+public int Native_GetCharacterKV(Handle plugin, int numParams)
+{
+	return view_as<int>(GetCharacterKV(GetNativeCell(1)));
+}

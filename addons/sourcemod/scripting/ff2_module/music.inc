@@ -1,3 +1,13 @@
+#if defined _ff2_music_included
+    #endinput
+#endif
+#define _ff2_music_included
+
+/**
+ * FF2 Music System
+ * Background music management for boss battles.
+ */
+
 Handle OnMusic;
 
 /////
@@ -415,7 +425,7 @@ public void SetSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client] |= soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], FF2Data_Int);
+	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
 }
 
 public void ClearSoundFlags(int client, int soundFlags)
@@ -426,17 +436,17 @@ public void ClearSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client]&=~soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], FF2Data_Int);
+	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
 }
 
 stock bool GetMusicSetting(int client, char[] musicId)
 {
-	return FF2DB_GetMusicSetting(client, musicId) == 0;
+    return DB_GetMusicSetting(client, musicId);
 }
 
 stock void SetMusicSetting(int client, char[] musicId, bool value)
 {
-	FF2DB_SetMusicSetting(client, musicId, value ? 0 : 1);
+    DB_SaveMusicSetting(client, musicId, value);
 }
 
 ///

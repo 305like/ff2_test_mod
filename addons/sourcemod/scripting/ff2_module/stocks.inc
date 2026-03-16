@@ -1,3 +1,13 @@
+#if defined _ff2_stocks_included
+    #endinput
+#endif
+#define _ff2_stocks_included
+
+/**
+ * FF2 Stock Functions
+ * Utility function library.
+ */
+
 public void GetHudSettingString(int value, char[] statusString, int buffer)
 {
     switch(value)

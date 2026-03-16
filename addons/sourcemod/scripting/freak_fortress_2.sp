@@ -45,22 +45,17 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <stocksoup/tf/monster_resource>
 #include <stocksoup/tf/econ>
 
-#include "ff2_module/shared.sp"
-#include "ff2_module/database.sp"
-// #include "ff2_module/global_var.sp"
-#include "ff2_module/methodmap.sp"
-
-#include "ff2_module/sdkcalls.sp"
-#include "ff2_module/stocks.sp"
-
-#include "ff2_module/hud.sp"
-#include "ff2_module/music.sp"
-#include "ff2_module/character.sp"
-#include "ff2_module/player.sp"
-#include "ff2_module/boss.sp"
-
-#include "ff2_module/cmd.sp"
-#include "ff2_module/dhooks.sp"
+#include "ff2_module/core.inc"
+#include "ff2_module/database.inc"
+#include "ff2_module/sdkcalls.inc"
+#include "ff2_module/stocks.inc"
+#include "ff2_module/hud.inc"
+#include "ff2_module/character.inc"
+#include "ff2_module/music.inc"
+#include "ff2_module/player.inc"
+#include "ff2_module/boss.inc"
+#include "ff2_module/commands.inc"
+#include "ff2_module/dhooks.inc"
 
 #pragma newdecls required
 

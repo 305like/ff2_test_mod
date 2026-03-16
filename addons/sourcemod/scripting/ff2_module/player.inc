@@ -1,3 +1,13 @@
+#if defined _ff2_player_included
+    #endinput
+#endif
+#define _ff2_player_included
+
+/**
+ * FF2 Player System
+ * Player state management and methodmaps.
+ */
+
 Handle FF2Cookie_QueuePoints;
 
 int botqueuepoints;
@@ -244,22 +254,6 @@ methodmap FF2BasePlayer < FF2BaseEntity
             this.Set(FF2BE_MAX_COUNT + FF2P_MusicTimer, timer);
         }
     }    
-
-    public bool LoadPlayerData()
-    {
-        if(!AreClientCookiesCached(this.Index))     return false;
-
-        char buffer[4];
-        GetClientCookie(this.Index, FF2Cookie_QueuePoints, buffer, sizeof(buffer));
-        if(!buffer[0])
-        {
-            SetClientCookie(this.Index, FF2Cookie_QueuePoints, "0");
-        }
-
-        this.QueuePoints = StringToInt(buffer);
-
-        return true;
-    }
 }
 
 FF2BaseEntity GetBaseByEntIndex(int ent)
