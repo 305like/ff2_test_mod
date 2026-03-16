@@ -337,6 +337,9 @@ public int Native_FF2HudQueue_ShowSyncHudQueueText(Handle plugin, int numParams)
 
 public void Forward_OnCalledQueue(FF2HudQueue hudQueue, int client)
 {
+	// 내부 모듈 직접 호출
+	RankHud_OnCalledQueue(hudQueue, client);
+
 	Call_StartForward(OnCalledQueue);
 	Call_PushCell(hudQueue);
 	Call_PushCell(client);

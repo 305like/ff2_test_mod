@@ -58,6 +58,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include "ff2_module/dhooks.inc"
 #include "ff2_module/weapon.inc"
 #include "ff2_module/goomba.inc"
+#include "ff2_module/rank_hud.inc"
 
 #pragma newdecls required
 
@@ -401,6 +402,9 @@ public void OnPluginStart()
 
 	// ff2_module/goomba.inc
 	Goomba_Init();
+
+	// ff2_module/rank_hud.inc
+	RankHud_Init();
 
 	delete gamedata;
 	CreateTimer(1.0, OverChargeTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
