@@ -22,7 +22,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-#tryinclude <mannvsmann>
 #tryinclude <smac>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
@@ -66,7 +65,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #if defined _steamtools_included
 bool steamtools;
 #endif
-bool mannvsmann = false;
 
 int Stabbed[MAXPLAYERS+1];
 int Marketed[MAXPLAYERS+1];
@@ -381,9 +379,6 @@ public void OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
-	#if defined _MVM_included
-	mannvsmann=LibraryExists("mannvsmann");
-	#endif
 
 
 	GameData gamedata = new GameData("potry");
@@ -432,12 +427,6 @@ public void OnLibraryAdded(const char[] name)
 	}
 	#endif
 
-	#if defined _MVM_included
-	if(StrEqual(name, "mannvsmann", false))
-	{
-		mannvsmann = true;
-	}
-	#endif
 
 	#if defined _updater_included && !defined DEV_REVISION
 	if(StrEqual(name, "updater") && cvarUpdater.BoolValue)
@@ -456,12 +445,6 @@ public void OnLibraryRemoved(const char[] name)
 	}
 	#endif
 
-	#if defined _MVM_included
-	if(StrEqual(name, "mannvsmann", false))
-	{
-		mannvsmann = false;
-	}
-	#endif
 
 	#if defined _updater_included
 	if(StrEqual(name, "updater"))
@@ -6460,25 +6443,6 @@ void KillStreakCheck(int attackerIndex, int client, int boss, float damage, bool
 		attacker.LastNoticedDamage = KILLSTREAK_DAMAGE_INTERVAL * (interval + 1);
 		CreateKillStreak(attackerIndex, client, "world", interval * KILLSTREAK_DAMAGE_INTERVAL);
 
-		// TODO: move this to freak_fortress_2/mvm.sp
-		// make configable 
-		float totalHealth = float(BossHealthMax[boss] * BossLivesMax[boss]);
-		float currencyRatio = float(KILLSTREAK_DAMAGE_INTERVAL) / totalHealth,
-			currency = (2200.0 * min((totalHealth / 50000.0), 1.0)) * currencyRatio;
-
-#if defined _MVM_included
-		SetMannVsMachineMode(true);
-#endif
-		int count = interval - (lastNoticedInterval - 1);
-		for(int loop = 0; loop < count; loop++)
-		{
-			MVM_DropCurrency(client, TF_CURRENCY_PACK_CUSTOM, RoundToCeil(currency),
-				currencyDistributed, _, TF2_GetClientTeam(attackerIndex));
-		}
-
-#if defined _MVM_included
-		ResetMannVsMachineMode();
-#endif
 
 		// PrintToChatAll("%d, %d, %d", interval, lastNoticedInterval, count);
 		// PrintToChatAll("%.1f, %.1f, %d", currencyRatio, currency, RoundToCeil(currency));
