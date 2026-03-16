@@ -1,0 +1,25 @@
+"Phrases"
+{
+	"Teleportation Cooldown"
+    {
+        "#format"   "{1:i}"
+        "en"        "Teleportation will be available in {1} second(s)"
+    }
+    "Point Teleportation Charge"
+    {
+        "#format"   "{1:i}"
+        "en"        "PRESS {2}: Teleportation is {1} percent ready."
+    }
+	"Point Teleportation Hint"
+	{
+		"en"        "Release button to teleport"
+	}
+	"Right Click"
+	{
+		"en"		"Right Click"
+	}
+	"Reload"
+	{
+		"en"		"Reload"
+	}
+}

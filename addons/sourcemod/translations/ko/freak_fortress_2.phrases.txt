@@ -1,0 +1,530 @@
+"Phrases"
+{
+	"More Players Needed"
+	{
+		"ko"		"Freak Fortress 2가 현재 비활성화 상태입니다. 즐기시기 위해서는 플레이어가 더 필요합니다."
+	}
+	"Type ff2 to Open Menu"
+	{
+		"ko"		"{olive}/ff2{default} 명령어를 채팅에 입력하여 메뉴를 여실 수 있습니다."
+	}
+	"Type ff2_advance to Open Menu"
+	{
+		"ko"		"{olive}/ff2_advance{default} 명령어를 채팅에 입력하여 고급 메뉴를 여실 수 있습니다."
+	}
+	"Wait for Health Value"
+	{
+		"#format"	"{1:i},{2:s}"
+		"ko"		"{1}초 후에 다시 확인하실 수 있습니다. 가장 최근에 확인한 체력: {2}."
+	}
+	"Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"ko"		"내 피해량: {1}"
+	}
+	"Point Unlocked"
+	{
+		"#format"	"{1:i},{2:i}"
+		"ko"		"{1}명만 남았거나 {2}초 남을 경우, 점령 지점이 열리게 됩니다!"
+	}
+	"Top 3"
+	{
+		"ko"		"피해를 가장 많이 입혀준 플레이어들"
+	}
+	"Ubercharge"
+	{
+		"#format"	"{1:i}"
+		"ko"		"우버차지: {1}%%"
+	}
+	"Boss Lives Left"
+	{
+		"#format" "{1:i},{2:i}"
+		"ko"	"라이프: {1} / {2}"
+	}
+	"Activate Rage"
+	{
+		"ko"		"메딕을 불러 \"분노\" 능력을 사용하세요!"
+	}
+	"Rage Duration"
+	{
+		"ko"		"분노 지속시간"
+	}
+	"Life Skill Duration"
+	{
+		"ko"		"라이프 스킬 지속시간"
+	}
+	"Rage Meter Phrase"
+	{
+		"ko"		"분노"
+	}
+	"Current Rage Meter"
+	{
+		"#format"	"{1:i},{2:s}"
+		"ko"		"{1}%% / {2}%%"
+	}
+	"Current Rage Damage"
+	{
+		"#format"	"{1:i},{2:i}"
+		"ko"		"{1} / {2}"
+	}
+	"Current Boss Rage"
+	{
+		"#format"	"{1:i}"
+		"ko"		"보스들의 분노: {1}%%"
+	}
+	"Super Duper Jump"
+	{
+		"ko"		"긴급 슈퍼점프가 준비되었습니다!"
+	}
+	"Teleportation Charge"
+	{
+		"#format"	"{1:i},{2:s}"
+		"ko"		"텔레포트: {1}%% / 100%% ({2})"
+	}
+	"Teleportation Hint"
+	{
+		"ko"		"100%%일 때, 위를 보고 버튼을 때면 발동"
+	}
+	"Super Jump Charge"
+	{
+		"#format"	"{1:i},{2:s}"
+		"ko"		"슈퍼점프: {1}%% ({2})"
+	}
+	"Super Jump Hint"
+	{
+		"ko"		"위를 보고 버튼을 때면 발동"
+	}
+	"Teleportation Cooldown"
+	{
+		"#format"	"{1:i}"
+		"ko"		"텔레포트 사용 대기시간: {1}초"
+	}
+	"Super Jump Cooldown"
+	{
+		"#format"	"{1:i}"
+		"ko"		"슈퍼점프 사용 대기시간: {1}초"
+	}
+	"Right Click"
+	{
+		"ko"		"우클릭"
+	}
+	"Reload"
+	{
+		"ko"		"재장전"
+	}
+	"Scout Advice"
+	{
+		"ko"		""
+	}
+	"Soldier Advice"
+	{
+		"ko"		"모든 총기류로 공중에 뜬 보스를 맞출 시 소형 치명타(직격포는 치명타)"
+	}
+	"Pyro Advice"
+	{
+		"ko"		"압축공기 분사는 보스의 분노와 버지니어 분노의 시간을 늘립니다."
+	}
+	"Demo Advice"
+	{
+		"ko"		""
+	}
+	"Heavy Advice"
+	{
+		"ko"		""
+	}
+	"Engineer Advice"
+	{
+		"ko"		""
+	}
+	"Medic Advice"
+	{
+		"ko"		"모든 메디건이 기본 + 응급조치 + 크리츠크리그의 능력을 모두 갖습니다."
+	}
+	"Sniper Advice"
+	{
+		"ko"		"대부분의 무기에 치명타를 부여받습니다.\n뒤에 착용한 배낭은 SMG도 부여받습니다."
+	}
+	"Spy Advice"
+	{
+		"ko"		"백스탭은 보스의 체력에 비례하여 큰 피해를 입힙니다.\n망도와 단검은 일반 은폐시계로 교체됩니다.\n모든 리볼버에 소형 치명타가 부여됩니다."
+	}
+	"Melee Advice"
+	{
+		"ko"		"칼을 제외한 모든 근접무기에 치명타가 부여됩니다!\n명령어 /ff2를 이용해 이 알림을 끄실 수 있습니다."
+	}
+	"Boss Queue"
+	{
+		"ko"		"보스 대기열"
+	}
+	"What's Up"
+	{
+		"ko"		"무슨 일 이세요?"
+	}
+	"Observe Health Value"
+	{
+		"ko"		"보스의 체력 확인하기 (/ff2_hp)"
+	}
+	"FF2 Help"
+	{
+		"ko"		"FF2 도움말 (/ff2_help)."
+	}
+	"What's New in FF2"
+	{
+		"ko"		"뭐가 새로워졌을까요? (/ff2_changelog)."
+	}
+	"View Queue Points"
+	{
+		"ko"		"보스 대기열 보기 (/ff2_next)"
+	}
+	"Advance Menu Title"
+	{
+		"ko"		"고급 설정 (/ff2_advance)"
+	}
+	"Boss Difficulty Setting"
+	{
+		"ko"		"내 보스 난이도 설정 (/ff2_diffculty)"
+	}
+	"Hud Setting"
+	{
+		"ko"		"HUD 설정 (/ff2_hud)"
+	}
+	"HudMenu Title"
+	{
+		"ko"		"HUD 설정"
+	}
+	"HudMenu Boss"
+	{
+		"ko"		"보스 시점"
+	}
+	"HudMenu Player"
+	{
+		"ko"		"플레이어 시점"
+	}
+	"HudMenu Observer"
+	{
+		"ko"		"관전자 시점"
+	}
+	"HudMenu Other"
+	{
+		"ko"		"그 외의 HUD"
+	}
+	"Hud Setting NONE"
+	{
+		"ko"		"아무것도 설정하지 않았습니다! (VIEW와 동일)"
+	}
+	"Hud Setting VIEW"
+	{
+		"ko"		"자신을 포함해서 다른 사람도 볼 수 있습니다."
+	}
+	"Hud Setting PUBLIC"
+	{
+		"ko"		"자신은 안보지만, 타인에게는 여전히 보일 수 있습니다."
+	}
+	"Hud Setting PRIVATE"
+	{
+		"ko"		"자신을 포함하여, 모든 사람에게 보이지 않습니다."
+	}
+	"Hud Setting Not Found!"
+	{
+		"ko"		"그 항목에서는 설정할 항목이 없습니다!"
+	}
+	"Human Team Boss Setting Title"
+	{
+		"ko"		"인간팀 보스 플레이 여부 설정"
+	}
+	"Human Team Boss Setting Description"
+	{
+		"ko"		" - 인간팀에서 일정 수 이상의 인원을 충족하면 그 중에 소수의 사람이 보스가 되어 팀을 도울 수 있습니다!\n - 보스 설정과 관계 없이 무작위 보스로 지정됩니다!"
+	}
+	"Menu Already Choose"
+	{
+		// 앞의 공백은 제대로 된 것이 맞으니 수정하지 말 것
+		"ko"		" (선택됨)"
+	}
+	"Exit Menu"
+	{
+		"ko"		"나가기"
+	}
+	"FF2 Objective"
+	{
+		"ko"		"===Freak Fortress 2===\n한명(혹은 다수가) 보스가 됩니다!\n다른 플레이어들은 그 보스를 쓰러뜨리는 것이 목표입니다."
+	}
+	"Changelog"
+	{
+		"ko"		"Freak Fortress 2 변경사항"
+	}
+	"Class Changes"
+	{
+		"ko"		"내 병과에서의 바뀐 점 확인 (/ff2_classinfo)"
+	}
+	"Total Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"ko"		"이번 라운드에 {1} 피해를 입혔습니다."
+	}
+	"Points Earned"
+	{
+		"#format"	"{1:i}"
+		"ko"		"{1} 대기열 포인트를 흭득하셨습니다."
+	}
+	"Boss Victory"
+	{
+		"ko"		"축하드립니다! 이기셨어요!"
+	}
+	"Boss Defeat"
+	{
+		"ko"		"헉! 지셨네요.. 하지만 다음 기회는 항상 있으니까요!"
+	}
+	"Boss Info"
+	{
+		"#format"	"{1:N},{2:s},{3:i},{4:s}"
+		"ko"		"{1}님의 {2} \nHP: {3}{4}"
+	}
+	"Boss Current Health"
+	{
+		"#format"	"{1:s},{2:i},{3:i},{4:s}"
+		"ko"		"{1}의 HP: {2} / {3}{4}"
+	}
+	"Boss Win Final Health"
+	{
+		"#format" "{1:s},{2:N},{3:i},{4:i},{5:s}"
+		"ko"	"{1}({2})님이 승리하셨습니다!\n남은 체력: {3} / {4}{5}"
+	}
+	"Vote for Character Set"
+	{
+		"ko"		"다음 맵에서 사용될 캐릭터 셋을 투표해주십시요."
+	}
+	"Your Queue Points"
+	{
+		"#format"	"{1:i}"
+		"ko"		"내 대기열 포인트: {1}"
+	}
+	"Reset Queue Points"
+	{
+		"ko"		"0으로 초기화"
+	}
+	"Reset Queue Points Confirmation"
+	{
+		"ko"		"대기열 포인트를 0으로 초기화하시겠습니까?"
+	}
+	"Reset Player's Queue Points"
+	{
+		"#format"	"{1:N}"
+		"ko"		"{1}님의 대기열 포인트를 0으로 초기화하시겠습니까?"
+	}
+	"Reset Queue Points Done"
+	{
+		"ko"		"대기열 포인트를 {olive}0{default}으로 초기화하였습니다."
+	}
+	"Reset Player's Points Done"
+	{
+		"#format"	"{1:N}"
+		"ko"		"{olive}{1}{default}님의 대기열 포인트를 {olive}0{default}으로 초기화하였습니다."
+	}
+	"Queue Points Reset by Admin"
+	{
+		"#format"	"{1:N}"
+		"ko"		"{olive}{1}{default}님이 당신의 대기열 포인트를 {olive}0{default}으로 초기화하였습니다."
+	}
+	"Next Boss"
+	{
+		"ko"		"곧 보스로 플레이하게 됩니다. {olive}/ff2_next{default} 명령어로 확인하실 수 있습니다."
+	}
+	"Arena Rounds Left"
+	{
+		"#format"	"{1:i}"
+		"ko"		"로딩 중인 플레이어를 기다리고 있습니다. FF2가 {1} 라운드 후에 시작됩니다."
+	}
+	"FF2 Music"
+	{
+		"#format"	"{1:s}"
+		"ko"		"Freak Fortress 2 전체 보스 음악: {1}"
+	}
+	"FF2 Voice"
+	{
+		"#format"	"{1:s}"
+		"ko"		"FF2 전체 보스 대사: {1}"
+	}
+	"FF2 Voice 2"
+	{
+		"ko"		"다른 소리들은 아마 여전히 조용하게나마 들릴 수 있습니다."
+	}
+	"Toggle Music"
+	{
+		"ko"		"보스 음악 설정 (/ff2_music)"
+	}
+	"Toggle Music Switch"
+	{
+		"ko"		"보스 음악 ON/OFF"
+	}
+	"Music Track Select Title"
+	{
+		"ko"		"음악 트랙 설정"
+	}
+	"Menu Music Track Current Music"
+	{
+		"ko"		"지금 듣고 있는 음악"
+	}
+	"Menu Music Track Boss Music"
+	{
+		"#format"	"{1:s}"
+		"ko"		"{1}의 음악"
+	}
+	"Menu Music Track Choose Music Setting"
+	{
+		"#format"	"{1:s}"
+		"ko"		"선택된 음악: {orange}{1}{default}"
+	}
+	"Music Track Detail Title"
+	{
+		"#format"	"{1:s}"
+		"ko"		"{1}의 음악 트랙 설정"
+	}
+	"Toggle Monologue"
+	{
+		"ko"		"보스 대사 ON / OFF (/ff2_voice)"
+	}
+	"Toggle Monologue Switch"
+	{
+		"ko"		"보스 대사 및 효과음 ON / OFF"
+	}
+	"Toggle Class Changes"
+	{
+		"ko"		"FF2에서의 병과 변경점 ON / OFF"
+	}
+	"FF2 Class Info"
+	{
+		"#format"	"{1:s}"
+		"ko"		"FF2에서의 병과 변경점 알림: {1}"
+	}
+	"Last FF2 Update"
+	{
+		"#format"	"{1:s}"
+		"ko"		"{olive}/ff2_changelog{default} 명령어로 {olive}{1}{default}에서의 변경점을 보실 수 있습니다."
+	}
+	"FF2 Changelog Notice"
+	{
+		"#format"	"{1:s}"
+		"ko"		"명령어 {olive}/ff2_changelog{default}: 마지막으로 변경사항을 확인한 이후 새로운 변경사항이 추가되었습니다. (변경날짜: {1})"
+	}
+	"Charge Status"
+	{
+		"#format"	"{1:i}"
+		"ko"		"Charge is {1} percent ready. When at 100 percent let go of the charge button."
+	}
+	"Character Set Next Map"
+	{
+		"#format"	"{1:s},{2:s}"
+		"ko"		"다음 맵({1})에서 사용될 캐릭터 셋이 {2}로 정해졌습니다."
+	}
+	"Ability uses Reload"
+	{
+		"ko"		"재장전 버튼을 눌러 능력을 사용!"
+	}
+	"Ability uses Right Mouse"
+	{
+		"ko"		"우클릭으로 능력을 사용!"
+	}
+	"Boss with Multiple Lives Left"
+	{
+		"#format"	"{1:s},{2:i}"
+		"ko"		"{1}(이)가 라이프를 잃었습니다! 아직 {2}개 남았습니다!"
+	}
+	"Boss with 1 Life Left"
+	{
+		"#format"	"{1:s}"
+		"ko"		"{1}(이)가 라이프를 잃었습니다! 이제 마지막 라이프입니다!"
+	}
+	"Seeldier Rage Message"
+	{
+		"#format"	"{1:s}"
+		"ko"		"당신은 이제 {1}의 하수인입니다. 다른 팀을 공격하세요!"
+	}
+	"VSH and FF2 Group"
+	{
+		"ko"		"VS Saxton Hale/Freak Fortress 2 그룹: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}"
+	}
+	"FF2 Contributors"
+	{
+		"#format"	"{1:s}"
+		"ko"		"=== Freak Fortress 2 v{1} (VS Saxton Hale Mode 기반 by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}, Forked by {dodgerblue}Nopied◎{default}) ==="
+	}
+	"Boss Suicide Denied"
+	{
+		"ko"	"보스로 자살하실 수 없습니다!"
+	}
+	"Boss Suicide Pre-round"
+	{
+		"ko"	"라운드 시작 전에 자살하실 수 없습니다!"
+	}
+	"Boss Disconnected"
+	{
+		"#format" "{1:N},{2:N}"
+		"ko"	"{1}님이 서버에서 퇴장하여 {2}님이 새로운 보스로 정해졌습니다!"
+	}
+	"Replace Disconnected Boss"
+	{
+		"ko"	"와! 보스가 되었습니다!"
+	}
+	"Backstab"
+	{
+		"ko"	"백스탭 했습니다!"
+	}
+	"Backstabbed"
+	{
+		"ko"	"백스탭 당했습니다!"
+	}
+	"Market Gardener"
+	{
+		"ko"	"마켓가든 공격을 했습니다!"
+	}
+	"Market Gardened"
+	{
+		"ko"	"마켓가든 공격을 당했습니다!"
+	}
+	"Detonations Left"
+	{
+		"#format"	"{1:i}"
+		"ko"		"남은 폭발물 갯수: {1}"
+	}
+	"Spectator Damage Dealt"
+	{
+		"#format"	"{1:N},{2:i}"
+		"ko"		"{1}님의 데미지: {2}"
+	}
+	"Your Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"ko"		"데미지: {1}"
+	}
+	"Dev Mode"
+	{
+		"ko"	"개발자 모드(∞)"
+	}
+	"Wave Started"
+	{
+		"ko"	"웨이브가 시작되었습니다! 플레이어들은 돈을 얻고 보스들은 추가 체력을 얻었습니다."
+	}
+	"Carteen Cooldown"
+	{
+		"ko"	"수통 대기 시간"
+	}
+	"Randomly Choose Boss Player"
+	{
+		"ko"	"플레이어가 부족하여 무작위로 보스 플레이어를 고릅니다!"
+	}
+	"Boss Music Info"
+	{
+		"#format"	"{1:s},{2:d}"
+		"ko"		"{1}의 음악 (#{2})"
+	}
+	"Wave Correction Boss Health"
+	{
+		"#format"	"{1:d}"
+		"ko"		"웨이브 보정: 보스의 체력이 {orange}{1:d}%%{default} 증가됩니다!"
+	}
+	"Overcharge"
+	{
+		"ko"		"방패 과충전"
+	}
+}

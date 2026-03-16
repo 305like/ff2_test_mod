@@ -1,0 +1,306 @@
+"Games"
+{
+	"tf"
+	{
+		"Signatures"
+		{
+			"CTFLunchBox::DrainAmmo"
+			{
+				"linux"		"@_ZN11CTFLunchBox9DrainAmmoEb"
+				"windows"	" "
+			}
+			"CTFWeaponBaseMelee::OnEntityHit"
+			{
+				"linux"		"@_ZN18CTFWeaponBaseMelee11OnEntityHitEP11CBaseEntityP15CTakeDamageInfo"
+				"windows"	" "
+			}
+			"CTFWeaponBaseMelee::Smack"
+			{
+				"linux"		"@_ZN18CTFWeaponBaseMelee5SmackEv"
+				"windows"	" "
+			}
+			"CTFShotgun::PrimaryAttack"
+			{
+				"linux"		"@_ZN10CTFShotgun13PrimaryAttackEv"
+				"windows"	" "
+			}
+			"CTFSword::GetSwingRange"
+			{
+				"linux"		"@_ZN8CTFSword13GetSwingRangeEv"
+				"windows"	" "
+			}
+			"CTFPlayer::GiveAmmo"
+			{
+			    "linux"		"@_ZN9CTFPlayer8GiveAmmoEiib"
+			    "windows"	" "
+			}
+			"CTFPlayer::GetMaxAmmo"
+			{
+				"linux"		"@_ZN9CTFPlayer10GetMaxAmmoEii"
+				"windows"	" "
+			}
+			"CTFPlayer::CanPickupDroppedWeapon"
+			{
+				"linux"		"@_ZN9CTFPlayer22CanPickupDroppedWeaponEPK16CTFDroppedWeapon"
+				"windows"	" "
+			}
+			"CTFPlayer::PickupWeaponFromOther"
+			{
+				"linux"		"@_ZN9CTFPlayer21PickupWeaponFromOtherEP16CTFDroppedWeapon"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x8B\x75\x08\x57\x8B\xF9\x81\xC6\x88\x04\x00\x00"
+			}
+			"CTFPlayer::TeamFortress_SetSpeed()"
+			{
+				"linux"		"@_ZN9CTFPlayer21TeamFortress_SetSpeedEv"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\xEC\x1C\x53"
+			}
+			"CTFDroppedWeapon::InitDroppedWeapon"
+			{
+				// WHY?
+				"linux"		"@_ZN16CTFDroppedWeapon17InitDroppedWeaponEP9CTFPlayerP13CTFWeaponBasebb"
+				"windows"	" "
+			}
+			"CTFDroppedWeapon::Create"
+			{
+				"linux"		"@_ZN16CTFDroppedWeapon6CreateEP9CTFPlayerRK6VectorRK6QAnglePKcPK13CEconItemView"
+				"windows"	" "
+			}
+			"CTFParticleCannon::FireChargedShot"
+			{
+				"library"	"server"
+				"linux"		"@_ZN17CTFParticleCannon15FireChargedShotEv"
+				"windows"	"\x55\x89\xE5\x57\x56\x53\x83\xEC\x3C\x8B\x5D\x08\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x85\xC0\x89\xC6\x74\x2A\x8B\x00\x89\x34\x24\xFF\x90\x4C\x01\x00\x00\x84\xC0\x75\x2A\x83\xC4\x3C\x5B\x5E\x5F\x5D\xC3\x8D\xB4\x26\x00\x00\x00\x00\x8B\x06"
+			}
+			"CBaseEntity::MyNextBotPointer"
+			{
+				"library"	"server"
+				"linux"		"@_ZN11CBaseEntity16MyNextBotPointerEv"
+				"windows"	" "
+			}
+			"INextBot::GetLocomotionInterface"
+			{
+				"library"	"server"
+				"linux"		"@_ZNK8INextBot22GetLocomotionInterfaceEv"
+				"windows"	" "
+			}
+			"CTFBaseBossLocomotion::GetStepHeight"
+			{
+				"library"	"server"
+				"linux"		"@_ZNK21CTFBaseBossLocomotion13GetStepHeightEv"
+				"windows"	" "
+			}
+			"CTFBaseBoss::GetCurrencyValue"
+			{
+				"linux"		"@_ZN11CTFBaseBoss16GetCurrencyValueEv"
+				"windows"	" "
+			}
+			"CBaseAnimating::StudioFrameAdvance"
+			{
+				"library"	"server"
+				"linux"		"@_ZN14CBaseAnimating18StudioFrameAdvanceEv"
+				"windows"	" "
+			}
+			"CBaseAnimatingOverlay::AllocateLayer"
+			{
+				"library"	"server"
+				"linux"		"@_ZN21CBaseAnimatingOverlay13AllocateLayerEi"
+				"windows"	" "
+			}
+			"CBaseAnimating::ResetSequence"
+			{
+				"library"	"server"
+				"linux"		"@_ZN14CBaseAnimating13ResetSequenceEi"
+				"windows"	" "
+			}
+
+			"CTFWeaponBuilder::Deploy"
+			{
+				"linux"		"@_ZN16CTFWeaponBuilder6DeployEv"
+				"windows"	" "
+			}
+		}
+		"Functions"
+		{
+			"CTFLunchBox::DrainAmmo"
+			{
+				"signature" "CTFLunchBox::DrainAmmo"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"bForceCooldown"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CTFWeaponBaseMelee::DoMeleeDamage"
+			{
+				"signature"	"CTFWeaponBaseMelee::DoMeleeDamage"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"ent"
+					{
+						"type"	"cbaseentity"
+					}
+					"trace"
+					{
+						"type"	"objectptr"
+					}
+					"flDamageMod"
+					{
+						"type"	"float"
+					}
+				}
+			}
+			"CTFWeaponBaseMelee::OnEntityHit"
+			{
+				"signature"	"CTFWeaponBaseMelee::OnEntityHit"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"ent"
+					{
+						"type"	"cbaseentity"
+					}
+					"info"
+					{
+						"type"	"objectptr"
+					}
+				}
+			}
+			"CTFWeaponBaseMelee::Smack"
+			{
+				"signature"	"CTFWeaponBaseMelee::Smack"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CTFShotgun::PrimaryAttack"
+			{
+				"signature"	"CTFShotgun::PrimaryAttack"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CTFPlayer::CanPickupDroppedWeapon"
+			{
+				"signature"	"CTFPlayer::CanPickupDroppedWeapon"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pDroppedWeapon"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+			"CTFPlayer::PickupWeaponFromOther"
+			{
+				"signature"	"CTFPlayer::CanPickupDroppedWeapon"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pDroppedWeapon"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+			"CTFDroppedWeapon::InitDroppedWeapon"
+			{
+				"signature"	"CTFDroppedWeapon::InitDroppedWeapon"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pPlayer"
+					{
+						"type"	"cbaseentity"
+					}
+					"pWeapon"
+					{
+						"type"	"cbaseentity"
+					}
+					"bSwap"
+					{
+						"type"	"bool"
+					}
+					"bIsSuicide"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CTFPlayer::TeamFortress_SetSpeed()"
+			{
+				"signature"	"CTFPlayer::TeamFortress_SetSpeed()"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CTFDroppedWeapon::Create"
+			{
+				"signature"	"CTFDroppedWeapon::Create"
+				"callconv"	"thiscall"
+				"return"	"cbaseentity"
+				"this"		"entity"
+				"arguments"
+				{
+					"pLastOwner"
+					{
+						"type"	"cbaseentity"
+					}
+					"vecOrigin"
+					{
+						"type"	"vectorptr"
+					}
+					"vecAngles"
+					{
+						"type"	"vectorptr"
+					}
+					"pszModelName"
+					{
+						"type"	"stringptr"
+					}
+					"pItem"
+					{
+						"type"	"objectptr"
+					}
+				}
+			}
+			"CTFParticleCannon::FireChargedShot"
+			{
+				"signature"		"CTFParticleCannon::FireChargedShot"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"entity"
+			}
+			"CTFBaseBoss::GetCurrencyValue"
+			{
+				"signature"		"CTFBaseBoss::GetCurrencyValue"
+				"callconv"		"thiscall"
+				"return"		"int"
+				"this"			"entity"
+			}
+			"CTFBaseBossLocomotion::GetStepHeight"
+			{
+				"signature"		"CTFBaseBossLocomotion::GetStepHeight"
+				"callconv"		"thiscall"
+				"return"		"float"
+				"this"			"address"
+			}
+		}
+    }
+}

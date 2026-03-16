@@ -1,0 +1,8 @@
+"Phrases"
+{
+    "Revive Marker Healing"
+    {
+        "#format" "{1:d}"
+        "ko"      "소생까지 남은 체력: {1}"
+    }
+}

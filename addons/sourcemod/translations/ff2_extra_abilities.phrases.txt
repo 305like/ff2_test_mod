@@ -1,0 +1,78 @@
+"Phrases"
+{
+    "Weapon Disabled"
+    {
+        "#format"   "{1:d}"
+        "en"        "This weapon has been disabled for {1} seconds!"
+    }
+    "Weapon Disabled Time"
+    {
+        "#format"   "{1:d}"
+        "en"        "Weapon Recover: In {1}sec"
+    }
+
+    "Reflecter Health"
+    {
+        "#format"   "{1:d}"
+        "en"        "Reflecter HP: {1}"
+    }
+    "Reflecter By Force"
+    {
+        "en"        "PRESS DUCK to use Reflecter"
+    }
+
+    "Sentry Count"
+    {
+        "#format"   "{1:d},{2:d}"
+        "en"        "Current Sentry Count: {1} / {2}"
+    }
+
+    "Eaten by Painis"
+    {
+        "#format"   "{1:s},{2:N},{3:i}"
+        "en"        "{green}{1}{default} ate {red}{2}{default}. (+{3}HP)"
+    }
+
+    "Extra HP"
+    {
+        "#format"   "{1:i}"
+        "en"        "Extra HP: {1}"
+    }
+
+    "HHH Warn Victim"
+    {
+        "en"        "YOU ARE IT!  MELEE HIT AN FRIENDLY TO TAG THEM IT!"
+    }
+
+    "HHH Lost Aggro"
+    {
+        "en"        "You are no longer IT."
+    }
+
+    "HHH Announce Tag"
+    {
+        "#format"   "{1:N},{2:N}"
+        "en"        "{1} tagged {2} as IT!"
+    }
+
+    "Shotgun Ability"
+    {
+        "#format"   "{1:s}"
+        "en"        "Shotgun Ability: {s} (RIGHT CLICK to change)"
+    }
+
+    "Shotgun Ability Normal"
+    {
+        "en"    "Normal"
+    }
+
+    "Shotgun Ability Vampire"
+    {
+        "en"    "Vampire"
+    }
+
+    "Shotgun Ability Gold"
+    {
+        "en"    "Gold"
+    }
+}
