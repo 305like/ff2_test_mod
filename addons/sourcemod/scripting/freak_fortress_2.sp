@@ -57,6 +57,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include "ff2_module/commands.inc"
 #include "ff2_module/dhooks.inc"
 #include "ff2_module/weapon.inc"
+#include "ff2_module/goomba.inc"
 
 #pragma newdecls required
 
@@ -398,6 +399,9 @@ public void OnPluginStart()
 	// ff2_moudle/cmd.sp
 	Cmd_Init();
 
+	// ff2_module/goomba.inc
+	Goomba_Init();
+
 	delete gamedata;
 	CreateTimer(1.0, OverChargeTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	
@@ -544,6 +548,8 @@ public void OnMapStart()
 
 	bossesArray.Clear();
 	bossesArrayOriginal.Clear();
+
+	Goomba_OnMapStart();
 }
 
 public void OnMapEnd()
@@ -2759,6 +2765,7 @@ public Action Command_Point_Enable(int client, int args)
 public void OnClientPostAdminCheck(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
+    Goomba_OnClientPutInServer(client);
 
     uberTarget[client]=-1;
 
@@ -2857,6 +2864,10 @@ public void OnClientDisconnect(int client)
 
 public Action OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(IsValidClient(client))
+		Goomba_OnPlayerSpawn(client);
+
 	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -4304,6 +4315,8 @@ public Action OnJoinTeam(int client, const char[] command, int args)
 
 public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadcast)
 {
+	Goomba_OnPlayerDeath(event);
+
 	if(!Enabled || CheckRoundState()!=FF2RoundState_RoundRunning)
 	{
 		return Plugin_Continue;
