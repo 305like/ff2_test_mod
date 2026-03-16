@@ -22,6 +22,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
+#tryinclude <mannvsmann>
+// #include <db_simple>
 #tryinclude <smac>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
@@ -65,6 +67,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #if defined _steamtools_included
 bool steamtools;
 #endif
+bool mannvsmann = false;
 
 int Stabbed[MAXPLAYERS+1];
 int Marketed[MAXPLAYERS+1];
@@ -75,6 +78,11 @@ float KSpreeTimer[MAXPLAYERS+1];
 int KSpreeCount[MAXPLAYERS+1];
 float GlowTimer[MAXPLAYERS+1];
 bool emitRageSound[MAXPLAYERS+1];
+float g_flZatoichiDrawTime[MAXPLAYERS+1];  // 자토이치를 꺼낸 시간
+int g_iAmputatorHits[MAXPLAYERS+1];
+Handle KritzTimer[MAXPLAYERS+1];
+float g_flSpyCloakDamageMultiplier[MAXPLAYERS+1];
+
 
 float RocketJumpPosition[MAXPLAYERS+1][3];
 
@@ -282,8 +290,6 @@ public void OnPluginStart()
 {
 	LogMessage("===Freak Fortress 2 Initializing-v%s===", PLUGIN_VERSION);
 
-	FF2DB_Init();
-
 	// cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", _, true, 0.0);
@@ -305,7 +311,7 @@ public void OnPluginStart()
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "1", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
-	cvarTimerType=CreateConVar("ff2_timer_type", "0", "0-Disable FF2 round timer, 1-Enable round timer, 2-Enable wave timer", _, true, 0.0, true, 2.0);
+	cvarTimerType=CreateConVar("ff2_timer_type", "1", "0-Disable FF2 round timer, 1-Enable round timer, 2-Enable wave timer", _, true, 0.0, true, 2.0);
 
 
 	HookEvent("teamplay_round_start", OnRoundStart);
@@ -379,7 +385,11 @@ public void OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
-
+	#if defined _MVM_included
+	mannvsmann=LibraryExists("mannvsmann");
+	#endif
+	
+	Database_Init();
 
 	GameData gamedata = new GameData("potry");
 
@@ -393,6 +403,13 @@ public void OnPluginStart()
 	Cmd_Init();
 
 	delete gamedata;
+	CreateTimer(1.0, OverChargeTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	
+	    for(int i = 0; i <= MaxClients; i++)
+    {
+        KritzTimer[i] = INVALID_HANDLE;
+    }
+
 }
 
 public bool BossTargetFilter(const char[] pattern, Handle clients)
@@ -427,6 +444,12 @@ public void OnLibraryAdded(const char[] name)
 	}
 	#endif
 
+	#if defined _MVM_included
+	if(StrEqual(name, "mannvsmann", false))
+	{
+		mannvsmann = true;
+	}
+	#endif
 
 	#if defined _updater_included && !defined DEV_REVISION
 	if(StrEqual(name, "updater") && cvarUpdater.BoolValue)
@@ -445,6 +468,12 @@ public void OnLibraryRemoved(const char[] name)
 	}
 	#endif
 
+	#if defined _MVM_included
+	if(StrEqual(name, "mannvsmann", false))
+	{
+		mannvsmann = false;
+	}
+	#endif
 
 	#if defined _updater_included
 	if(StrEqual(name, "updater"))
@@ -527,6 +556,10 @@ public void OnMapEnd()
 	{
 		DisableFF2();  //This resets all the variables for safety
 	}
+	    for(int i = 0; i <= MaxClients; i++)
+    {
+        OverCharge[i] = 0.0;
+    }
 }
 
 public void OnPluginEnd()
@@ -582,11 +615,11 @@ public void EnableFF2()
 	FindConVar("mp_teams_unbalance_limit").SetInt(0);
 	FindConVar("tf_arena_first_blood").SetInt(0);
 	FindConVar("mp_forcecamera").SetInt(0);
-	FindConVar("tf_dropped_weapon_lifetime").SetInt(2000);
+	FindConVar("tf_dropped_weapon_lifetime").SetInt(0);
 	FindConVar("tf_feign_death_activate_damage_scale").SetFloat(0.3);
 	FindConVar("tf_feign_death_damage_scale").SetFloat(1.0);
 	FindConVar("mp_humans_must_join_team").SetString("any");
-	FindConVar("tf_player_movement_restart_freeze").SetInt(0);
+	FindConVar("tf_player_movement_restart_freeze").SetInt(1);
 
 	float time=Announce;
 	if(time>1.0)
@@ -926,6 +959,15 @@ public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	{
 		DisableFF2();
 	}
+	
+	    for(int i = 0; i <= MaxClients; i++)
+    {
+        Stabbed[i] = 0;
+        Marketed[i] = 0;
+        KSpreeCount[i] = 0;
+        ComboPunchCount[i] = 0;
+        emitRageSound[i] = true;
+    }
 
 	if(!cvarEnabled.BoolValue)
 	{
@@ -992,7 +1034,6 @@ public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 
 		player.Damage = 0;
 		player.Assist = 0;
-		player.LastNoticedDamage = KILLSTREAK_DAMAGE_INTERVAL;
 		player.Flags = 0;
 		
 		uberTarget[client]=-1;
@@ -1143,7 +1184,7 @@ public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 		{
 			AcceptEntityInput(entity, "Kill");
 		}
-		else if(StrEqual(classname, "func_respawnroomvisualizer"))
+		else if (StrEqual(classname, "func_respawnroom") || StrEqual(classname, "func_respawnroomvisualizer"))
 		{
 			AcceptEntityInput(entity, "Disable");
 		}
@@ -1573,7 +1614,7 @@ public Action StartBossTimer(Handle timer)
 			isBossAlive=true;
 			// SetEntityMoveType(Boss[boss], MOVETYPE_NONE);
 
-			BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((560.8+float(RedAlivePlayers))*(float(RedAlivePlayers)-1.0), 1.0341)+2046.0));
+			BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((1,121.2+float(RedAlivePlayers))*(float(RedAlivePlayers)-1.0), 1.0621)+3046.0));
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 
 			// 초기 쿨타임
@@ -1619,24 +1660,24 @@ public Action StartBossTimer(Handle timer)
 	return Plugin_Continue;
 }
 
-public any GetSettingData(int client, const char[] settingId, FF2DataType type)
+public any GetSettingData(int client, const char[] settingId, DBSDataTypes type)
 {
 	char data[128];
 	GetSettingStringData(client, settingId, data, 128);
 
 	switch(type)
 	{
-		case FF2Data_Int:
+		case DBSData_Int:
 		{
 			return data[0] != '\0' ? StringToInt(data) : 0;
 		}
-		case FF2Data_Float:
+		case DBSData_Float:
 		{
 			return data[0] != '\0' ? StringToFloat(data) : 0.0;
 		}
 		default:
 		{
-			ThrowError("only FF2Data_Int, FF2Data_Float supported!");
+			ThrowError("only DBSData_Int, DBSData_Float supported!");
 		}
 	}
 
@@ -1648,14 +1689,14 @@ public any Native_GetSettingData(Handle plugin, int numParams)
 	int client = GetNativeCell(1);
 	char settingId[128];
 	GetNativeString(2, settingId, sizeof(settingId));
-	FF2DataType type = GetNativeCell(3);
+	DBSDataTypes type = GetNativeCell(3);
 
 	return GetSettingData(client, settingId, type);
 }
 
 public void GetSettingStringData(int client, const char[] settingId, char[] value, int buffer)
 {
-	FF2DB_GetSettingString(client, settingId, value, buffer);
+    value[0] = '\0';
 }
 
 public int Native_GetSettingStringData(Handle plugin, int numParams)
@@ -1670,23 +1711,24 @@ public int Native_GetSettingStringData(Handle plugin, int numParams)
 	return 0; // ??
 }
 
-public void SetSettingData(int client, const char[] settingId, any value, FF2DataType type)
+public void SetSettingData(int client, const char[] settingId, any value, DBSDataTypes type)
 {
+	// (DBSPlayerData.GetClientData(client)).SetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYERDATA_TABLENAME, settingId, "value", value);
 	char data[128];
 
 	switch(type)
 	{
-		case FF2Data_Int:
+		case DBSData_Int:
 		{
 			Format(data, sizeof(data), "%d", value);
 		}
-		case FF2Data_Float:
+		case DBSData_Float:
 		{
 			Format(data, sizeof(data), "%.1f", value);
 		}
 		default:
 		{
-			ThrowError("FF2Data_Int, FF2Data_Float supported!");
+			ThrowError("KvData_Int, KvData_Float supported!");
 		}
 	}
 
@@ -1698,7 +1740,7 @@ public /*void*/int Native_SetSettingData(Handle plugin, int numParams)
 	int client = GetNativeCell(1);
 	char settingId[128];
 	GetNativeString(2, settingId, sizeof(settingId));
-	FF2DataType type = GetNativeCell(4);
+	DBSDataTypes type = GetNativeCell(4);
 
 	SetSettingData(client, settingId, GetNativeCellRef(3), type);
 	return 0;
@@ -1706,7 +1748,7 @@ public /*void*/int Native_SetSettingData(Handle plugin, int numParams)
 
 public void SetSettingStringData(int client, const char[] settingId, char[] value)
 {
-	FF2DB_SetSettingString(client, settingId, value);
+    DB_SaveSetting(client, settingId, value);
 }
 
 public /*void*/int Native_SetSettingStringData(Handle plugin, int numParams)
@@ -2352,640 +2394,1982 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 				}
 				kvWeaponMods.GoBack();
 			}
-
-			/*if(kvWeaponMods.JumpToKey("remove"))  //TODO: remove-all (TF2Attrib)
-			{
-				Debug("\tEntered remove");
-				if(kvWeaponMods.GotoFirstSubKey(false))
-				{
-					Debug("\t\tEntered first subkey");
-					int attributes[64];
-					int attribCount=1;
-
-					attributes[0]=kvWeaponMods.GetNum("1");
-					Debug("\t\tKeyvalues classname>removeattribs: First attrib was %i", attributes[0]);
-
-					for(int key=2; kvWeaponMods.GotoNextKey(false); key++)
-					{
-						char temp[4];
-						IntToString(key, temp, sizeof(temp));
-						attributes[key]=kvWeaponMods.GetNum(temp);
-						Debug("\t\tKeyvalues classname>removeattribs: Got attrib %i", attributes[key]);
-						attribCount++;
-					}
-					Debug("\t\tFinal attrib count was %i", attribCount);
-
-					if(attribCount>0)
-					{
-						int i=0;
-						for(int attribute=0; attribute<attribCount && i<16; attribute++)
-						{
-							if(!attributes[attribute])
-							{
-								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s", classname);
-								delete weapon;
-								weapon=null;
-								return Plugin_Stop;
-							}
-
-							Debug("\t\tRemoved attribute %i", attributes[attribute]);
-							int entity=FindEntityByClassname(-1, classname);
-							if(entity!=-1)
-							{
-								TF2Attrib_RemoveByDefIndex(entity, attributes[attribute]);
-							}
-							i++;
-						}
-					}
-				}
-				else
-				{
-					LogError("[FF2 Weapons] There was nothing under \"remove\" for classname %s!", classname);
-				}
-				kvWeaponMods.GoBack();
-			}*/
-
-			/*if(kvWeaponMods.JumpToKey("add"))  //TODO: Preserve attributes
-			{
-				if(kvWeaponMods.GotoFirstSubKey(false))
-				{
-					Debug("\t\tEntered first subkey");
-					char attributes[64][64];
-					int attribCount=1;
-
-					kvWeaponMods.GetSectionName(attributes[0], sizeof(attributes));
-					kvWeaponMods.GetString(attributes[0], attributes[1], sizeof(attributes));
-					Debug("\t\tFirst attrib set was %s ; %s", attributes[0], attributes[1]);
-
-					for(int key=3; kvWeaponMods.GotoNextKey(); key+=2)
-					{
-						kvWeaponMods.GetSectionName(attributes[key], sizeof(attributes));
-						kvWeaponMods.GetString(attributes[key], attributes[key+1], sizeof(attributes));
-						Debug("\t\tGot attrib set %s ; %s", attributes[key], attributes[key+1]);
-						attribCount++;
-					}
-					Debug("\t\tFinal attrib count was %i", attribCount);
-
-					if(attribCount%2!=0)
-					{
-						attribCount--;
-					}
-
-					if(attribCount>0)
-					{
-						int i=0;
-						for(int attribute=0; attribute<attribCount && i<16; attribute+=2)
-						{
-							int attrib=StringToInt(attributes[attribute]);
-							if(attrib==0)
-							{
-								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s: %s ; %s", classname, attributes[attribute], attributes[attribute+1]);
-								delete weapon;
-								weapon=null;
-								return Plugin_Stop;
-							}
-
-							Debug("\t\tKeyvalues classname>addattribs: Added attrib set %s ; %s", attributes[attribute], attributes[attribute+1]);
-							int entity=FindEntityByClassname(-1, classname);
-							{  //FIXME: THIS BRACKET
-								TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
-							}
-							i++;
-						}
-					}
-				}
-				else
-				{
-					LogError("[FF2 Weapons] There was nothing under \"Addattribs\" for classname %s!", classname);
-				}
-				kvWeaponMods.GoBack();
-			}*/
 		}
 
-		/*if(differentClass)
-		{
-			Debug("Keyvalues differentClass: Gave weapon!");
-			TF2Items_GiveNamedItem(client, weapon);
-			delete weapon;
-			weapon=null;
-			return Plugin_Stop;
-		}*/
 	}
 
-	switch(iItemDefinitionIndex)
-	{
-		case 38, 457:  //Axtinguisher, Postal Pummeler
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", false);
-				//25: -50% ammo
-				//58: 220% self damage force
-				//144: NOPE
-				//207: +33% damage to self
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 40, 1146:  //Backburner, Festive Backburner
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "165 ; 1.0");
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-/*
-		case 215:  //The Degreaser
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "");
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-*/
-		case 224:  //L'etranger
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 157 ; 1.0 ; 253 ; 1.0");
-				//85: +50% time needed to regen cloak
-				//157: +1 second needed to fully disguise
-				//253: +1 second needed to fully cloak
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", false);
-				//1: -50% damage
-				//107: +50% move speed
-				//128: Only when weapon is active
-				//191: -7 health/second
-				//772: Holsters 50% slower
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 76 ; 2");
-				//2: +50% damage
-				//76: +100% ammo
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		/*case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron - commented out because
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", false);
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}*/
-		case 226:  //Battalion's Backup
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0 ; 4365 ; 1.5");
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 231:  //Darwin's Danger Shield
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50");  //+50 health
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 17 ; 0.08");
-				//2: +20% damage
-				//17: +5% uber on hit
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 331:  //Fists of Steel
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", false);
-				//205: -80% damage from ranged while active
-				//206: +100% damage from melee while active
-				//772: Holsters 100% slower
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 415:  //Reserve Shooter
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", false);
-				//2: +10% damage bonus
-				//3: -50% clip size
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-				//179: Minicrits become crits
-				//547: Deploys 40% faster
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 426:	//Eviction Notice
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "851 ; 1.15 ; 1 ; 0.4 ; 6 ; 0.6 ; 737 ; 3.0 ; 191 ; -7.0", false);
-				// 851: 15% faster move speed on wearer
-				// 1: -60% damage penalty
-				// 6: +40% faster firing speed
-				// 737: On Hit: Gain a speed boost
-				// 191: -7 health/second
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-
-/*
-		case 133, 444:  // Gunboats, Mantreads
-		{
-			Handle itemOverride;
-
-			if(iItemDefinitionIndex==444)
-				itemOverride=PrepareItemHandle(item, _, _, "58 ; 1.5");
-
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-*/
-		case 648:  //Wrap Assassin
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
-				//279: 2 ornaments
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 656:  //Holiday Punch
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", false);
-				//199: Holsters 100% faster
-				//547: Deploys 100% faster
-				//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 772:  //Baby Face's Blaster
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.8 ; 109 ; 0.5 ; 125 ; -25 ; 236 ; 1.0 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", false);
-				//1: -20% damage penalty
-				//2: +15% damage bonus
-				//109: -50% health from packs on wearer
-				//125: -25 max health
-				//236: Blocks healing while in use
-				//394: 15% firing speed bonus hidden
-				//418: Build hype for faster speed
-				//419: Hype resets on jump
-				//532: Hype decays
-				//651: Fire rate increases as health decreases
-				//709: Weapon spread increases as health decreases
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 1103:  //Back Scatter
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
-				//179: Crit instead of mini-critting
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 588: // The Pomson 6000
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.6 ; 97 ; 0.5");
-			// 6: fire speed
-			// 97: reload speed
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 142: // The Gunslinger
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.8 ; 140 ; 50.0");
-			// 6: fire speed
-			// 140: max health
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-/*
-		case 527: // The Widowmaker
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.8");
-			// 6: fire speed
-			// 106: accurate
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-*/
-		case 594: // The Phlogistinator
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "841 ; 0 ; 843 ; 8.5 ; 865 ; 50 ; 844 ; 2450 ; 839 ; 2.8 ; 862 ; 0.6 ; 863 ; 0.1 ; 356 ; 1.0");
-			// 6: fire speed
-			// 106: accurate
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-
-		case 997: // The Rescue Ranger (구조대원)
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "97 ; 0.75 ; 148 ; 1.3");
-			// 97: reload time
-			//287: sentry damage
-			// 4351: (hidden) sentry ammo
-			// 148:  building_cost_reduction
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-
-		case 46, 1145: // Bonk!
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "278 ; 2.0 ; 278 ; 0.5 ; 414 ; 8.0", false);
-			// 414: Marked-For-Death while active, and for short period after switching weapons (sec)
-			// 856: 3, gas passer meter style
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-	}
-/*
-	if(!StrContains(classname, "tf_weapon_rocketpack"))  // Thermal Thruster
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "856 ; 1.0 ; 801 ; 18.0 ; 872 ; 1.0 ; 873 ; 1.0", true);
-			//870: falling_impact_radius_pushback
-			//871: falling_impact_radius_stun
-			//872: thermal_thruster_air_launch
-			//96: Reload time increased
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-*/
-
-/*
-	if(!StrContains(classname, "tf_weapon_jar") && !StrEqual(classname, "tf_weapon_jar_gas"))  // exclude gas passer
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "313 ; 0.1", false);
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-*/
-	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!StrContains(classname, "tf_weapon_rocketlauncher", false) || !StrContains(classname, "tf_weapon_shotgun", false)))
-	{
-		Handle itemOverride;
-		if(iItemDefinitionIndex==127)  //Direct Hit
-		{
-			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1 ; 179 ; 1.0");
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-				//179: Mini-crits become crits
-		}
-		else
-		{
-			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1");
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-		}
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-	if(TF2_GetPlayerClass(client)==TFClass_Heavy)
-	{
-		// if(!StrContains(classname, "tf_weapon_shotgun", false))
-		// {
-		// 	Handle itemOverride=PrepareItemHandle(item, _, _, "741 ; 50.0");
-		// 	//741: On Hit: Gain up to +%1$s health per attack
-
-		// 	if(itemOverride!=null)
-		// 	{
-		// 		item=itemOverride;
-		// 		return Plugin_Changed;
-		// 	}
-		// }
-
-		if(!StrContains(classname, "tf_weapon_minigun", false))
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "4347 ; 1.0");
-			//4347: (hidden) enable holster when even minigun spining.
-
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-
-		if(!StrContains(classname, "tf_weapon_fist", false))
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50.0");
-			// 26: max health
-
-			if(itemOverride!=null)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-	}
-
-	if(TF2_GetPlayerClass(client) == TFClass_Spy &&
-		(!StrContains(classname, "tf_weapon_builder") || !StrContains(classname, "tf_weapon_sapper")))
-	// Sapper
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "278 ; 2.66");
-		// 278: (MVM) charge time increase
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-	if(!StrContains(classname, "tf_weapon_pda_engineer_build"))  // Construction PDA
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "345 ; 4.00 ; 148 ; 0.7692 ; 469 ; 100 ; 4351 ; 0.4 ; 287 ; 0.8", false);
-			//345: engy dispenser radius increased
-			//276: bidirectional_teleport
-			//287: sentry damage
-			// 469: Use metal to pick up your targeted building from long range
-			// 148:  building_cost_reduction
-			// 4351: (hidden) sentry ammo
-			// 4354: (hidden) teleporter charge rate
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.03 ; 144 ; 1", false);
-			//17: 3% uber on hit
-			//144: Sets weapon mode - *possibly* the overdose speed effect
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-	if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 2 ; 547 ; 0.75", false);
-			//10: +50% faster charge rate
-			//11: +50% overheal bonus, 482: overheal_expert
-			//144: Quick-fix speed/jump effects
-			//199: Deploys 25% faster
-			//314: Ubercharge lasts 2 seconds longer (aka 50% longer)
-			//547: Holsters 25% faster
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-	if(!StrContains(classname, "tf_weapon_pipebomblauncher"))  // Pipe launchers
-	{
-		Handle itemOverride = PrepareItemHandle(item, _, _, "670 ; 0.1");
-
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-
-
-	if(!StrContains(classname, "tf_weapon_flamethrower"))
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "841 ; 0.5 ; 843 ; 8.5 ; 865 ; 50 ; 844 ; 2450 ; 839 ; 2.8");
-		// 255: airblast push force
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-/*
-	if(!StrContains(classname, "tf_weapon_rocketlauncher_fireball"))
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "856 ; 1 ; 801 ; 0.8 ; 37 ; 0.2 ; 2062 ; 0.25 ; 2065 ; 1 ; 2063 ; 1 ; 255 ; 2.0 ; 255; 0.5", false);
-		// 256: airblast_refire_time
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-*/
-	return Plugin_Continue;
-}
-
-public Action Timer_NoHonorBound(Handle timer, int userid)
+switch(iItemDefinitionIndex)
 {
-	int client=GetClientOfUserId(userid);
-	if(IsValidClient(client) && IsPlayerAlive(client))
+	// ==================== SCOUT ====================
+	
+	// === 주무기 (Primary) ===
+	case 13, 200, 669, 799, 808, 888, 897, 906, 915, 964, 973: // 스캐터건✅
 	{
-		int melee=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-		int index=((IsValidEntity(melee) && melee>MaxClients) ? GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex") : -1);
-		int weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-		char classname[64];
-		if(IsValidEntity(weapon))
+		Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.90", false);
+		if(itemOverride!=null)
 		{
-			GetEntityClassname(weapon, classname, sizeof(classname));
+			item=itemOverride;
+			return Plugin_Changed;
 		}
-		if(index==357 && weapon==melee && StrEqual(classname, "tf_weapon_katana", false))
+	}
+	
+	case 772: // 동안의 총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.3 ; 45 ; 0.1 ; 4 ; 3 ; 4519 ; 1 ; 96 ; 12 ; 2 ; 2.2 ; 76 ; 3.13", false);
+		if(itemOverride!=null)
 		{
-			SetEntProp(melee, Prop_Send, "m_bIsBloody", 1);
-			if(GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
-			{
-				SetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
-			}
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 1103: // 등짝 작렬총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "179 ; 1 ; 15 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 220: // 유격수✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.9");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 448: // 탄산총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "97 ; 0.65");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 45, 1078: // 자연의섭리✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "45 ; 1.3");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+	case 23, 209: // 권총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 294: // 루거모프✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1.5 ; 107 ; 1.05", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 30666: // 선장의 고급진 펄스트론 입자 전자기 광선총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1.5 ; 2 ; 1.05", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 222, 1121: // 미치광이 우유✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 17 ; 1 ; 10 ; 103 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 812: // 혈적자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 13 ; 278 ; 0 ; 103 ; 2 ; 6 ; 0.5 ; 411 ; 2.5 ; 392 ; 0.25 ; 15 ; 1 ; 288 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 46, 1145: // 봉크! 원자맛 음료✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "201 ; 1.25 ; 414 ; 8.0", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 163: // 훅가콜라✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "201 ; 1.25 ; 278 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 773: // 계집애 같은 사내의 소형 권총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 32 ; 4478 ; 3 ; 3 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 449: // 윙어✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 0.5 ; 1 ; 2 ; 106 ; 0.5 ; 6 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	case 0, 190, 660: // 방망이✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 221, 999: // 고등어 이쿠✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.05 ; 6 ; 0.95");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 572: // 비무장 지대✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.03 ; 6 ; 0.97 ; 107 ; 1.03");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 30667: // 광봉✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.15");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 44: // 샌드맨✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -35 ; 278 ; 0.8");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 317: // 지팡이 사탕✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 25 ; 54 ; 0.95 ; 65 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 648: // 포장지 암살자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "279 ; 10.0 ; 1 ; 0.05");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 325: // 보스턴의 깡패✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.50");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 355: // 죽음의 부채✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.05");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 452: // 삼륜검✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 3 ; 54 ; 0.85 ; 49 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 349: // 해를 품은 막대✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 60 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	case 450: // 인수분해✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "326 ; 1.5 ; 773 ; 1 ; 138 ; 1 ; 1 ; 0.75");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// ==================== SOLDIER ====================
+	
+	// === 주무기 (Primary) ===
+	
+	case 18, 800, 205, 658, 809, 889, 898, 907, 916, 965, 974: // 로켓 발사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "99 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 127: // 직격포✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "100 ; 0.2 ; 103 ; 1.8 ; 114 ; 1 ; 179 ; 1 ; 2 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 228, 1085: // 블랙 박스✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1 ; 16 ; 25 ; 104 ; 0.75 ; 741 ; 0 ; 4411 ; 1 ; 1 ; 0.34", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 414: // 자유투사✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1.5 ; 103 ; 1.5 ; 1 ; 0.80 ; 99 ; 1.25 ; 135 ; 0.75", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 513: // 원조✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.05", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 730: // 거지의 바주카✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 97 ; 0.75 ; 6 ; 0.5 ; 4 ; 3 ; 417 ; 0 ; 411 ; 0 ; 413 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1104: // 공중 포격포✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "135 ; 0.75 ; 97 ; 0.75 ; 6 ; 0 ; 411 ; 5 ; 1 ; 0.75", true);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 237: // 로켓점퍼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 3.0 ; 181 ; 0 ; 76 ; 1.0 ; 103 ; 1.5 ; 3 ; 0.25 ; 96 ; 1.5 ; 621 ; 0", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 441: // 소도륙 5000✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "27 ; 1 ; 4522 ; 7 ; 6 ; 0.33 ; 4521 ; -3 ; 335 ; 3  ; 97 ; 0.75 ; 4668 ; 1 ; 104 ; 0.6 ", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+	
+		case 10, 12, 11, 9, 199, 1141: // 산탄총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "45 ; 1.2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 129, 1001: // 사기 증진 깃발✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 107 ; 1.15", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 226: // 부대지원✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 26 ; 50", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 354: // 전복자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 107 ; 1.05 ; 57 ; 5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 415: // 부사수✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 1 ; 178 ; 0.75 ", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 442: // 정의의 들소✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "335 ; 1000 ; 103 ; 1.5 ; 6 ; 0.25 ; 4519 ; 1 ; 392 ; 0.25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 133: // 건보츠✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "64 ; 0.1 ; 135 ; 0.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 444: // 인간딛개✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50 ; 64 ; 0.6 ; 135 ; 0.6", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1101: // 고지 도약기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+		case 357: // 자토이치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "264 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 6: // 야전삽✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 128: // 등가교환기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, " 2 ; 6 ; 851 ; 0.1 ; 115 ; 0", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 154: // 고통행 열차✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "264 ; 1.5 ; 852 ; 1.2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 416: // 마캣가든 모종삽✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 447: // 징계조치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 1 ; 0.01", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 775: // 탈출계획
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "414 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
 		}
 	}
 
-	return Plugin_Continue;
-}
+	
+	// ==================== PYRO ====================
+	
+	// === 주무기 (Primary) ===
+	
+		case 21, 208, 659, 798, 807, 887, 896, 905, 914, 963, 972: // 화염방사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 40, 1146: // 백버너✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4421 ; 4.0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 215: // 기름때 제거기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "199 ; 1 ; 547 ; 1 ; 178 ; 0.5 ; 71 ; 1 ; 74 ; 0.5 ; 76 ; 1.5 ; 170 ; 1, false");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 30474: // 노스트로모호 네이팜 분사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 73 ; 1.5");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1178: // 용의 격노
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "801 ; 0.4 ; 76 ; 2 ; 171 ; 0.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 741: // 무지개 뿌리개✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 844 ; 8000, false");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 594: // 플로지스톤✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
 
+		case 39, 351, 1081: // 조명탄 발사기, 기폭장치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 4358 ; 20 ; 20 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 740: // 그슬린 한방✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 99 ; 1.5 ; 208 ; 1 ; 103 ; 2.2 ; 2 ; 2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1180: // 가스패서✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "848 ; 0 ; 878 ; 0 ; 874 ; 0.5 ; 879 ; 0 ; 845 ; 0 ; 801 ; 10 ; 856 ; 3 ; 280 ; 2 ; 103 ; 1.5 ; 4358 ; 500 ; 1 ; 1.5 ; 208 ; 1 ; 642 ; 1 ; 6 ; 2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1179: // 가열가속기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "874 ; 0.75 ; 26 ; 75 ; 840 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 595: // 인간 융해 장치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.05 ; 411 ; 2.5 ; 103 ; 2 ; 1 ; 0.67 ; 4521 ; -5 ; 4522 ; 5 ; 4428 ; 5000", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	
+		case 2, 192: // 소방도끼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 38, 1000: // 소화도끼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, "tf_weapon_fireaxe",_, "2067 ; 0 ; 1 ; 1 ; 772 ; 1 ; 21 ; 0.5 ; 22 ; 1 ; 795 ; 2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 457: // 전사통지✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, "tf_weapon_fireaxe",_, "2067 ; 0 ; 772 ; 1 ; 2 ; 2 ; 6 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 153: // 가정파괴범✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "137 ; 1 ; 138 ; 1 ; 4644 ; 3 ; 6 ; 3", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 466: // 쇠매
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "137 ; 1 ; 138 ; 1 ; 149 ; 10 ; 264 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 214: // 전원잭✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "54 ; 1.33 ; 77 ; 0.5 ; 79 ; 0.5 ; 852 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 326: // 효자손✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "108 ; 100 ; 69 ; 0 ; 853 ; 0 ; 2 ; 1 ; 57 ; 25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 348: // 날카로운 화산파편✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 71	; 1.5 ; 107 ; 0.9 ; 208 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 593: // 3도화상✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 739: // 학대사탕✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 16 ; 25 ; 6 ; 0.67", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 813, 834: // 네온전멸기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "138 ; 1 ; 4367 ; 100 ; 4548 ; -1 ; 4418 ; 1 ; 2 ; 0.5 ; 6 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 1181: // 화끈한손✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, " 6 ; 0 ; 204 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+
+	// ==================== DEMOMAN ====================
+	
+	// === 주무기 (Primary) ===
+		case 19, 206: // 유탄발사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1.5 ; 76 ; 1.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 308: // 로드 앤 로크✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4430 ; 1 ; 3 ; 0.6 ; 103 ; 2 ; 6 ; 0.5 ; 2 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 996: // 통제불능 대포✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.25 ; 99 ; 1.5 ; 4411 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1151: // 무쇠 폭탄 발사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 103 ; 1.25 ; 6 ; 0.5 ; 4430 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 405: // 알리바바의 조각된 신발✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 75 ; 788 ; 1 ; 107 ; 1.2 ; 249 ; 1.25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 608: // 밀주업자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 75 ; 788 ; 1 ; 107 ; 1.2 ; 249 ; 1.25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+		case 265: // 점착 점프 장치
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 3.0 ; 181 ; 0 ; 76 ; 1.0 ; 97 ; 1.5 ; 120 ; 1 ; 89 ; -6", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 20, 207, 661, 797, 806, 886, 895, 904, 913, 962, 971: // 점착폭탄 발사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "99 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 130: // 스코틀랜드식 저항운동
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "88 ; 22 ; 100 ; 0.8 ; 6 ; 1 ; 119 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1150: // 순삭 폭탄 발사기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "126 ; -1 ; 4 ; 0.15 ; 99 ; 1.5 ; 670 ; 0 ; 6 ; 0.75 ; 96 ; 0.75 ; 89 ; -7 ; 727 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 131, 1144: // 돌격 방패✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "412 ; 0.66", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 406: // 경이로운 차폐막✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "249 ; 2.0", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1099: // 조류 조타기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "202 ; 3", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		// === 근접무기 (Melee) ===
+		
+		case 1, 191: // 술병✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 609: // 스코틀랜드식 악수✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 132, 482, 1082, 266: // 아이랜더, 아이언 9번 골프채✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 32 ; 4478 ; 3");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 172: // 스코틀랜드인의 머리따개✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 2 ; 54 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 327: // 클레이브 모어✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 2 ; 264 ; 3 ; 4477 ; 32 ; 4478 ; 3", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 404: // 페르시아식 설득 도구✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "778 ; 100 ; 782 ; 0 ; 249 ; 0.2 ; 77 ; 1 ; 79 ; 1 ; 246 ; 6", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 307: // 울라플 막대✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 1.5 ; 2 ; 2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+
+	// ==================== HEAVY ====================
+	
+	// === 주무기 (Primary) ===
+	
+		
+		case 15, 202, 793, 654, 802, 882, 891, 900, 909, 958, 967: // 미니건✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 312: // 황동야수✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.3 ; 36 ; 1.25 ; 4347 ; 1 ; 183 ; 1 ; 86 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 424: // 토미슬라프✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.2 ; 87 ; 0 ; 6 ; 1.3 ; 4347 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 298: // 철의장막✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "412 ; 0.66 ; 77 ; 0.25 ; 6 ; 0.67", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		case 41: // 나타샤✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 3 ; 103 ; 9999 ; 6 ; 3.5 ; 4430 ; 1 ; 1 ; 8.3 ; 77 ; 0.2 ; 86 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 811, 832: // 화룡포 발열기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "209 ; 1 ; 76 ; 1.5 ; 430 ; 100 ; 1 ; 0.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+	
+		case 425: // 가족사업✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4518 ; 1 ; 4519 ; 1 ; 45 ; 5 ; 36 ; 5 ; 96 ; 25 ; 79 ; 0.13 ; 1 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1153: // 공황공격✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 6 ; 0.25 ; 4 ; 5 ; 4519 ; 1 ; 78 ; 2 ; 96 ; 10 ; 1 ; 1 ; 45 ; 0.34 ; 106 ; 0.2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 42, 1002: // 샌드비치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 863: // 로보 샌드비치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 60", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 159: // 달로코스 바✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 25 ; 107 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 433: // 어육완자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 30 ; 107 ; 1.15", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 311: // 버팔로 스테이크 샌드비치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "57 ; 15 ; 144 ; 0 ; 856 ; 1 ; 801 ; 30", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 1190: // 2인자의 바나나✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "77 ; 1.25 ; 79 ; 1.25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	
+		case 5, 195: // ✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "201 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 239, 1084: // G.R.U✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1100: // 빵으로 물기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -6", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 43: // K.G.B✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "326 ; 1.5 ; 250 ; 1 ; 125 ; 50", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 331: // 강철주먹✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "412 ; 0.8 ; 206 ; 1 ; 772 ; 1 ; 853 ; 1 ; 854 ; 1 ; 1 ; 0.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 426: // 퇴거 통보✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 1 ; 0.05 ; 855 ; 0 ; 4477 ; 32 ; 4478 ; 3", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 310: // 전사의 혼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "852 ; 1 ; 2 ; 1.33 ; 16 ; 50 ; 54 ; 0.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 656: // 휴일빵✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 16 ; 15 ; 1 ; 288 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// ==================== ENGINEER ====================
+	
+	// === 주무기 (Primary) ===
+	
+		case 527: // 과부 제조기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 642 ; 1 ; 4358 ; 200 ; 4577 ; 0.15 ; 103 ; 0.1 ; 4406 ; 3000 ; 4448 ; 0.15 ; 100 ; 0.1 ; 2 ; 15 ; 299 ; 0 ; 298 ; 25 ; 4421 ; 0.5 ; 6 ; 1.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 141: // 개척자의 정의✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.2 ; 45 ; 0.1 ; 1 ; 50 ; 96 ; 3.5 ; 6 ; 1.8 ; 4388 ; 50", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 588: // 폼슨 6000✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4358 ; 300 ; 4539 ; 1 ; 6 ; 3 ; 307 ; 1 ; 335 ; 9999 ; 97 ; 0 ; 15 ; 1 ; 288 ; 1 ; 869 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 997: // 구조대원✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "469 ; -1 ; 474 ; 75 ; 472 ; 0 ; 3 ; 1 ; 1 ; 0.5");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+	
+		case 140: // 원격 조련장비✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "287 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+
+		case 528: // 합선기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 30668: // 기거 계수기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "287 ; 1.15", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+
+	// === 근접무기 (Melee) ===
+	
+		
+		case 7, 197, 662, 795, 804, 884, 893, 902, 911, 960, 969: // 렌치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "92 ; 1.25", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 329: // 뾰족렌치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 321 ; 0.5 ; 148 ; 1.5 ; 6 ; 0.75 ; 2043 ; 2 ; 95 ; 0.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 155: // 남부의 환영방식✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "149 ; 0 ; 61	; 1 ; 732 ; 100 ; 1 ; 0.5 ; 54 ; 0.75", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 589: // 유래카 효과✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -25 ; 4357 ; 0.75 ; 93 ; 1 ; 732 ; 1 ; 790 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 142: // 총잡이✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "124 ; 0 ; 26 ; 75 ; 4353 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// ==================== MEDIC ====================
+	
+	// === 주무기 (Primary) ===
+	
+		case 17, 204: // 주사기총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.03", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 305, 1079: // 십자군의 쇠뇌✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4358 ; 15 ; 1 ; 0.2 ; 17 ; 0.03 ; 6 ; 0.75 ; 97 ; 0.15 ");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 36: // 블루트자우거✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 57 ; 4478 ; 0.3 ; 6 ; 2 ; 3 ; 0.5 ; 2 ; 1.5 ; 17 ; 0.04 ; 96 ; 2 ; 881 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 412: // 약물납용✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 32 ; 4478 ; 3 ; 128 ; 1 ; 191 ; -7 ; 792 ; 1.8 ; 1 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+		
+		case 29, 211, 663, 796, 805, 885, 894, 903, 912, 961, 970: // 메디건✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 411: // 응급조치✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "7 ; 1.5 ; 9 ; 0.75", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 35: // 크리츠크릿✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "7 ; 0.75 ; 105 ; 0.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 998: // 예방접종✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "7 ; 0.1 ; 4641 ; 10 ; 4648 ; 0.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	
+		case 8, 198, 1143: // 뼈톱✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 37, 1003: // 우버쏘우✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.2 ; 5 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 173: // 비타쏘우✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -25");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 304: // 절단기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 190 ; 0 ; 130 ; 3", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 413: // 엄숙한 맹세✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 1.2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// ==================== SNIPER ====================
+	
+	// === 주무기 (Primary) ===
+	
+		
+		case 14, 201, 664, 792, 801, 881, 890, 899, 908, 957, 966: // 저격소총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 2 ; 6 ; 0.75");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 526: // 마키나✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 2 ; 5 ; 1.5 ; 304 ; 1.5 ; 305 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 30665: // 유성✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 2 ; 5 ; 1.5 ; 304 ; 2 ; 305 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 230: // 시드니 마취총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.5 ; 90 ; 1.5 ; 42 ; 1 ; 175 ; 0");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 1092: // 강화된 콤파운드 보우✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4380 ; 1 ; 4358 ; 500 ; 1 ; 0.1 ; 4577 ; 0.5 ; 5 ; 2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 56, 1005: // 헌츠맨✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4358 ; 20 ; 182 ; 3 ; 1 ; 0.5");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1098: // 클래식✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.1 ; 304 ; 50 ; 91 ; 0.34 ; 4411 ; 1 ; 392 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 851: // 경찰용 제압소총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 3 ; 91 ; -100");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 402: // 시장흥정품✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "91 ; 1 ; 4477 ; 91 ; 4478 ; 3");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 752: // 청부업자의 사건제조기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 76 ; 4 ; 392 ; 1 ; 4521 ; -3 ; 4522 ; 10 ; 6 ; 0.1 ; 91 ; -100", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 보조무기 (Secondary) ===
+	
+		
+		case 16, 203: //기관단총 ✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.75 ; 4 ; 2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 57: //레이저백✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 58: //병수도
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 1105: //자아를 가진 예쁜 반점
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		case 751: // 청소부의 단축형 소총✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 16 ; 4478 ; 5 ; 5 ; 1 ; 3 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 231: // 다윈산 차단막
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 100 ; 60 ; 1 ; 527 ; 0 ; 412 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 642: // 안락한 야영 장비✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50 ; 107 ; 1.3 ; 57 ; 5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	
+		case 3, 193: // 쿠크리✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 171: // 부족민의 칼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 1 ");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 232: // 부시와카✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "326 ; 1.5 ; 412 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 401: // 왕중왕✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "224 ; 1 225 ; 1 ; 112 ; 1.2", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// ==================== SPY ====================
+	
+	// === 보조무기 (Secondary) ===
+		
+		case 24, 210, 1142: // 리볼버✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 61, 1006: // 외교대사✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "5 ; 0.75 ; 3 ; 0.67 ; 1 ; 1 ; 4421 ; 5 ; 4397 ; 1 ; 4396 ; 1 ; 51 ; 0", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 161: // 빅킬✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.8 ; 2 ; 1.1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 224: // 이방인✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 4477 ; 66 ; 4478 ; 3");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 460: // 집행자✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4343 ; 1 ; 410 ; 1.3 ; 5 ; 1.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 525: // 다이아몬드 백✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "362 ; 1 ; 1 ; 1 ; 36 ; 1.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === 근접무기 (Melee) ===
+	
+		case 4, 194, 665, 749, 803, 883, 892, 901, 910, 959, 968: // 칼✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.9", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 727: // 흑장미✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.85", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 638: // 날카로운 신사✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.9 ; 107 ; 1.05", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 225: // 영원한 안식✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "107 ; 1.05", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 356: // 묵인자의 쿠나이✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -65");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 461: // 재력가✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "54 ; 0.8", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 574: // 왕가 부족의 찌르개✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "107 ; 1.1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 649: // 스파이 고드름✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "54 ; 0.9 ; 264 ; 1.5", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === PDA1 (기타1) ===
+	
+	case 735, 736 , 108: // 전자교란기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "851 ; 1.2");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 810, 831: // 절차주의 녹음기✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 25");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 933: // Ap-Sap✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 25 ; 851 ; 1.1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 1102: // 군것질 공격✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "851 ; 1.3");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+	// === PDA2 (기타2) ===
+	
+		
+		case 30, 212: // 투명화 시계✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 59: // 데드링거✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "726 ; 0 ; 35 ; 1.5 ; 34 ; 1.6 ; 33 ; 1", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 60: // 망토와 단검✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "84 ; 100 ; 34 ; 5");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+	
+		
+		case 297: // 열성자의 시계✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+		
+		case 947: // 꽥꽥이 시계✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "", false);
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+}
+}
 /*
  * Prepares a new item handle based on an existing one
  *
@@ -2997,6 +4381,7 @@ public Action Timer_NoHonorBound(Handle timer, int userid)
  *
  * @return				Item handle on success, null on failure
  */
+
 stock Handle PrepareItemHandle(Handle item, char[] classname="", int index=-1, const char[] attributeList="", bool preserve=true)
 {
 	// TODO: This duplicates a whole lot of logic in SpawnWeapon
@@ -3164,11 +4549,6 @@ public Action CheckItems(Handle timer, FF2BaseEntity player)
 
 	//Cloak and Dagger is NEVER allowed, even in Medieval mode
 	int weapon=GetPlayerWeaponSlot(client, 4);
-	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
-	{
-		TF2_RemoveWeaponSlot(client, 4);
-		SpawnWeapon(client, "tf_weapon_invis", 30);
-	}
 
 	if(bMedieval)
 	{
@@ -3183,54 +4563,6 @@ public Action CheckItems(Handle timer, FF2BaseEntity player)
 			index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 			switch(index)
 			{
-				case 41:  //Natascha
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_minigun", 15);
-				}
-				case 237:  //Rocket Jumper
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
-						//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-					FF2_SetAmmo(client, weapon, 20);
-				}
-				case 402:  //Bazaar Bargain
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_sniperrifle", 14);
-				}
-
-				case 265:  //Stickybomb Jumper
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-					SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20);
-					FF2_SetAmmo(client, weapon, 24);
-				}
-
-				// 긴급 픽스 (소스모드 1.11 교체 후 에너지 링 버그 해소하고 제거할 것)
-				// 소도둑, 정의의 들소, 폼슨 교체
-				/*
-				case 441:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_rocketlauncher", 205);
-					FF2_SetAmmo(client, weapon, 20);
-				}
-				case 442:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-					SpawnWeapon(client, "tf_weapon_shotgun_soldier", 199);
-					FF2_SetAmmo(client, weapon, 36);
-				}
-
-				case 588:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_shotgun_primary", 199);
-					FF2_SetAmmo(client, weapon, 36);
-				}
-				*/
 			}
 
 			if(TF2_GetPlayerClass(client) == TFClass_Medic)
@@ -3251,10 +4583,6 @@ public Action CheckItems(Handle timer, FF2BaseEntity player)
 
 	int playerBack=FindPlayerBack(client, 57);  //Razorback
 	shield[client]=IsValidEntity(playerBack) ? playerBack : 0;
-	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
-	{
-		SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
-	}
 
 	// TODO: 이 구문 삭제
 	if(IsValidEntity(FindPlayerBack(client, 444)))  //Mantreads
@@ -3266,8 +4594,6 @@ public Action CheckItems(Handle timer, FF2BaseEntity player)
 		TF2Attrib_RemoveByDefIndex(client, 58);
 	}
 
-	TF2Attrib_SetByDefIndex(client, 112, 0.05); // NOTE: 무한탄약
-	TF2Attrib_SetByDefIndex(client, 113, 30.0); // NOTE: 무한금속
 	TF2Attrib_RemoveByDefIndex(client, 252); // NOTE: 보스 넉백 저항
 
 	int entity=-1;
@@ -3277,41 +4603,6 @@ public Action CheckItems(Handle timer, FF2BaseEntity player)
 		{
 			shield[client]=entity;
 		}
-	}
-
-	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if(IsValidEntity(weapon))
-	{
-		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-		switch(index)
-		{
-			case 43:  //KGB
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
-					//1: -50% damage
-					//107: +50% move speed
-					//128: Only when weapon is active
-					//191: -7 health/second
-					//772: Holsters 50% slower
-			}
-			case 357:  //Half-Zatoichi
-			{
-				CreateTimer(1.0, Timer_NoHonorBound, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
-			case 589:  //Eureka Effect
-			{
-				if(!cvarEnableEurekaEffect.BoolValue)
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					SpawnWeapon(client, "tf_weapon_wrench", 7);
-				}
-			}
-		}
-	}
-	else
-	{
-		civilianCheck[client]++;
 	}
 
 	if(civilianCheck[client]==3)
@@ -3761,72 +5052,101 @@ public Action Command_Point_Enable(int client, int args)
 
 public void OnClientPostAdminCheck(int client)
 {
-	// TODO: Hook these inside of EnableFF2() or somewhere instead
-	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
-	// SDKHook(client, SDKHook_OnTakeDamageAlivePost, OnTakeDamageAlivePost);
+    SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
 
-	uberTarget[client]=-1;
+    uberTarget[client]=-1;
 
-	g_hBasePlayer[client] = new FF2BasePlayer(client);
-	PlayerHudQueue[client] = FF2HudQueue.CreateHudQueue("Player");
+    g_hBasePlayer[client] = new FF2BasePlayer(client);
+    PlayerHudQueue[client] = FF2HudQueue.CreateHudQueue("Player");
 
-	if(!IsFakeClient(client))
-	{
-		FF2DB_LoadPlayerData(client);
-		view_as<FF2BasePlayer>(g_hBasePlayer[client]).LoadPlayerData();
-		muteSound[client]=GetSettingData(client, "sound_mute_flag", FF2Data_Int);
-	}
+    if(!IsFakeClient(client))
+    {
+        
+        muteSound[client]=GetSettingData(client, "sound_mute_flag", DBSData_Int);
+        
+        if(g_DatabaseReady)
+        {
+            DB_LoadPlayer(client);
+        }
+        else
+        {
+            CreateTimer(2.0, Timer_LoadPlayer, client, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
 
-	if(playBGM[0])
-	{
-		playBGM[client]=true;
-		if(Enabled)
-		{
-			StartMusic(client, true);
-			// CreateTimer(0.1, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		}
-	}
-	else
-	{
-		playBGM[client]=false;
-	}
+    if(playBGM[0])
+    {
+        playBGM[client]=true;
+        if(Enabled)
+        {
+            StartMusic(client, true);
+        }
+    }
+    else
+    {
+        playBGM[client]=false;
+    }
 }
 
 public void OnClientDisconnect(int client)
 {
-	if(Enabled)
-	{
-		if(IsBoss(client) && !CheckRoundState() && cvarPreroundBossDisconnect.BoolValue)
-		{
-			int boss=GetBossIndex(client);
-			bool[] omit=new bool[MaxClients+1];
-			omit[client]=true;
-			Boss[boss]=GetClientWithMostQueuePoints(omit);
+    if(Enabled)
+    {
+        if(IsBoss(client) && !CheckRoundState() && cvarPreroundBossDisconnect.BoolValue)
+        {
+            int boss=GetBossIndex(client);
+            bool[] omit=new bool[MaxClients+1];
+            omit[client]=true;
+            Boss[boss]=GetClientWithMostQueuePoints(omit);
 
-			if(Boss[boss])
-			{
-				TF2_ChangeClientTeam(Boss[boss], BossTeam);
-				CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
-				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
-				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
-			}
-		}
+            if(Boss[boss])
+            {
+                TF2_ChangeClientTeam(Boss[boss], BossTeam);
+                CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+                CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+                CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
+            }
+        }
 
-		if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==FF2RoundState_RoundRunning)
-		{
-			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-		}
-	}
+        if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==FF2RoundState_RoundRunning)
+        {
+            CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
+        g_flSpyCloakDamageMultiplier[client] = 1.0;
+    }
 
-	if(MusicTimer[client]!=null)
-		delete MusicTimer[client];
+    // ✅ IsFakeClient 체크를 여기로 이동
+    if(IsFakeClient(client))
+        return;
 
-	FF2DB_OnClientDisconnect(client);
+    PrintToServer("[FF2] ========================================");
+    PrintToServer("[FF2] %N 접속 종료", client);
+    
+    // ✅ SQLite에 데이터 저장
+    if(g_DatabaseReady && IsClientInGame(client))
+    {
+        DB_SavePlayer(client);
+        PrintToServer("[FF2 DB] ✅ 데이터 저장 완료");
+    }
+    
+    PrintToServer("[FF2] ========================================");
 
-	if(g_hBasePlayer[client] != null)
-		delete g_hBasePlayer[client];
+    if(MusicTimer[client]!=null)
+        delete MusicTimer[client];
 
-	delete PlayerHudQueue[client];
+    if(g_hBasePlayer[client] != null)
+        delete g_hBasePlayer[client];
+
+    delete PlayerHudQueue[client];
+    g_flZatoichiDrawTime[client] = 0.0;
+    
+    // ✅ 크리츠크릭 타이머 정리
+    if(KritzTimer[client] != INVALID_HANDLE)
+    {
+        KillTimer(KritzTimer[client]);
+        KritzTimer[client] = INVALID_HANDLE;
+    }
 }
 
 public Action OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
@@ -4122,7 +5442,7 @@ public Action ClientTimer(Handle timer)
 				{
 					SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
 				}
-				TF2_AddCondition(client, TFCond_Buffed, 0.3);
+				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.3);
 
 				if(lastPlayerGlow)
 				{
@@ -4131,17 +5451,58 @@ public Action ClientTimer(Handle timer)
 			}
 			else if(RedAlivePlayers==2 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
-				TF2_AddCondition(client, TFCond_Buffed, 0.3);
+				TF2_AddCondition(client, TFCond_CritCola, 0.3);
 			}
 			else if(bMedieval)
 			{
 				PlayerHudQueue[client].DeleteAllDisplay();
 				continue;
 			}
+			
+			if(TF2_GetPlayerClass(client) == TFClass_Medic)
+{
+	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+	if(IsValidEntity(melee))
+	{
+		int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
+		
+		// ✅ 먼저 medigun 변수 선언!
+		int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		
+		if(meleeIndex == 173
+			&& (IsValidEntity(medigun) && GetEntProp(medigun, Prop_Send, "m_bChargeRelease") == 0))
+		{
+			int decapitations=GetEntProp(client, Prop_Send, "m_iDecapitations");
+			float minCharge=0.1*(decapitations > 6 ? 6 : decapitations),
+				currentCharge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
+
+			if(minCharge > currentCharge)
+				SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", minCharge);
+		}
+
+		// ✅ 메디건 들고 있으면 최소 25% 우버 보장
+		if(IsValidEntity(medigun))
+		{
+			char medigunClass[64];
+			GetEntityClassname(medigun, medigunClass, sizeof(medigunClass));
+			
+			if(StrEqual(medigunClass, "tf_weapon_medigun") 
+				&& GetEntProp(medigun, Prop_Send, "m_bChargeRelease") == 0)  // 우버 사용 중이 아닐 때
+			{
+				float currentCharge = GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
+				
+				if(currentCharge < 0.25)  // 25% 미만이면
+				{
+					SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", 0.25);  // 25%로 설정
+				}
+			}
+		}
+	}
+}
 
 			cond=TFCond_HalloweenCritCandy;
 			/*
-			if(TF2_IsPlayerInCondition(client, TFCond_CritCola) && (playerclass==TFClass_Scout ))
+			if(TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy) && (playerclass==TFClass_Scout ))
 			{
 				// || playerclass==TFClass_Heavy
 				TF2_AddCondition(client, cond, 0.3);
@@ -4167,11 +5528,7 @@ public Action ClientTimer(Handle timer)
 					addthecrit = (player.Flags & FF2FLAG_BLAST_JUMPING) ? true : false;
 				}
 			}
-			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
-			         // !StrContains(classname, "tf_weapon_compound_bow") ||
-			         !StrContains(classname, "tf_weapon_crossbow") ||
-			         !StrContains(classname, "tf_weapon_pistol") ||
-			         !StrContains(classname, "tf_weapon_handgun_scout_secondary"))
+			else if((!StrContains(classname, "tf_weapon_pistol") ||!StrContains(classname, "tf_weapon_handgun_scout_secondary")))
 			{
 				addthecrit=true;
 				cond=TFCond_Buffed;
@@ -4184,10 +5541,14 @@ public Action ClientTimer(Handle timer)
 			}
 			
 			// Yes. This is addtional cond.
-			if(!StrContains(classname, "tf_weapon_fist"))
+		if(!StrContains(classname, "tf_weapon_fist"))
+		{
+			int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+			if(index == 331)  // 331만 허용
 			{
 				TF2_AddCondition(client, TFCond_DefenseBuffed, 0.3);
 			}
+		}
 
 			if(index==16 && IsValidEntity(FindPlayerBack(client, 642)))  //SMG, Cozy Camper
 			{
@@ -4229,16 +5590,6 @@ public Action ClientTimer(Handle timer)
 						if(shieldCrits==1)
 						{
 							cond=TFCond_Buffed;
-						}
-					}
-				}
-				case TFClass_Spy:
-				{
-					if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
-					{
-						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised))
-						{
-							TF2_AddCondition(client, TFCond_CritCola, 0.3);
 						}
 					}
 				}
@@ -4490,24 +5841,342 @@ public Action BossTimer(Handle timer)
 	return Plugin_Continue;
 }
 
+
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
 	if(!Enabled || CheckRoundState() != FF2RoundState_RoundRunning) 	return Plugin_Continue;
-
-	//	This also check Replay, SourceTV players.
 	if(!IsValidClient(client) || !IsPlayerAlive(client))			return Plugin_Continue;
 
-	// 이 구문은 HUD 표기와 관련 없이 능력이나 내부 연산에만 사용됨.
 	if(IsBoss(client))
 		OnBossThink(client);
-/*
-	else
-		OnClientThink(client);
-*/
 
 	LastCharge[client] = GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
 
+	// ✅ 자토이치 명예의 구속
+	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+	if(IsValidEntity(melee))
+	{
+		int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
+		if(meleeIndex == 357)  // Half-Zatoichi
+		{
+			int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+			if(activeWeapon > 0)
+			{
+				char weaponClass[64];
+				GetEntityClassname(activeWeapon, weaponClass, sizeof(weaponClass));
+				
+				if(StrEqual(weaponClass, "tf_weapon_katana"))
+				{
+					if(g_flZatoichiDrawTime[client] == 0.0)
+					{
+						g_flZatoichiDrawTime[client] = GetGameTime();
+					}
+					
+					float elapsedTime = GetGameTime() - g_flZatoichiDrawTime[client];
+					
+					if(elapsedTime >= 1.0 && GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy") == 0)
+					{
+						if(buttons & IN_ATTACK3)
+							buttons &= ~IN_ATTACK3;
+						
+						if(impulse >= 1 && impulse <= 5)
+							impulse = 0;
+						
+						if(!TF2_IsPlayerInCondition(client, TFCond_RestrictToMelee))
+							TF2_AddCondition(client, TFCond_RestrictToMelee, 1.0, 0);
+						
+						return Plugin_Changed;
+					}
+				}
+				else
+				{
+					g_flZatoichiDrawTime[client] = 0.0;
+				}
+			}
+		}
+		else
+		{
+			g_flZatoichiDrawTime[client] = 0.0;
+		}
+	}
+
+	// 낙하산 즉시 재전개
+	if(!TF2_IsPlayerInCondition(client, TFCond_Parachute) &&
+	   TF2_IsPlayerInCondition(client, TFCond_ParachuteDeployed))
+	{
+		int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		if(IsValidEntity(secondary) && 
+		   GetEntProp(secondary, Prop_Send, "m_iItemDefinitionIndex") == 1101)
+		{
+			TF2_RemoveCondition(client, TFCond_ParachuteDeployed);
+		}
+	}
+	
+	// 파이로 3도화상 도발 힐
+	if(TF2_GetPlayerClass(client) == TFClass_Pyro)
+	{
+		int meleeWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+		if(IsValidEntity(meleeWeapon) && 
+		   GetEntProp(meleeWeapon, Prop_Send, "m_iItemDefinitionIndex") == 593)
+		{
+			if(TF2_IsPlayerInCondition(client, TFCond_Taunting))
+			{
+				static float g_flLastHealTime[MAXPLAYERS+1];
+				if(GetGameTime() - g_flLastHealTime[client] >= 0.5)
+				{
+					g_flLastHealTime[client] = GetGameTime();
+					
+					float clientPos[3];
+					GetClientAbsOrigin(client, clientPos);
+					int clientTeam = GetClientTeam(client);
+					
+					for(int i = 1; i <= MaxClients; i++)
+					{
+						if(!IsValidClient(i) || !IsPlayerAlive(i) || i == client)
+							continue;
+						
+						if(GetClientTeam(i) != clientTeam)
+							continue;
+						
+						float targetPos[3];
+						GetClientAbsOrigin(i, targetPos);
+						
+						if(GetVectorDistance(clientPos, targetPos) <= 150.0)
+						{
+							int maxHealth = GetEntProp(i, Prop_Data, "m_iMaxHealth");
+							int currentHealth = GetClientHealth(i);
+							int healAmount = 25;
+							int newHealth = currentHealth + healAmount;
+							
+							if(newHealth > maxHealth)
+							{
+								healAmount = maxHealth - currentHealth;
+								newHealth = maxHealth;
+							}
+							
+							if(healAmount > 0)
+							{
+								SetEntityHealth(i, newHealth);
+								
+								Event event = CreateEvent("player_healed", true);
+								if(event != null)
+								{
+									event.SetInt("patient", GetClientUserId(i));
+									event.SetInt("healer", GetClientUserId(client));
+									event.SetInt("amount", healAmount);
+									event.Fire();
+								}
+								
+								SetEntPropEnt(i, Prop_Send, "m_hHealers", client);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// ✅ 크리츠크릭 치료 시 미니크리 부여
+	if(TF2_GetPlayerClass(client) == TFClass_Medic)
+	{
+		int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		if(IsValidEntity(secondary) && 
+		   GetEntProp(secondary, Prop_Send, "m_iItemDefinitionIndex") == 35)
+		{
+			if(GetEntProp(secondary, Prop_Send, "m_bHealing"))
+			{
+				int healTarget = GetEntPropEnt(secondary, Prop_Send, "m_hHealingTarget");
+				if(healTarget > 0 && healTarget <= MaxClients && IsClientInGame(healTarget) && IsPlayerAlive(healTarget))
+				{
+					if(KritzTimer[client] == INVALID_HANDLE)
+					{
+						TF2_AddCondition(healTarget, TFCond_CritCola, 0.5, 0);
+						KritzTimer[client] = CreateTimer(0.3, Timer_Kritz, EntIndexToEntRef(secondary), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+					}
+				}
+			}
+			else
+			{
+				if(KritzTimer[client] != INVALID_HANDLE)
+				{
+					KillTimer(KritzTimer[client]);
+					KritzTimer[client] = INVALID_HANDLE;
+				}
+			}
+		}
+		else
+		{
+			if(KritzTimer[client] != INVALID_HANDLE)
+			{
+				KillTimer(KritzTimer[client]);
+				KritzTimer[client] = INVALID_HANDLE;
+			}
+		}
+	}
+
+	// ✅ 절단기(304번) 체력 증가 체크
+	if(TF2_GetPlayerClass(client) == TFClass_Medic)
+	{
+		int meleeSlot = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+		if(IsValidEntity(meleeSlot) && 
+		   GetEntProp(meleeSlot, Prop_Send, "m_iItemDefinitionIndex") == 304)
+		{
+			static int lastHitCount[MAXPLAYERS+1];
+			int currentHits = GetEntProp(client, Prop_Send, "m_iDecapitations");
+			
+			if(currentHits > lastHitCount[client])
+			{
+				int currentHealth = GetClientHealth(client);
+				int healAmount = (currentHits - lastHitCount[client]) * 100;
+				int newHealth = currentHealth + healAmount;
+				
+				SetEntityHealth(client, newHealth);
+				lastHitCount[client] = currentHits;
+			}
+		}
+	}
+	
+	// ✅ 안락한 야영장비(642번) 착용 시 50% 투명 (무기+옷 포함)
+	static bool hasCozyWearable[MAXPLAYERS+1];
+	static float lastCheckTime[MAXPLAYERS+1];
+
+	float gameTime = GetGameTime();
+	if(gameTime - lastCheckTime[client] >= 0.5)
+	{
+		lastCheckTime[client] = gameTime;
+
+		bool foundCozy = false;
+
+		// 안락한 야영장비 확인
+		for(int i = MaxClients + 1; i < GetMaxEntities(); i++)
+		{
+			if(!IsValidEntity(i))
+				continue;
+			
+			char classname[64];
+			GetEntityClassname(i, classname, sizeof(classname));
+			
+			if(StrContains(classname, "tf_wearable") != -1)
+			{
+				int owner = GetEntPropEnt(i, Prop_Send, "m_hOwnerEntity");
+				if(owner == client)
+				{
+					int itemIndex = GetEntProp(i, Prop_Send, "m_iItemDefinitionIndex");
+					if(itemIndex == 642)
+					{
+						foundCozy = true;
+						break;
+					}
+				}
+			}
+		}
+
+		// 상태가 바뀌었을 때만 적용
+		if(foundCozy != hasCozyWearable[client])
+		{
+			hasCozyWearable[client] = foundCozy;
+			
+			int alpha = foundCozy ? 127 : 255;
+			int renderMode = foundCozy ? RENDER_TRANSCOLOR : RENDER_NORMAL;
+			
+			// 플레이어
+			SetEntityRenderMode(client, renderMode);
+			SetEntityRenderColor(client, 255, 255, 255, alpha);
+			
+			// 모든 무기
+			for(int slot = 0; slot < 5; slot++)
+			{
+				int slotWeapon = GetPlayerWeaponSlot(client, slot);
+				if(IsValidEntity(slotWeapon))
+				{
+					SetEntityRenderMode(slotWeapon, renderMode);
+					SetEntityRenderColor(slotWeapon, 255, 255, 255, alpha);
+				}
+			}
+			
+			// 모든 wearables + 장식품
+			int entity = -1;
+			char searchClass[][] = {"tf_wearable", "tf_wearable_demoshield", "tf_powerup_bottle"};
+			
+			for(int i = 0; i < sizeof(searchClass); i++)
+			{
+				entity = -1;
+				while((entity = FindEntityByClassname(entity, searchClass[i])) != -1)
+				{
+					if(!IsValidEntity(entity)) continue;
+					
+					int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+					if(owner == client)
+					{
+						SetEntityRenderMode(entity, renderMode);
+						SetEntityRenderColor(entity, 255, 255, 255, alpha);
+					}
+				}
+			}
+		}
+	}
+	
+	if(TF2_GetPlayerClass(client) == TFClass_Spy)
+	{
+		bool isCloaked = TF2_IsPlayerInCondition(client, TFCond_Cloaked) || 
+		                 TF2_IsPlayerInCondition(client, TFCond_Stealthed);
+		
+		if(isCloaked)
+		{
+			int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+			
+			if(IsValidEntity(activeWeapon))
+			{
+				int index = GetEntProp(activeWeapon, Prop_Send, "m_iItemDefinitionIndex");
+				float oldMult = g_flSpyCloakDamageMultiplier[client];
+				
+				switch(index)
+				{
+					default:
+						g_flSpyCloakDamageMultiplier[client] = 0.5;
+				}
+			}
+		}
+		else
+		{
+			g_flSpyCloakDamageMultiplier[client] = 1.0;
+		}
+	}
+
 	return Plugin_Continue;
+}
+
+public Action Timer_Kritz(Handle timer, int medigunid)
+{
+	int medigun = EntRefToEntIndex(medigunid);
+	if(medigun && IsValidEntity(medigun) && CheckRoundState() == FF2RoundState_RoundRunning)
+	{
+		int client = GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
+		
+		if(IsValidClient(client, false) && IsPlayerAlive(client))
+		{
+			if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
+			{
+				int healTarget = GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
+				if(IsValidClient(healTarget, false) && IsPlayerAlive(healTarget))
+				{
+					TF2_AddCondition(healTarget, TFCond_CritCola, 0.5, 0);
+					return Plugin_Continue;
+				}
+			}
+		}
+	}
+	
+	// 치료가 끝났거나 문제가 생기면 타이머 정리
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(KritzTimer[i] == timer)
+		{
+			KritzTimer[i] = INVALID_HANDLE;
+			break;
+		}
+	}
+	return Plugin_Stop;
 }
 
 void OnBossThink(int client)
@@ -5376,30 +7045,51 @@ public Action Timer_DrawGame(Handle timer)
 		}
 
 
-		if(timeInteger == 0)
-		{
-			if(timeType == FF2Timer_WaveTimer)
-			{
-				if(currentWave == maxWave)
-				{
-					ForceTeamWin(TFTeam_Unassigned);
-					return Plugin_Stop;
-				}
+if(timeInteger == 0)
+{
+    if(timeType == FF2Timer_WaveTimer)
+    {
+        if(currentWave == maxWave)
+        {
+            // 여기서 플레이어 전원 죽이기
+            for(int client = 1; client <= MaxClients; client++)
+            {
+                if(IsValidClient(client) && IsPlayerAlive(client))
+                {
+                    ForcePlayerSuicide(client);
+                }
+            }
 
-				currentWave++;
-				timeleft=maxTime;
+            ForceTeamWin(TFTeam_Unassigned);
+            return Plugin_Stop;
+        }
 
-				Call_StartForward(OnWaveStarted);
-				Call_PushCell(currentWave);
-				Call_Finish();
+        currentWave++;
+        timeleft = maxTime;
 
-				return Plugin_Continue;
-			}
-			else
-				ForceTeamWin(TFTeam_Unassigned);
+        Call_StartForward(OnWaveStarted);
+        Call_PushCell(currentWave);
+        Call_Finish();
 
-			return Plugin_Stop;
-		}
+        return Plugin_Continue;
+    }
+    else
+    {
+        // 여기서 플레이어 전원 죽이기
+        for(int client = 1; client <= MaxClients; client++)
+        {
+            if(IsValidClient(client) && IsPlayerAlive(client))
+            {
+                ForcePlayerSuicide(client);
+            }
+        }
+
+        ForceTeamWin(TFTeam_Unassigned);
+    }
+
+    return Plugin_Stop;
+}
+
 
 	}
 
@@ -5436,9 +7126,9 @@ public Action OnPlayerHurt(Event event, const char[] name, bool dontBroadcast)
 			else
 				attacker.Assist += damage;
 		}
-
+		// 보스 피해 계산
 		int targetBoss;
-		if((targetBoss = GetBossIndex(iAttacker)) != -1 && AddRage)
+		if((targetBoss = GetBossIndex(iClient)) != -1 && AddRage)
 		{
 			float adding = damage * 100.0 / BossRageDamage[targetBoss],
 				temp = adding; 
@@ -5597,69 +7287,29 @@ public Action OnPlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 void OnBossSmackMiss(int owner, int boss, int weapon)
 {
-	float attackerPos[3], attackerSwingPos[3], attackerAngles[3];
-	float targetPos[3], targetHullMax[3];
 
-	GetClientEyePosition(owner, attackerPos);
-	GetClientEyeAngles(owner, attackerAngles);
+}
 
-	int team = GetClientTeam(owner);
-	float range = GetMeleeRange(owner, weapon),
-		maxDistance = range * 3.5;
-
-	float fwd[3];
-	GetAngleVectors(attackerAngles, fwd, NULL_VECTOR, NULL_VECTOR);
-	ScaleVector(fwd, range);
-	AddVectors(attackerPos, fwd, attackerSwingPos);
-
-	GetAngleVectors(attackerAngles, fwd, NULL_VECTOR, NULL_VECTOR);
-
-	FOREACH_PLAYER(target)
+public Action OverChargeTimer(Handle timer)
+{
+	for (int client = 1; client <= MaxClients; client++)
 	{
-		if(!IsClientInGame(target) || !IsPlayerAlive(target)
-			|| team == GetClientTeam(target))
+		if (!IsClientInGame(client) || !IsPlayerAlive(client))
 			continue;
 
-		// TODO: Only for shield.
-		if(!shield[target]
-			|| GetEntProp(shield[target], Prop_Send, "m_iItemDefinitionIndex") == 57)
+		if (!shield[client])
 			continue;
 
-		GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
-		GetEntPropVector(target, Prop_Send, "m_vecMaxs", targetHullMax);
+		int index = GetEntProp(shield[client], Prop_Send, "m_iItemDefinitionIndex");
 
-		float targetBestPos[3];
-		targetBestPos = targetPos;
+		// Splendid Screen 제외 가능
+		if (index == 57)
+			continue;
 
-		if(targetPos[2] + targetHullMax[2] < attackerSwingPos[2])
-			targetBestPos[2] = targetPos[2] + targetHullMax[2];
-		else if(targetPos[2] < attackerSwingPos[2])
-			targetBestPos[2] = targetPos[2];
-		else
-			targetBestPos[2] = attackerSwingPos[2];
-
-		float distance = GetVectorDistance(targetBestPos, attackerSwingPos);
-		
-		if(maxDistance > distance)
-		// 48 * 3.0 = 144
-		{
-			float angleDiff, angles[3];
-			SubtractVectors(targetBestPos, attackerPos, angles);
-			NormalizeVector(angles, angles);
-
-			angleDiff = GetVectorDotProduct(fwd, angles);
-			float score = (((distance - maxDistance) * -1.0) / maxDistance)
-			 * 100.0 * angleDiff; /* * 2.0 */ 
-
-			if(score > 0.0)
-			{
-				OverCharge[target] = min(OverCharge[target] + score, 100.0);
-
-				// TODO: Effect
-				// PrintToChatAll("%N -> %N (%.1f, %.1f, score: %.1f)", owner, target, distance, angleDiff, score);
-			}
-		}
+		OverCharge[client] = min(100.0, OverCharge[client] + 5.0);
 	}
+
+	return Plugin_Continue;
 }
 
 public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -5816,10 +7466,7 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 				}
 			}
 		}
-
-		if(IsValidEntity(weapon))
-			KillStreakCheck(iAttacker, client, boss, damage, currencyDistributed);
-	}	
+	}
 	else
 	{
 		FF2BaseEntity victim = g_hBasePlayer[client];
@@ -5939,7 +7586,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 						float score = (charge - 100.0) * -1.0,
 							tempDamage = (damage * 2.0) + score;
 						
-						CreateKillStreak(iAttacker, client, "demoshield", RoundFloat(score));
 
 						// IncrementHeadCount(iAttacker);
 						ScaleVector(damageForce, 10.0 * (score * 0.01));
@@ -5998,8 +7644,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 							EmitSoundToAll("potry_v2/se/homerun_bat.wav", client);
 
 							SpecialAttackToBoss(iAttacker, boss, weapon, "combo_punch", damage);
-							CreateKillStreak(iAttacker, client, "robot_arm_combo_kill", ++ComboPunchCount[iAttacker]);
-
 							bChanged = true;
 							currencyDistributed = true;
 						}
@@ -6137,8 +7781,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 								Marketed[client]++;
 							}
 
-							CreateKillStreak(iAttacker, client, "market_gardener", RoundFloat(score));
-
 							PrintHintText(iAttacker, "%t", "Market Gardener");  //You just market-gardened the boss!
 							PrintHintText(client, "%t", "Market Gardened");  //You just got market-gardened!
 
@@ -6244,7 +7886,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					{
 						Stabbed[boss]++;
 					}
-					CreateKillStreak(iAttacker, client, "backstab", Stabbed[boss]);
 
 					if(!isSlient)
 					{
@@ -6368,8 +8009,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					bChanged = true;
 				}
 
-				if(IsValidEntity(weapon))
-					KillStreakCheck(iAttacker, client, boss, damage, currencyDistributed);
 			}
 			else
 			{
@@ -6427,26 +8066,7 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 }
 
 void KillStreakCheck(int attackerIndex, int client, int boss, float damage, bool currencyDistributed = false)
-{
-	// TODO: Move this to Onplayerhit event
-	FF2BaseEntity attacker = g_hBasePlayer[attackerIndex];
-	int currentDamage = RoundFloat(damage);
-/*
-	PrintToChatAll("attacker.Damage: %d, currentDamage: %d, attacker.LastNoticedDamage: %d",
-		attacker.Damage, currentDamage, attacker.LastNoticedDamage);
-*/
-	if(attacker.Damage + currentDamage >= attacker.LastNoticedDamage)
-	{
-		int interval = (attacker.Damage + currentDamage) / KILLSTREAK_DAMAGE_INTERVAL,
-			lastNoticedInterval = attacker.LastNoticedDamage / KILLSTREAK_DAMAGE_INTERVAL;
-
-		attacker.LastNoticedDamage = KILLSTREAK_DAMAGE_INTERVAL * (interval + 1);
-		CreateKillStreak(attackerIndex, client, "world", interval * KILLSTREAK_DAMAGE_INTERVAL);
-
-
-		// PrintToChatAll("%d, %d, %d", interval, lastNoticedInterval, count);
-		// PrintToChatAll("%.1f, %.1f, %d", currencyRatio, currency, RoundToCeil(currency));
-	}			
+{	
 }
 
 public Action TF2_OnPlayerTeleport(int client, int teleporter, bool& result)
@@ -7074,7 +8694,7 @@ public Action ResetQueuePointsCmd(int client, int args)
 
 int GetClientClassInfoCookie(int client)
 {
-	return GetSettingData(client, "class_info_view", FF2Data_Int);
+	return GetSettingData(client, "class_info_view", DBSData_Int);
 }
 
 public Action HookSound(int clients[64], int& numClients, char sound[PLATFORM_MAX_PATH], int& client, int& channel, float& volume, int& level, int& pitch, int& flags, char soundEntry[PLATFORM_MAX_PATH], int& seed)
