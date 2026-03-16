@@ -245,8 +245,18 @@ bool Goomba_DoStomp(int attacker, int victim)
 	}
 
 	// Deal damage
-	int victimHealth = GetClientHealth(victim);
-	float stompDamage = float(victimHealth) * damageMultiplier + damageBonus;
+	float stompDamage;
+	if(IsBoss(attacker))
+	{
+		// 보스 → 플레이어: 고정 1000 데미지
+		stompDamage = 1000.0;
+	}
+	else
+	{
+		// 플레이어 → 보스: 피해자 체력 × 배율 + 보너스
+		int victimHealth = GetClientHealth(victim);
+		stompDamage = float(victimHealth) * damageMultiplier + damageBonus;
+	}
 
 	g_iGoombaFakekill[victim] = 1;
 	SDKHooks_TakeDamage(victim, attacker, attacker, stompDamage,
