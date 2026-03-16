@@ -130,7 +130,7 @@ public int HumanTeamBossMenu_Handler(Menu menu, MenuAction action, int client, i
 	if(action==MenuAction_Select)
 	{
 		// 0: ON, 1: OFF
-		SetSettingData(client, "human_team_boss_play", selection, DBSData_Int);
+		SetSettingData(client, "human_team_boss_play", selection, FF2Data_Int);
 		CPrintToChat(client, "{olive}[FF2]{default} %t: %s",
 			"Human Team Boss Setting Title", selection > 0 ? "OFF" : "ON");
 	}
@@ -145,7 +145,7 @@ public int ClassInfoTogglePanelH(Menu menu, MenuAction action, int client, int s
 		if(action==MenuAction_Select)
 		{
 			// class_info_view: 0: VIEW, 1: OFF, 2, VIEW: Main boss's help panel
-			SetSettingData(client, "class_info_view", selection - 1, DBSData_Int);
+			SetSettingData(client, "class_info_view", selection - 1, FF2Data_Int);
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Class Info", selection==2 ? "off" : "on");
 		}
 	}

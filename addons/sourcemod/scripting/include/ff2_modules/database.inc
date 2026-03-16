@@ -3,23 +3,43 @@
 #endif
 #define _ff2_db_included
 
-#undef REQUIRE_PLUGIN
-#include <db_simple>
-#define REQUIRE_PLUGIN
-
 /**
- * Get/Set Player's setting data.
+ * Get Player's setting data (Int or Float).
  *
  * @param client            client's index
  * @param settingId         setting ID
- * @param value             Get/Set data
- * @param type              KvData_Int, KvData_Float is supported, otherwise error occured
- *
+ * @param type              FF2Data_Int or FF2Data_Float
+ * @return                  setting value
  */
-native any FF2_GetSettingData(int client, const char[] settingId, DBSDataTypes type);
-native void FF2_GetSettingStringData(int client, const char[] settingId, char[] value, DBSDataTypes buffer);
+native any FF2_GetSettingData(int client, const char[] settingId, FF2DataType type);
 
-native void FF2_SetSettingData(int client, const char[] settingId, any value, DBSDataTypes type);
+/**
+ * Get Player's setting data (String).
+ *
+ * @param client            client's index
+ * @param settingId         setting ID
+ * @param value             buffer to store the value
+ * @param buffer            buffer size
+ */
+native void FF2_GetSettingStringData(int client, const char[] settingId, char[] value, int buffer);
+
+/**
+ * Set Player's setting data (Int or Float).
+ *
+ * @param client            client's index
+ * @param settingId         setting ID
+ * @param value             value to set
+ * @param type              FF2Data_Int or FF2Data_Float
+ */
+native void FF2_SetSettingData(int client, const char[] settingId, any value, FF2DataType type);
+
+/**
+ * Set Player's setting data (String).
+ *
+ * @param client            client's index
+ * @param settingId         setting ID
+ * @param value             value to set
+ */
 native void FF2_SetSettingStringData(int client, const char[] settingId, char[] value);
 
 public SharedPlugin __pl_ff2_db=

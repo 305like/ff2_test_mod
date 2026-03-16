@@ -23,7 +23,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #tryinclude <mannvsmann>
-// #include <db_simple>
 #tryinclude <smac>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
@@ -1635,24 +1634,24 @@ public Action StartBossTimer(Handle timer)
 	return Plugin_Continue;
 }
 
-public any GetSettingData(int client, const char[] settingId, DBSDataTypes type)
+public any GetSettingData(int client, const char[] settingId, FF2DataType type)
 {
 	char data[128];
 	GetSettingStringData(client, settingId, data, 128);
 
 	switch(type)
 	{
-		case DBSData_Int:
+		case FF2Data_Int:
 		{
 			return data[0] != '\0' ? StringToInt(data) : 0;
 		}
-		case DBSData_Float:
+		case FF2Data_Float:
 		{
 			return data[0] != '\0' ? StringToFloat(data) : 0.0;
 		}
 		default:
 		{
-			ThrowError("only DBSData_Int, DBSData_Float supported!");
+			ThrowError("only FF2Data_Int, FF2Data_Float supported!");
 		}
 	}
 
@@ -1664,14 +1663,14 @@ public any Native_GetSettingData(Handle plugin, int numParams)
 	int client = GetNativeCell(1);
 	char settingId[128];
 	GetNativeString(2, settingId, sizeof(settingId));
-	DBSDataTypes type = GetNativeCell(3);
+	FF2DataType type = GetNativeCell(3);
 
 	return GetSettingData(client, settingId, type);
 }
 
 public void GetSettingStringData(int client, const char[] settingId, char[] value, int buffer)
 {
-	(DBSPlayerData.GetClientData(client)).GetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYERDATA_TABLENAME, settingId, "value", value, buffer);
+	FF2DB_GetSettingString(client, settingId, value, buffer);
 }
 
 public int Native_GetSettingStringData(Handle plugin, int numParams)
@@ -1686,24 +1685,23 @@ public int Native_GetSettingStringData(Handle plugin, int numParams)
 	return 0; // ??
 }
 
-public void SetSettingData(int client, const char[] settingId, any value, DBSDataTypes type)
+public void SetSettingData(int client, const char[] settingId, any value, FF2DataType type)
 {
-	// (DBSPlayerData.GetClientData(client)).SetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYERDATA_TABLENAME, settingId, "value", value);
 	char data[128];
 
 	switch(type)
 	{
-		case DBSData_Int:
+		case FF2Data_Int:
 		{
 			Format(data, sizeof(data), "%d", value);
 		}
-		case DBSData_Float:
+		case FF2Data_Float:
 		{
 			Format(data, sizeof(data), "%.1f", value);
 		}
 		default:
 		{
-			ThrowError("KvData_Int, KvData_Float supported!");
+			ThrowError("FF2Data_Int, FF2Data_Float supported!");
 		}
 	}
 
@@ -1715,7 +1713,7 @@ public /*void*/int Native_SetSettingData(Handle plugin, int numParams)
 	int client = GetNativeCell(1);
 	char settingId[128];
 	GetNativeString(2, settingId, sizeof(settingId));
-	DBSDataTypes type = GetNativeCell(4);
+	FF2DataType type = GetNativeCell(4);
 
 	SetSettingData(client, settingId, GetNativeCellRef(3), type);
 	return 0;
@@ -1723,7 +1721,7 @@ public /*void*/int Native_SetSettingData(Handle plugin, int numParams)
 
 public void SetSettingStringData(int client, const char[] settingId, char[] value)
 {
-	(DBSPlayerData.GetClientData(client)).SetStringData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYERDATA_TABLENAME, settingId, "value", value);
+	FF2DB_SetSettingString(client, settingId, value);
 }
 
 public /*void*/int Native_SetSettingStringData(Handle plugin, int numParams)
@@ -3789,8 +3787,9 @@ public void OnClientPostAdminCheck(int client)
 
 	if(!IsFakeClient(client))
 	{
+		FF2DB_LoadPlayerData(client);
 		view_as<FF2BasePlayer>(g_hBasePlayer[client]).LoadPlayerData();
-		muteSound[client]=GetSettingData(client, "sound_mute_flag", DBSData_Int);
+		muteSound[client]=GetSettingData(client, "sound_mute_flag", FF2Data_Int);
 	}
 
 	if(playBGM[0])
@@ -3836,6 +3835,8 @@ public void OnClientDisconnect(int client)
 
 	if(MusicTimer[client]!=null)
 		delete MusicTimer[client];
+
+	FF2DB_OnClientDisconnect(client);
 
 	if(g_hBasePlayer[client] != null)
 		delete g_hBasePlayer[client];
@@ -7107,7 +7108,7 @@ public Action ResetQueuePointsCmd(int client, int args)
 
 int GetClientClassInfoCookie(int client)
 {
-	return GetSettingData(client, "class_info_view", DBSData_Int);
+	return GetSettingData(client, "class_info_view", FF2Data_Int);
 }
 
 public Action HookSound(int clients[64], int& numClients, char sound[PLATFORM_MAX_PATH], int& client, int& channel, float& volume, int& level, int& pitch, int& flags, char soundEntry[PLATFORM_MAX_PATH], int& seed)

@@ -46,16 +46,12 @@ stock KeyValues LoadHudConfig()
 
 stock int GetHudSetting(int client, char[] hudId)
 {
-	return (DBSPlayerData.GetClientData(client)).GetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_HUDDATA_TABLENAME, hudId, "setting_value");
+	return FF2DB_GetHudSetting(client, hudId);
 }
 
 stock void SetHudSetting(int client, char[] hudId, int value)
 {
-	char timeStr[32];
-	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", GetTime());
-
-	(DBSPlayerData.GetClientData(client)).SetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_HUDDATA_TABLENAME, hudId, "setting_value", value);
-	(DBSPlayerData.GetClientData(client)).SetStringData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_HUDDATA_TABLENAME, hudId, "last_saved_time", timeStr);
+	FF2DB_SetHudSetting(client, hudId, value);
 }
 
 // Native things

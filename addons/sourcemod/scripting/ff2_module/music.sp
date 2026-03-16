@@ -415,7 +415,7 @@ public void SetSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client] |= soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
+	SetSettingData(client, "sound_mute_flag", muteSound[client], FF2Data_Int);
 }
 
 public void ClearSoundFlags(int client, int soundFlags)
@@ -426,21 +426,17 @@ public void ClearSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client]&=~soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
+	SetSettingData(client, "sound_mute_flag", muteSound[client], FF2Data_Int);
 }
 
 stock bool GetMusicSetting(int client, char[] musicId)
 {
-	return (DBSPlayerData.GetClientData(client)).GetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_MUSICDATA_TABLENAME, musicId, "setting_value") == 0;
+	return FF2DB_GetMusicSetting(client, musicId) == 0;
 }
 
 stock void SetMusicSetting(int client, char[] musicId, bool value)
 {
-	char timeStr[32];
-	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", GetTime());
-
-	(DBSPlayerData.GetClientData(client)).SetData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_MUSICDATA_TABLENAME, musicId, "setting_value", value ? 0 : 1);
-	(DBSPlayerData.GetClientData(client)).SetStringData(FF2DATABASE_CONFIG_NAME, FF2_DB_PLAYER_MUSICDATA_TABLENAME, musicId, "last_saved_time", timeStr);
+	FF2DB_SetMusicSetting(client, musicId, value ? 0 : 1);
 }
 
 ///
