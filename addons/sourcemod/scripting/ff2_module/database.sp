@@ -1,4 +1,4 @@
-#define FF2_PLAYERDATA_PATH "data/ff2_playerdata"
+#define FF2_DB_CONFIG "ff2"
 
 enum FF2DataType
 {
@@ -7,176 +7,247 @@ enum FF2DataType
 	FF2Data_String
 };
 
-static KeyValues g_hPlayerData[MAXPLAYERS+1];
+static Database g_hDB = null;
 
-stock void FF2DB_OnClientConnected(int client)
+// 메모리 캐시: 클라이언트별 설정값을 StringMap에 저장
+static StringMap g_hPlayerSettings[MAXPLAYERS+1];
+static StringMap g_hPlayerHud[MAXPLAYERS+1];
+static StringMap g_hPlayerMusic[MAXPLAYERS+1];
+
+void FF2DB_Init()
 {
-	delete g_hPlayerData[client];
-	g_hPlayerData[client] = null;
+	char error[256];
+	g_hDB = SQL_Connect(FF2_DB_CONFIG, true, error, sizeof(error));
+
+	if(g_hDB == null)
+	{
+		LogError("[FF2] Database connection failed: %s", error);
+		return;
+	}
+
+	// 테이블 생성
+	g_hDB.Query(DB_GenericCallback,
+		"CREATE TABLE IF NOT EXISTS ff2_player_setting ("
+		... "steam_id VARCHAR(32) NOT NULL, "
+		... "setting_id VARCHAR(64) NOT NULL, "
+		... "value VARCHAR(128) NOT NULL DEFAULT '', "
+		... "PRIMARY KEY (steam_id, setting_id))");
+
+	g_hDB.Query(DB_GenericCallback,
+		"CREATE TABLE IF NOT EXISTS ff2_player_hud_setting ("
+		... "steam_id VARCHAR(32) NOT NULL, "
+		... "hud_id VARCHAR(64) NOT NULL, "
+		... "setting_value INTEGER NOT NULL DEFAULT 0, "
+		... "last_saved_time VARCHAR(32) NOT NULL DEFAULT '', "
+		... "PRIMARY KEY (steam_id, hud_id))");
+
+	g_hDB.Query(DB_GenericCallback,
+		"CREATE TABLE IF NOT EXISTS ff2_player_music_setting ("
+		... "steam_id VARCHAR(32) NOT NULL, "
+		... "music_id VARCHAR(64) NOT NULL, "
+		... "setting_value INTEGER NOT NULL DEFAULT 0, "
+		... "last_saved_time VARCHAR(32) NOT NULL DEFAULT '', "
+		... "PRIMARY KEY (steam_id, music_id))");
 }
 
-stock void FF2DB_LoadPlayerData(int client)
+public void DB_GenericCallback(Database db, DBResultSet results, const char[] error, any data)
 {
-	if(IsFakeClient(client))
-		return;
-
-	char authId[32], filePath[PLATFORM_MAX_PATH];
-	GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
-	ReplaceString(authId, sizeof(authId), ":", "_");
-
-	BuildPath(Path_SM, filePath, sizeof(filePath), "%s/%s.cfg", FF2_PLAYERDATA_PATH, authId);
-
-	delete g_hPlayerData[client];
-	g_hPlayerData[client] = new KeyValues("PlayerData");
-
-	if(FileExists(filePath))
+	if(error[0] != '\0')
 	{
-		g_hPlayerData[client].ImportFromFile(filePath);
+		LogError("[FF2] Database query error: %s", error);
 	}
 }
 
-stock void FF2DB_SavePlayerData(int client)
+// --- 클라이언트 데이터 로드 ---
+
+void FF2DB_LoadPlayerData(int client)
 {
-	if(g_hPlayerData[client] == null)
+	if(IsFakeClient(client) || g_hDB == null)
 		return;
 
-	char authId[32], filePath[PLATFORM_MAX_PATH], dirPath[PLATFORM_MAX_PATH];
+	// 캐시 초기화
+	delete g_hPlayerSettings[client];
+	delete g_hPlayerHud[client];
+	delete g_hPlayerMusic[client];
+
+	g_hPlayerSettings[client] = new StringMap();
+	g_hPlayerHud[client] = new StringMap();
+	g_hPlayerMusic[client] = new StringMap();
+
+	char authId[32], query[256];
 	GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
-	ReplaceString(authId, sizeof(authId), ":", "_");
 
-	BuildPath(Path_SM, dirPath, sizeof(dirPath), FF2_PLAYERDATA_PATH);
-	if(!DirExists(dirPath))
-	{
-		CreateDirectory(dirPath, 0o755);
-	}
+	// 설정 데이터 로드
+	Format(query, sizeof(query),
+		"SELECT setting_id, value FROM ff2_player_setting WHERE steam_id = '%s'", authId);
+	g_hDB.Query(DB_OnSettingsLoaded, query, GetClientUserId(client));
 
-	BuildPath(Path_SM, filePath, sizeof(filePath), "%s/%s.cfg", FF2_PLAYERDATA_PATH, authId);
-	g_hPlayerData[client].ExportToFile(filePath);
+	// HUD 데이터 로드
+	Format(query, sizeof(query),
+		"SELECT hud_id, setting_value FROM ff2_player_hud_setting WHERE steam_id = '%s'", authId);
+	g_hDB.Query(DB_OnHudLoaded, query, GetClientUserId(client));
+
+	// 음악 데이터 로드
+	Format(query, sizeof(query),
+		"SELECT music_id, setting_value FROM ff2_player_music_setting WHERE steam_id = '%s'", authId);
+	g_hDB.Query(DB_OnMusicLoaded, query, GetClientUserId(client));
 }
 
-stock void FF2DB_OnClientDisconnect(int client)
+public void DB_OnSettingsLoaded(Database db, DBResultSet results, const char[] error, any userId)
 {
-	FF2DB_SavePlayerData(client);
-	delete g_hPlayerData[client];
-	g_hPlayerData[client] = null;
+	if(error[0] != '\0')
+	{
+		LogError("[FF2] Settings load error: %s", error);
+		return;
+	}
+
+	int client = GetClientOfUserId(userId);
+	if(client <= 0 || g_hPlayerSettings[client] == null)
+		return;
+
+	char settingId[64], value[128];
+	while(results.FetchRow())
+	{
+		results.FetchString(0, settingId, sizeof(settingId));
+		results.FetchString(1, value, sizeof(value));
+		g_hPlayerSettings[client].SetString(settingId, value);
+	}
+}
+
+public void DB_OnHudLoaded(Database db, DBResultSet results, const char[] error, any userId)
+{
+	if(error[0] != '\0')
+	{
+		LogError("[FF2] HUD load error: %s", error);
+		return;
+	}
+
+	int client = GetClientOfUserId(userId);
+	if(client <= 0 || g_hPlayerHud[client] == null)
+		return;
+
+	char hudId[64];
+	while(results.FetchRow())
+	{
+		results.FetchString(0, hudId, sizeof(hudId));
+		g_hPlayerHud[client].SetValue(hudId, results.FetchInt(1));
+	}
+}
+
+public void DB_OnMusicLoaded(Database db, DBResultSet results, const char[] error, any userId)
+{
+	if(error[0] != '\0')
+	{
+		LogError("[FF2] Music load error: %s", error);
+		return;
+	}
+
+	int client = GetClientOfUserId(userId);
+	if(client <= 0 || g_hPlayerMusic[client] == null)
+		return;
+
+	char musicId[64];
+	while(results.FetchRow())
+	{
+		results.FetchString(0, musicId, sizeof(musicId));
+		g_hPlayerMusic[client].SetValue(musicId, results.FetchInt(1));
+	}
+}
+
+// --- 클라이언트 연결 해제 ---
+
+void FF2DB_OnClientDisconnect(int client)
+{
+	delete g_hPlayerSettings[client];
+	delete g_hPlayerHud[client];
+	delete g_hPlayerMusic[client];
+	g_hPlayerSettings[client] = null;
+	g_hPlayerHud[client] = null;
+	g_hPlayerMusic[client] = null;
 }
 
 // --- Settings ---
 
-stock void FF2DB_GetSettingString(int client, const char[] settingId, char[] value, int buffer)
+void FF2DB_GetSettingString(int client, const char[] settingId, char[] value, int buffer)
 {
-	if(g_hPlayerData[client] == null)
+	value[0] = '\0';
+	if(g_hPlayerSettings[client] != null)
 	{
-		value[0] = '\0';
-		return;
+		g_hPlayerSettings[client].GetString(settingId, value, buffer);
 	}
-
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("settings", true))
-	{
-		g_hPlayerData[client].GetString(settingId, value, buffer, "");
-	}
-	else
-	{
-		value[0] = '\0';
-	}
-	g_hPlayerData[client].Rewind();
 }
 
-stock void FF2DB_SetSettingString(int client, const char[] settingId, const char[] value)
+void FF2DB_SetSettingString(int client, const char[] settingId, const char[] value)
 {
-	if(g_hPlayerData[client] == null)
+	if(g_hPlayerSettings[client] == null || g_hDB == null)
 		return;
 
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("settings", true))
-	{
-		g_hPlayerData[client].SetString(settingId, value);
-	}
-	g_hPlayerData[client].Rewind();
-	FF2DB_SavePlayerData(client);
+	g_hPlayerSettings[client].SetString(settingId, value);
+
+	char authId[32], query[512], escapedValue[256];
+	GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
+	g_hDB.Escape(value, escapedValue, sizeof(escapedValue));
+
+	Format(query, sizeof(query),
+		"INSERT OR REPLACE INTO ff2_player_setting (steam_id, setting_id, value) VALUES ('%s', '%s', '%s')",
+		authId, settingId, escapedValue);
+	g_hDB.Query(DB_GenericCallback, query);
 }
 
 // --- HUD ---
 
-stock int FF2DB_GetHudSetting(int client, const char[] hudId)
+int FF2DB_GetHudSetting(int client, const char[] hudId)
 {
-	if(g_hPlayerData[client] == null)
-		return 0;
-
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("hud", true))
+	int value = 0;
+	if(g_hPlayerHud[client] != null)
 	{
-		if(g_hPlayerData[client].JumpToKey(hudId, true))
-		{
-			int val = g_hPlayerData[client].GetNum("value", 0);
-			g_hPlayerData[client].Rewind();
-			return val;
-		}
+		g_hPlayerHud[client].GetValue(hudId, value);
 	}
-	g_hPlayerData[client].Rewind();
-	return 0;
+	return value;
 }
 
-stock void FF2DB_SetHudSetting(int client, const char[] hudId, int value)
+void FF2DB_SetHudSetting(int client, const char[] hudId, int value)
 {
-	if(g_hPlayerData[client] == null)
+	if(g_hPlayerHud[client] == null || g_hDB == null)
 		return;
 
-	char timeStr[32];
+	g_hPlayerHud[client].SetValue(hudId, value);
+
+	char authId[32], query[512], timeStr[32];
+	GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
 	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", GetTime());
 
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("hud", true))
-	{
-		if(g_hPlayerData[client].JumpToKey(hudId, true))
-		{
-			g_hPlayerData[client].SetNum("value", value);
-			g_hPlayerData[client].SetString("last_saved", timeStr);
-		}
-	}
-	g_hPlayerData[client].Rewind();
-	FF2DB_SavePlayerData(client);
+	Format(query, sizeof(query),
+		"INSERT OR REPLACE INTO ff2_player_hud_setting (steam_id, hud_id, setting_value, last_saved_time) VALUES ('%s', '%s', %d, '%s')",
+		authId, hudId, value, timeStr);
+	g_hDB.Query(DB_GenericCallback, query);
 }
 
 // --- Music ---
 
-stock int FF2DB_GetMusicSetting(int client, const char[] musicId)
+int FF2DB_GetMusicSetting(int client, const char[] musicId)
 {
-	if(g_hPlayerData[client] == null)
-		return 0;
-
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("music", true))
+	int value = 0;
+	if(g_hPlayerMusic[client] != null)
 	{
-		if(g_hPlayerData[client].JumpToKey(musicId, true))
-		{
-			int val = g_hPlayerData[client].GetNum("value", 0);
-			g_hPlayerData[client].Rewind();
-			return val;
-		}
+		g_hPlayerMusic[client].GetValue(musicId, value);
 	}
-	g_hPlayerData[client].Rewind();
-	return 0;
+	return value;
 }
 
-stock void FF2DB_SetMusicSetting(int client, const char[] musicId, int value)
+void FF2DB_SetMusicSetting(int client, const char[] musicId, int value)
 {
-	if(g_hPlayerData[client] == null)
+	if(g_hPlayerMusic[client] == null || g_hDB == null)
 		return;
 
-	char timeStr[32];
+	g_hPlayerMusic[client].SetValue(musicId, value);
+
+	char authId[32], query[512], timeStr[32];
+	GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
 	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", GetTime());
 
-	g_hPlayerData[client].Rewind();
-	if(g_hPlayerData[client].JumpToKey("music", true))
-	{
-		if(g_hPlayerData[client].JumpToKey(musicId, true))
-		{
-			g_hPlayerData[client].SetNum("value", value);
-			g_hPlayerData[client].SetString("last_saved", timeStr);
-		}
-	}
-	g_hPlayerData[client].Rewind();
-	FF2DB_SavePlayerData(client);
+	Format(query, sizeof(query),
+		"INSERT OR REPLACE INTO ff2_player_music_setting (steam_id, music_id, setting_value, last_saved_time) VALUES ('%s', '%s', %d, '%s')",
+		authId, musicId, value, timeStr);
+	g_hDB.Query(DB_GenericCallback, query);
 }
