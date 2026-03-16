@@ -148,10 +148,12 @@ public Action Goomba_OnStartTouch(int client, int other)
 	if(!Goomba_AreValidTargets(client, other))
 		return Plugin_Continue;
 
+	float fallSpeed = velocity[2] * -1.0; // 양수로 변환
+
 	int immunityResult = Goomba_CheckImmunity(client, other);
 	if(immunityResult == GOOMBA_IMMUNFLAG_NONE)
 	{
-		if(Goomba_DoStomp(client, other))
+		if(Goomba_DoStomp(client, other, fallSpeed))
 		{
 			Goomba_PlayReboundSound(client);
 			Goomba_EmitParticles(other);
@@ -209,7 +211,7 @@ bool Goomba_AreValidTargets(int client, int victim)
 // Stomp Execution
 // ============================================================
 
-bool Goomba_DoStomp(int attacker, int victim)
+bool Goomba_DoStomp(int attacker, int victim, float fallSpeed)
 {
 	float damageMultiplier = g_cvGoombaDmgMultiplier.FloatValue;
 	float damageBonus = g_cvGoombaDmgAdd.FloatValue;
@@ -244,18 +246,17 @@ bool Goomba_DoStomp(int attacker, int victim)
 		g_flGoombaTeleportVel[attacker] = vel;
 	}
 
-	// Deal damage
-	float stompDamage;
+	// Deal damage - 낙하속도 비례 데미지
+	// 최소속도(goomba_minspeed) = 360 에서 최소 데미지 500
+	// 속도가 빠를수록 데미지 증가: 500 + (낙하속도 - 최소속도) × 배율
+	float minSpeed = g_cvGoombaMinSpeed.FloatValue;
+	float speedRatio = (fallSpeed - minSpeed) / minSpeed; // 0.0 ~ ...
+	float stompDamage = 500.0 + (speedRatio * 500.0);     // 최소 500, 2배속도=1000, 3배속도=1500 ...
+
 	if(IsBoss(attacker))
 	{
-		// 보스 → 플레이어: 고정 1000 데미지
+		// 보스 → 플레이어: 고정 1000 데미지 (낙하거리 무관)
 		stompDamage = 1000.0;
-	}
-	else
-	{
-		// 플레이어 → 보스: 피해자 체력 × 배율 + 보너스
-		int victimHealth = GetClientHealth(victim);
-		stompDamage = float(victimHealth) * damageMultiplier + damageBonus;
 	}
 
 	g_iGoombaFakekill[victim] = 1;
