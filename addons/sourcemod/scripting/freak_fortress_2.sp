@@ -2779,9 +2779,11 @@ public void OnClientPostAdminCheck(int client)
 
     if(!IsFakeClient(client))
     {
-        
         FF2DB_LoadPlayerData(client);
         muteSound[client]=FF2DB_GetSettingInt(client, "sound_mute_flag");
+
+        // Cookie에서 대기표 복원
+        view_as<FF2BasePlayer>(g_hBasePlayer[client]).LoadQueuePointsFromCookie();
     }
 
     if(playBGM[0])
@@ -2795,6 +2797,14 @@ public void OnClientPostAdminCheck(int client)
     else
     {
         playBGM[client]=false;
+    }
+}
+
+public void OnClientCookiesCached(int client)
+{
+    if(g_hBasePlayer[client] != null && !IsFakeClient(client))
+    {
+        view_as<FF2BasePlayer>(g_hBasePlayer[client]).LoadQueuePointsFromCookie();
     }
 }
 

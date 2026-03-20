@@ -225,7 +225,7 @@ methodmap FF2BasePlayer < FF2BaseEntity
     property int QueuePoints {
         public get() {
             if(!IsClientInGame(this.Index))
-                return -1;
+                return 0;
 
             if(IsFakeClient(this.Index))
                 return botqueuepoints;
@@ -235,14 +235,40 @@ methodmap FF2BasePlayer < FF2BaseEntity
         public set(int queuepoints) {
             if(!IsClientInGame(this.Index))
                 return;
-                
+
             if(!IsFakeClient(this.Index))
             {
+                // 비정상적인 범위 클램프
+                if(queuepoints < -1000)
+                    queuepoints = 0;
+                else if(queuepoints > 100000)
+                    queuepoints = 0;
+
                 char buffer[12];
                 IntToString(queuepoints, buffer, sizeof(buffer));
                 SetClientCookie(this.Index, FF2Cookie_QueuePoints, buffer);
                 this.Set(FF2BE_MAX_COUNT + FF2P_QueuePoints, queuepoints);
             }
+        }
+    }
+
+    public void LoadQueuePointsFromCookie() {
+        int client = this.Index;
+        if(!IsClientInGame(client) || IsFakeClient(client))
+            return;
+
+        if(!AreClientCookiesCached(client))
+            return;
+
+        char buffer[12];
+        GetClientCookie(client, FF2Cookie_QueuePoints, buffer, sizeof(buffer));
+        if(buffer[0] != '\0')
+        {
+            int points = StringToInt(buffer);
+            // 비정상 값 필터링
+            if(points < -1000 || points > 100000)
+                points = 0;
+            this.Set(FF2BE_MAX_COUNT + FF2P_QueuePoints, points);
         }
     }
 
