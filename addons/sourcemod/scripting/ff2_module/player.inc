@@ -265,11 +265,24 @@ methodmap FF2BasePlayer < FF2BaseEntity
         if(buffer[0] != '\0')
         {
             int points = StringToInt(buffer);
-            // 비정상 값 필터링
             if(points < -1000 || points > 100000)
                 points = 0;
             this.Set(FF2BE_MAX_COUNT + FF2P_QueuePoints, points);
         }
+    }
+
+    // 맵 변경/disconnect 시점에 cookie에 저장 (IsClientInGame 불필요)
+    public void SaveQueuePointsToCookie(int client) {
+        if(IsFakeClient(client) || !AreClientCookiesCached(client))
+            return;
+
+        int points = this.Get(FF2BE_MAX_COUNT + FF2P_QueuePoints);
+        if(points < -1000 || points > 100000)
+            points = 0;
+
+        char buffer[12];
+        IntToString(points, buffer, sizeof(buffer));
+        SetClientCookie(client, FF2Cookie_QueuePoints, buffer);
     }
 
     property Handle MusicTimer {

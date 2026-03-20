@@ -560,14 +560,23 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
+	// 맵 변경 전 모든 플레이어의 대기표를 cookie에 저장
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && !IsFakeClient(i) && g_hBasePlayer[i] != null)
+		{
+			view_as<FF2BasePlayer>(g_hBasePlayer[i]).SaveQueuePointsToCookie(i);
+		}
+	}
+
 	if(Enabled || Enabled2)
 	{
 		DisableFF2();  //This resets all the variables for safety
 	}
-	    for(int i = 0; i <= MaxClients; i++)
-    {
-        OverCharge[i] = 0.0;
-    }
+	for(int i = 0; i <= MaxClients; i++)
+	{
+		OverCharge[i] = 0.0;
+	}
 }
 
 public void OnPluginEnd()
@@ -2851,8 +2860,12 @@ public void OnClientDisconnect(int client)
     if(MusicTimer[client]!=null)
         delete MusicTimer[client];
 
+    // 대기표 cookie 저장 후 삭제
     if(g_hBasePlayer[client] != null)
+    {
+        view_as<FF2BasePlayer>(g_hBasePlayer[client]).SaveQueuePointsToCookie(client);
         delete g_hBasePlayer[client];
+    }
 
     delete PlayerHudQueue[client];
     g_flZatoichiDrawTime[client] = 0.0;
