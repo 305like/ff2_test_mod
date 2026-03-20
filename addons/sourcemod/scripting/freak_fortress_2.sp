@@ -2072,7 +2072,11 @@ void EquipBoss(int boss)
 					char model[PLATFORM_MAX_PATH];
 					kv.GetString("projectile model", model, sizeof(model));
 					if(model[0] != '\0')
+					{
+						if(!IsModelPrecached(model))
+							PrecacheModel(model);
 						TF2Attrib_SetFromStringValue(weapon, "custom projectile model", model);
+					}
 
 					SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 					initCaptureAttribute = true;

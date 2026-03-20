@@ -109,6 +109,11 @@ public void OnProjectileSpawned(int entity)
 			{
 				char model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, PROJECTILE, "projectile_model", model, sizeof(model));
+				if(!IsModelPrecached(model))
+				{
+					PrecacheModel(model);
+				}
+
 				if(IsModelPrecached(model))
 				{
 					SetEntityModel(entity, model);
