@@ -243,6 +243,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("FF2_MakePlayerToBoss", Native_MakePlayerToBoss);
 	CreateNative("FF2_GetBossCreatorFlags", Native_GetBossCreatorFlags);
 	CreateNative("FF2_GetBossCreators", Native_GetBossCreators);
+	CreateNative("FF2_DropWeapon", Native_DropWeapon);
+	CreateNative("FF2_EqiupWeaponFromDropped", Native_EqiupWeaponFromDropped);
 
 	OnWaveStarted=CreateGlobalForward("FF2_OnWaveStarted", ET_Hook, Param_Cell); // wave
 	OnPlayBoss=CreateGlobalForward("FF2_OnPlayBoss", ET_Hook, Param_Cell); // Boss
@@ -7038,4 +7040,25 @@ void UpdateHealthBar(bool noHealState = false)
 
 	healthBar.BossHealthPercentageByte=healthPercent;
 	recently=healthAmount;
+}
+
+// FF2_DropWeapon - drops a weapon from the player
+public int Native_DropWeapon(Handle plugin, int numParams)
+{
+	int owner = GetNativeCell(1);
+	int weapon = GetNativeCell(2);
+	// int flags = GetNativeCell(3);
+
+	if(!IsValidClient(owner) || !IsValidEntity(weapon))
+		return -1;
+
+	// Use TF2 built-in drop system
+	SDKHooks_DropWeapon(owner, weapon);
+	return weapon;
+}
+
+// FF2_EqiupWeaponFromDropped - stub implementation
+public int Native_EqiupWeaponFromDropped(Handle plugin, int numParams)
+{
+	return 0;
 }
