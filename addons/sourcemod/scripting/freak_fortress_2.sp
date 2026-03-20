@@ -1319,7 +1319,6 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 		if(FindSound("win", sound, sizeof(sound)))
 		{
 			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 		}
 	}
 
@@ -1396,7 +1395,6 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 	}
 	else if(!bossWin && FindSound("lose", sound, sizeof(sound), 0))
 	{
-		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 	}
 
@@ -1498,7 +1496,6 @@ public Action OnBroadcast(Event event, const char[] name, bool dontBroadcast)
 public Action Timer_NineThousand(Handle timer)
 {
 	EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
 	return Plugin_Continue;
 }
 
@@ -1596,7 +1593,6 @@ public Action StartResponseTimer(Handle timer)
 	char sound[PLATFORM_MAX_PATH];
 	if(FindSound("begin", sound, sizeof(sound)))
 	{
-		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 	}
 	return Plugin_Continue;
@@ -2343,7 +2339,6 @@ public Action OnObjectDestroyed(Event event, const char[] name, bool dontBroadca
 
 			if(FindSound("destroy building", sound, sizeof(sound), boss))
 			{
-				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 			}
 		}
@@ -3457,7 +3452,6 @@ public Action BossTimer(Handle timer)
 				if(FindSound("full rage", sound, sizeof(sound), boss) && emitRageSound[boss])
 				{
 					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
-					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 
 					emitRageSound[boss]=false;
 				}
@@ -4175,7 +4169,6 @@ public Action OnCallForMedic(int client, const char[] command, int args)
 		if(FindSound("ability", sound, sizeof(sound), boss, true))
 		{
 			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 		}
 		emitRageSound[boss]=true;
 
@@ -4334,7 +4327,6 @@ public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadc
 				if(FindSound("first blood", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
-					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 				}
 				firstBlood=false;
 			}
@@ -4344,7 +4336,6 @@ public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadc
 				if(GetRandomInt(0, 1) && FindSound("kill", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
-					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 				}
 				else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 				{
@@ -4353,7 +4344,6 @@ public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadc
 					Format(playerclass, sizeof(playerclass), "kill %s", classnames[TF2_GetPlayerClass(client)]);
 					if(FindSound(playerclass, sound, sizeof(sound), boss))
 					{
-						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 					}
 				}
@@ -4372,7 +4362,6 @@ public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadc
 			{
 				if(FindSound("kspree", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 				}
 				KSpreeCount[boss]=0;
@@ -4409,7 +4398,6 @@ public Action OnPlayerDeath(Event event, const char[] eventName, bool dontBroadc
 
 		if(FindSound("lose", sound, sizeof(sound), boss))
 		{
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 		}
 
@@ -4590,7 +4578,6 @@ public Action CheckAlivePlayers(Handle timer)
 			char sound[PLATFORM_MAX_PATH];
 			if(FindSound("lastman", sound, sizeof(sound)))
 			{
-				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 			}
 		}
@@ -4952,11 +4939,9 @@ public Action OnPlayerHurt(Event event, const char[] name, bool dontBroadcast)
 			if(BossLives[boss]==1 && FindSound("last life", ability, sizeof(ability), boss))
 			{
 				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability);
-				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability);
 			}
 			else if(FindSound("next life", ability, sizeof(ability), boss))
 			{
-				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability);
 				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability);
 			}
 
@@ -5672,7 +5657,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					char sound[PLATFORM_MAX_PATH];
 					if(FindSound("stabbed", sound, sizeof(sound), boss))
 					{
-						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 					}
 					bChanged = true;
