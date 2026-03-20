@@ -1,0 +1,104 @@
+"Phrases"
+{
+    "FF2Boss InGame Only"
+    {
+        "ko"    "게임 안에서만 사용하실 수 있습니다."
+    }
+
+    "FF2Boss Loading PlayerData"
+    {
+        "ko"    "데이터 로딩 중입니다. 잠시만 기다려주세요.."
+    }
+
+    "FF2Boss Playing Before Load PlayerData"
+    {
+        "ko"    "보스 설정을 불러오기 이전에 보스가 되었습니다."
+    }
+
+    "FF2Boss Cant Chosse This Now"
+    {
+        "ko"    "현재 선택 불가"
+    }
+
+    "FF2Boss Dont Play Boss"
+    {
+        "ko"    "보스를 플레이하지 않습니다. (대기열 포인트가 저장되었습니다.)"
+    }
+
+    "FF2Boss Saved QueuePoints"
+    {
+        "#format"   "{1:d}"
+        "ko"    "저장된 대기열 포인트: {1}"
+    }
+
+    "FF2Boss Menu Title"
+    {
+        "#format"   "{1:s}"
+        "ko"    "현재 선택한 보스: {1}"
+    }
+
+    "FF2Boss Menu Random"
+    {
+        "ko"    "무작위 보스"
+    }
+
+    "FF2Boss Menu None"
+    {
+        "ko"    "보스를 하지 않습니다."
+    }
+
+    "FF2Boss Selected"
+    {
+        "#format"   "{1:s}"
+        "ko"    "보스 선택: {orange}{1}{default}"
+    }
+
+    "FF2Boss Cant Chosse This Map"
+    {
+        "ko"    "이 맵에선 금지되었습니다!"
+    }
+
+    "FF2Boss Info Health"
+    {
+        "#format"   "{1:d},{2:d}"
+        "ko"    "체력: {1}명 기준 > {2}"
+    }
+
+    "FF2Boss Info RageDamage"
+    {
+        "#format"   "{1:d}"
+        "ko"    "분노 충전률: {1} (피해량)"
+    }
+
+    "FF2Boss Info Speed"
+    {
+        "#format"   "{1:d}"
+        "ko"    "이동 속도: {1}"
+    }
+
+    "FF2Boss Info Select Boss"
+    {
+        "ko"    "이 보스 선택"
+    }
+
+    "FF2Boss Info Select Boss (Played Point)"
+    {
+        "#format"   "{1:d},{2:d},{3:d}"
+        "ko"        "포인트 사용 시: {1} -> {2}(-{3})"
+    }
+
+    "FF2Boss Not Enough Played Point"
+    {
+        "ko"        "포인트가 부족합니다."
+    }
+
+    "FF2Boss Info View Description"
+    {
+        "ko"    "능력 설명 보기"
+    }
+
+    "FF2Boss Skip Tip"
+    {
+        "ko"    "재장전 키 + 선택: 설명 생략"
+    }
+}

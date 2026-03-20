@@ -1,0 +1,104 @@
+"Phrases"
+{
+    "FF2Boss InGame Only"
+    {
+        "en"    "In-game only"
+    }
+
+    "FF2Boss Loading PlayerData"
+    {
+        "en"    "Loading data.. Please wait."
+    }
+
+    "FF2Boss Playing Before Load PlayerData"
+    {
+        "en"    "You are became boss before your setting is loading."
+    }
+
+    "FF2Boss Cant Chosse This Now"
+    {
+        "en"    "Currently unselectable"
+    }
+
+    "FF2Boss Dont Play Boss"
+    {
+        "en"    "leaved queue. (Queue point saved.)"
+    }
+
+    "FF2Boss Saved QueuePoints"
+    {
+        "#format"   "{1:d}"
+        "en"    "Saved Queue points: {1}"
+    }
+
+    "FF2Boss Menu Title"
+    {
+        "#format"   "{1:s}"
+        "en"    "Current Boss: {1}"
+    }
+
+    "FF2Boss Menu Random"
+    {
+        "en"    "Random"
+    }
+
+    "FF2Boss Menu None"
+    {
+        "en"    "I don't wanna play Boss."
+    }
+
+    "FF2Boss Selected"
+    {
+        "#format"   "{1:s}"
+        "en"    "Selected: {orange}{1}{default}"
+    }
+
+    "FF2Boss Cant Chosse This Map"
+    {
+        "en"    "Banned for this map!"
+    }
+
+    "FF2Boss Info Health"
+    {
+        "#format"   "{1:d},{2:d}"
+        "en"    "Health: {1} players > {2}"
+    }
+
+    "FF2Boss Info RageDamage"
+    {
+        "#format"   "{1:d}"
+        "en"    "Rage charge rate: {1} Damage"
+    }
+
+    "FF2Boss Info Speed"
+    {
+        "#format"   "{1:d}"
+        "en"    "Speed: {1}"
+    }
+
+    "FF2Boss Info Select Boss"
+    {
+        "en"    "Select This"
+    }
+
+    "FF2Boss Info Select Boss (Played Point)"
+    {
+        "#format"   "{1:d},{2:d},{3:d}"
+        "en"        "Point: {1} -> {2}(-{3})"
+    }
+
+    "FF2Boss Not Enough Played Point"
+    {
+        "en"        "Not enough point."
+    }
+
+    "FF2Boss Info View Description"
+    {
+        "en"    "View Description"
+    }
+
+    "FF2Boss Skip Tip"
+    {
+        "en"    "Press RELOAD + Select: Skip view info"
+    }
+}
