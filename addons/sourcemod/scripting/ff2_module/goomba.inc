@@ -273,12 +273,12 @@ bool Goomba_DoStomp(int attacker, int victim, float fallSpeed)
 		DMG_PREVENT_PHYSICS_FORCE | DMG_CRUSH | DMG_ALWAYSGIB);
 	g_iGoombaFakekill[victim] = 0;
 
-	// Fire post-stomp forward
+	// Fire post-stomp forward (damageBonus에 실제 적용된 데미지를 전달)
 	Call_StartForward(g_hForwardOnStompPost);
 	Call_PushCell(attacker);
 	Call_PushCell(victim);
 	Call_PushFloat(damageMultiplier);
-	Call_PushFloat(damageBonus);
+	Call_PushFloat(stompDamage);
 	Call_PushFloat(jumpPower);
 	Call_Finish();
 

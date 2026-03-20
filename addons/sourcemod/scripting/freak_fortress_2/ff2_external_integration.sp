@@ -113,6 +113,7 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 
 public int OnStompPost(int attacker, int victim, float damageMultiplier, float damageBonus, float jumpPower)
 {
+	// damageBonus에 goomba.inc에서 실제 적용된 stompDamage가 들어옴
 	int boss = FF2_GetBossIndex(victim);
 
 	if(boss != -1)
@@ -122,9 +123,8 @@ public int OnStompPost(int attacker, int victim, float damageMultiplier, float d
 
 		CreateKillStreak(attacker, victim, "mantreads", ++Goombaed[attacker]);
 
-		int adddmg = RoundFloat(FindConVar("goomba_dmg_add").FloatValue);
-		if(boss != -1)
-			FF2_SpecialAttackToBoss(attacker, boss, _, "goomba", ((FF2_GetBossHealth(boss) - FF2_GetBossMaxHealth(boss) * (FF2_GetBossLives(boss) - 1)) * damageMultiplier) + adddmg);
+		// damageBonus = 실제 SDKHooks_TakeDamage로 적용된 데미지
+		FF2_SpecialAttackToBoss(attacker, boss, _, "goomba", damageBonus);
 	}
 }
 
