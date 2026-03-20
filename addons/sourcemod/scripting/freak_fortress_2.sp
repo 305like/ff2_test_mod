@@ -3161,10 +3161,26 @@ public Action ClientTimer(Handle timer)
 					player.Flags &= ~FF2FLAG_ISBUFFED;
 				}
 			}
-			else if(OverCharge[client] > 0.0)
+	
+
+			// 쉴드 게이지 및 오버차지 HUD 표시 (클래스 무관, 쉴드 보유 시)
+			if(shield[client] && IsValidEntity(shield[client]))
 			{
-				Format(hudText, sizeof(hudText), "%t: %d", "Overcharge", RoundFloat(OverCharge[client]));
-				hudDisplay = FF2HudDisplay.CreateDisplay("Overcharge", hudText);
+				int shieldIndex = GetEntProp(shield[client], Prop_Send, "m_iItemDefinitionIndex");
+				if(shieldIndex == 57) // Razorback
+				{
+					float razorCharge = GetEntPropFloat(client, Prop_Send, "m_flItemChargeMeter", TFWeaponSlot_Secondary);
+					Format(hudText, sizeof(hudText), "%t: %d%%", "Shield Charge", RoundFloat(razorCharge));
+				}
+				else // 데모 쉴드
+				{
+					float charge = GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
+					if(OverCharge[client] > 0.0)
+						Format(hudText, sizeof(hudText), "%t: %d%% | %t: %d", "Shield Charge", RoundFloat(charge), "Overcharge", RoundFloat(OverCharge[client]));
+					else
+						Format(hudText, sizeof(hudText), "%t: %d%%", "Shield Charge", RoundFloat(charge));
+				}
+				hudDisplay = FF2HudDisplay.CreateDisplay("Shield", hudText);
 				PlayerHudQueue[client].AddHud(hudDisplay, client);
 			}
 

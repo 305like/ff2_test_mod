@@ -527,4 +527,8 @@
 	{
 		"en"		"Shield Overcharge"
 	}
+	"Shield Charge"
+	{
+		"en"		"Shield Charge"
+	}
 }
