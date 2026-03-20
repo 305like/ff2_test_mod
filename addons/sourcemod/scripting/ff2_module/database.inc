@@ -253,12 +253,12 @@ void FF2DB_SetHudSetting(int client, const char[] hudId, int value)
 
 int FF2DB_GetMusicSetting(int client, const char[] musicId)
 {
-	int value = 0;
-	if(g_hPlayerMusic[client] != null)
+	int value;
+	if(g_hPlayerMusic[client] != null && g_hPlayerMusic[client].GetValue(musicId, value))
 	{
-		g_hPlayerMusic[client].GetValue(musicId, value);
+		return value;
 	}
-	return value;
+	return 1; // 기본값: 활성화
 }
 
 void FF2DB_SetMusicSetting(int client, const char[] musicId, int value)
