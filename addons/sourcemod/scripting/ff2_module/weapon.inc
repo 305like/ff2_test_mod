@@ -211,7 +211,7 @@ switch(iItemDefinitionIndex)
 	
 	case 772: // 동안의 총✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.3 ; 45 ; 0.1 ; 4 ; 3 ; 4519 ; 1 ; 96 ; 12 ; 2 ; 2.2 ; 76 ; 3.13", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.3 ; 45 ; 0.1 ; 4 ; 3 ; 96 ; 0.25 ; 2 ; 2.2 ; 76 ; 3.13", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -332,7 +332,7 @@ switch(iItemDefinitionIndex)
 	
 	case 773: // 계집애 같은 사내의 소형 권총✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 32 ; 4478 ; 3 ; 3 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;

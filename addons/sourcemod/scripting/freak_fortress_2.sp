@@ -5298,6 +5298,12 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 				// SetEntPropFloat(iAttacker, Prop_Send, "m_flRageMeter",
 				// 	charge > 100.0 ? 100.0 : charge);
 
+				// 계집애 같은 사내의 소형 권총: 적중 시 자신에게 속도 버프 3초
+				if(index == 773)
+				{
+					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
+				}
+
 				if(damagecustom==TF_WEAPON_SENTRY_BULLET)
 				{
 					damagetype |= DMG_PREVENT_PHYSICS_FORCE;
