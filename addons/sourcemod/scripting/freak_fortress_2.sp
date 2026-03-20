@@ -3091,6 +3091,13 @@ public Action ClientTimer(Handle timer)
 			bool validwep=!StrContains(classname, "tf_weapon", false);
 
 			int index=(validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+
+			// 블랙 박스: 들고 있을 때 상시 크리티컬
+			if((index == 228 || index == 1085) && !IsBoss(client))
+			{
+				TF2_AddCondition(client, TFCond_CritOnFirstBlood, 0.3);
+			}
+
 			if(playerclass==TFClass_Medic)
 			{
 				int medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);

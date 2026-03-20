@@ -497,7 +497,7 @@ switch(iItemDefinitionIndex)
 	
 		case 228, 1085: // 블랙 박스✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1 ; 16 ; 25 ; 104 ; 0.75 ; 741 ; 0 ; 4411 ; 1 ; 1 ; 0.34", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "4 ; 1 ; 16 ; 25 ; 104 ; 0.75 ; 741 ; 0 ; 1 ; 0.34", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -557,7 +557,7 @@ switch(iItemDefinitionIndex)
 	
 		case 441: // 소도륙 5000✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "27 ; 1 ; 4522 ; 7 ; 6 ; 0.33 ; 4521 ; -3 ; 335 ; 3  ; 97 ; 0.75 ; 4668 ; 1 ; 104 ; 0.6 ", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "27 ; 1 ; 335 ; 3 ; 97 ; 0.75 ; 104 ; 0.6", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -579,7 +579,7 @@ switch(iItemDefinitionIndex)
 	
 		case 129, 1001: // 사기 증진 깃발✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 107 ; 1.15", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "319 ; 0.75 ; 116 ; 1 ; 107 ; 1.15", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -589,7 +589,7 @@ switch(iItemDefinitionIndex)
 	
 		case 226: // 부대지원✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 26 ; 50", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "319 ; 0.75 ; 116 ; 1 ; 26 ; 50", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -599,7 +599,7 @@ switch(iItemDefinitionIndex)
 	
 		case 354: // 전복자✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4692 ; 0.3 ; 116 ; 1 ; 107 ; 1.05 ; 57 ; 5", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "319 ; 0.75 ; 116 ; 1 ; 107 ; 1.05 ; 57 ; 5", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -619,7 +619,7 @@ switch(iItemDefinitionIndex)
 	
 		case 442: // 정의의 들소✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "335 ; 1000 ; 103 ; 1.5 ; 6 ; 0.25 ; 4519 ; 1 ; 392 ; 0.25", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "335 ; 1000 ; 103 ; 1.5 ; 6 ; 0.1 ; 392 ; 0.25 ; 97 ; 0.1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
