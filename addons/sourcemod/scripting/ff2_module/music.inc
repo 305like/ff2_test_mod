@@ -425,7 +425,7 @@ public void SetSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client] |= soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
+	FF2DB_SetSettingInt(client, "sound_mute_flag", muteSound[client]);
 }
 
 public void ClearSoundFlags(int client, int soundFlags)
@@ -436,17 +436,17 @@ public void ClearSoundFlags(int client, int soundFlags)
 	}
 
 	muteSound[client]&=~soundFlags;
-	SetSettingData(client, "sound_mute_flag", muteSound[client], DBSData_Int);
+	FF2DB_SetSettingInt(client, "sound_mute_flag", muteSound[client]);
 }
 
 stock bool GetMusicSetting(int client, char[] musicId)
 {
-    return DB_GetMusicSetting(client, musicId);
+    return FF2DB_GetMusicSetting(client, musicId);
 }
 
 stock void SetMusicSetting(int client, char[] musicId, bool value)
 {
-    DB_SaveMusicSetting(client, musicId, value);
+    FF2DB_SetMusicSetting(client, musicId, value);
 }
 
 ///

@@ -57,12 +57,12 @@ stock KeyValues LoadHudConfig()
 
 stock int GetHudSetting(int client, char[] hudId)
 {
-    return DB_GetHudSetting(client, hudId);
+    return FF2DB_GetHudSetting(client, hudId);
 }
 
 stock void SetHudSetting(int client, char[] hudId, int value)
 {
-    DB_SaveHudSetting(client, hudId, value);
+    FF2DB_SetHudSetting(client, hudId, value);
 }
 
 // Native things

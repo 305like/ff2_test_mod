@@ -74,6 +74,15 @@ void Goomba_Init()
 	RegConsoleCmd("goomba_status", Goomba_CmdStatus, "Show goomba immunity status");
 	RegConsoleCmd("goomba_on", Goomba_CmdOn, "Enable stomp");
 	RegConsoleCmd("goomba_off", Goomba_CmdOff, "Disable stomp");
+
+	CreateNative("EmitStompParticles", Native_EmitStompParticles);
+}
+
+public int Native_EmitStompParticles(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	Goomba_EmitParticles(client);
+	return 0;
 }
 
 /**

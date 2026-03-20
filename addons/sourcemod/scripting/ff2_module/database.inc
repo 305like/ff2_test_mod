@@ -10,12 +10,20 @@
 
 #define FF2_DB_CONFIG "ff2"
 
+#if !defined _ff2_db_included
 enum FF2DataType
 {
 	FF2Data_Int = 0,
 	FF2Data_Float,
 	FF2Data_String
 };
+#endif
+
+// db_simple 호환용 별칭
+#define DBSDataTypes FF2DataType
+#define DBSData_Int FF2Data_Int
+#define DBSData_Float FF2Data_Float
+#define DBSData_String FF2Data_String
 
 static Database g_hDB = null;
 
@@ -196,6 +204,20 @@ void FF2DB_SetSettingString(int client, const char[] settingId, const char[] val
 		"INSERT OR REPLACE INTO ff2_player_setting (steam_id, setting_id, value) VALUES ('%s', '%s', '%s')",
 		authId, settingId, escapedValue);
 	g_hDB.Query(DB_GenericCallback, query);
+}
+
+int FF2DB_GetSettingInt(int client, const char[] settingId)
+{
+	char value[32];
+	FF2DB_GetSettingString(client, settingId, value, sizeof(value));
+	return StringToInt(value);
+}
+
+void FF2DB_SetSettingInt(int client, const char[] settingId, int value)
+{
+	char strValue[32];
+	IntToString(value, strValue, sizeof(strValue));
+	FF2DB_SetSettingString(client, settingId, strValue);
 }
 
 // --- HUD ---

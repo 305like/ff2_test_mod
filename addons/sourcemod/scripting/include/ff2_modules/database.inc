@@ -3,6 +3,13 @@
 #endif
 #define _ff2_db_included
 
+enum FF2DataType
+{
+	FF2Data_Int = 0,
+	FF2Data_Float,
+	FF2Data_String
+};
+
 /**
  * Get Player's setting data (Int or Float).
  *

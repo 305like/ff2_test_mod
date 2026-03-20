@@ -387,7 +387,7 @@ public void OnPluginStart()
 	mannvsmann=LibraryExists("mannvsmann");
 	#endif
 	
-	Database_Init();
+	FF2DB_Init();
 
 	GameData gamedata = new GameData("potry");
 
@@ -1702,7 +1702,7 @@ public any Native_GetSettingData(Handle plugin, int numParams)
 
 public void GetSettingStringData(int client, const char[] settingId, char[] value, int buffer)
 {
-    value[0] = '\0';
+    FF2DB_GetSettingString(client, settingId, value, buffer);
 }
 
 public int Native_GetSettingStringData(Handle plugin, int numParams)
@@ -1754,7 +1754,7 @@ public /*void*/int Native_SetSettingData(Handle plugin, int numParams)
 
 public void SetSettingStringData(int client, const char[] settingId, char[] value)
 {
-    DB_SaveSetting(client, settingId, value);
+    FF2DB_SetSettingString(client, settingId, value);
 }
 
 public /*void*/int Native_SetSettingStringData(Handle plugin, int numParams)
@@ -2779,16 +2779,8 @@ public void OnClientPostAdminCheck(int client)
     if(!IsFakeClient(client))
     {
         
-        muteSound[client]=GetSettingData(client, "sound_mute_flag", DBSData_Int);
-        
-        if(g_DatabaseReady)
-        {
-            DB_LoadPlayer(client);
-        }
-        else
-        {
-            CreateTimer(2.0, Timer_LoadPlayer, client, TIMER_FLAG_NO_MAPCHANGE);
-        }
+        FF2DB_LoadPlayerData(client);
+        muteSound[client]=FF2DB_GetSettingInt(client, "sound_mute_flag");
     }
 
     if(playBGM[0])
@@ -2840,12 +2832,8 @@ public void OnClientDisconnect(int client)
     PrintToServer("[FF2] ========================================");
     PrintToServer("[FF2] %N 접속 종료", client);
     
-    // ✅ SQLite에 데이터 저장
-    if(g_DatabaseReady && IsClientInGame(client))
-    {
-        DB_SavePlayer(client);
-        PrintToServer("[FF2 DB] ✅ 데이터 저장 완료");
-    }
+    // SQLite 캐시 정리 (설정은 변경 시 즉시 저장됨)
+    FF2DB_OnClientDisconnect(client);
     
     PrintToServer("[FF2] ========================================");
 

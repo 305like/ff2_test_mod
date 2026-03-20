@@ -207,7 +207,7 @@ public Action HumanTeamBossMenu(int client, int args)
 		Menu menu=new Menu(HumanTeamBossMenu_Handler);
 
 		SetGlobalTransTarget(client);
-		int currentSetting = GetSettingData(client, "human_team_boss_play", DBSData_Int);
+		int currentSetting = FF2DB_GetSettingInt(client, "human_team_boss_play");
 
 		Format(text, sizeof(text), "%t", "Advance Menu Title");
 		Format(text, sizeof(text), "%s > %t\n", text, "Human Team Boss Setting Title");
@@ -924,7 +924,7 @@ public int HumanTeamBossMenu_Handler(Menu menu, MenuAction action, int client, i
 	if(action==MenuAction_Select)
 	{
 		// 0: ON, 1: OFF
-		SetSettingData(client, "human_team_boss_play", selection, DBSData_Int);
+		FF2DB_SetSettingInt(client, "human_team_boss_play", selection);
 		CPrintToChat(client, "{olive}[FF2]{default} %t: %s",
 			"Human Team Boss Setting Title", selection > 0 ? "OFF" : "ON");
 	}
@@ -939,7 +939,7 @@ public int ClassInfoTogglePanelH(Menu menu, MenuAction action, int client, int s
 		if(action==MenuAction_Select)
 		{
 			// class_info_view: 0: VIEW, 1: OFF, 2, VIEW: Main boss's help panel
-			SetSettingData(client, "class_info_view", selection - 1, DBSData_Int);
+			FF2DB_SetSettingInt(client, "class_info_view", selection - 1);
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Class Info", selection==2 ? "off" : "on");
 		}
 	}
