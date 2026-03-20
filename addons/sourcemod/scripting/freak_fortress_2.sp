@@ -5184,10 +5184,11 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 
 					if(OverCharge[client] > 0.0)
 					{
-						damage -= OverCharge[client];
+						float absorbed = min(damage, OverCharge[client]);
+						OverCharge[client] -= absorbed;
+						damage -= absorbed;
 						bChanged = true;
 
-						OverCharge[client] = max(0.0, OverCharge[client] - damage);
 						PlayShieldBreakSound(client, position, 0.7);
 					}
 				}
