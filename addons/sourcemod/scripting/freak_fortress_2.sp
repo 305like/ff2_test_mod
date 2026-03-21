@@ -3169,11 +3169,7 @@ public Action ClientTimer(Handle timer)
 						g_bHomingEnabled[client] = true;
 						g_flHomingStrength[client] = 100.0;
 					}
-					else if(priIndex == 1098) // 클래식: 들고 있을 때만 상시 치명타
-					{
-						if(GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") == priWeapon)
-							TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
-					}
+					// 클래식은 블랙박스와 같은 방식으로 활성무기 index 체크에서 처리
 				}
 
 				// 보조 무기 체크: 유도 + 가스패서 탄약
@@ -3221,6 +3217,12 @@ public Action ClientTimer(Handle timer)
 			if((index == 228 || index == 1085) && !IsBoss(client))
 			{
 				TF2_AddCondition(client, TFCond_CritOnFirstBlood, 0.3);
+			}
+
+			// 클래식: 들고 있을 때 상시 치명타
+			if(index == 1098 && !IsBoss(client))
+			{
+				TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
 			}
 
 			if(playerclass==TFClass_Medic)
