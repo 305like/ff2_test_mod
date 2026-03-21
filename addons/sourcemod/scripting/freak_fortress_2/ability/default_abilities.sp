@@ -476,7 +476,6 @@ void Charge_BraveJump(const char[] abilityName, int boss, int slot, int status)
 			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 			}
 		}
 	}
