@@ -7189,27 +7189,7 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 }
 
 // =========================================================================
-// 개척자의 정의(141): 폭발 생성 (이펙트 + 범위 데미지)
-// =========================================================================
-void CreateFrontierExplosion(int attacker, float pos[3])
-{
-	int explode = CreateEntityByName("env_explosion");
-	if(!IsValidEntity(explode))
-		return;
-
-	DispatchKeyValue(explode, "iMagnitude", "50");
-	DispatchKeyValue(explode, "iRadiusOverride", "150");
-	DispatchKeyValue(explode, "spawnflags", "0");
-	SetEntPropEnt(explode, Prop_Data, "m_hOwner", attacker);
-	SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(attacker));
-	DispatchSpawn(explode);
-	TeleportEntity(explode, pos, NULL_VECTOR, NULL_VECTOR);
-	AcceptEntityInput(explode, "Explode");
-	AcceptEntityInput(explode, "Kill");
-}
-
-// =========================================================================
-// 개척자의 정의(141): 벽 피격 시 폭발 (bullet_impact)
+// 개척자의 정의(141): 발사 디버그 (bullet_impact)
 // =========================================================================
 public void OnBulletImpact(Event event, const char[] name, bool dontBroadcast)
 {
@@ -7217,17 +7197,12 @@ public void OnBulletImpact(Event event, const char[] name, bool dontBroadcast)
 	if(client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
 		return;
 
-	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	if(!IsValidEntity(weapon))
-		return;
-
-	int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-	if(index != 141)
-		return;
-
-	// 현재 들고 있는 무기가 개척자의 정의인지 확인
 	int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(activeWep != weapon)
+	if(!IsValidEntity(activeWep))
+		return;
+
+	int index = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
+	if(index != 141)
 		return;
 
 	float pos[3];
@@ -7235,7 +7210,7 @@ public void OnBulletImpact(Event event, const char[] name, bool dontBroadcast)
 	pos[1] = event.GetFloat("y");
 	pos[2] = event.GetFloat("z");
 
-	CreateFrontierExplosion(client, pos);
+	PrintToChatAll("[DEBUG] 개척자정의 발사감지! 착탄위치=(%.0f, %.0f, %.0f)", pos[0], pos[1], pos[2]);
 }
 
 // =========================================================================
