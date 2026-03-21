@@ -3969,7 +3969,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		}
 	}
 
-	// 개척자의 정의(141): 발사 감지 디버그 (IN_ATTACK + 탄약 체크 + TraceRay)
+	// 개척자의 정의(141): 발사 시 착탄 위치에 폭발 (데미지 50, 반경 150)
 	if(!IsBoss(client) && (buttons & IN_ATTACK) && !(g_iLastButtons[client] & IN_ATTACK))
 	{
 		int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -3978,7 +3978,6 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 			int wepIndex = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
 			if(wepIndex == 141)
 			{
-				// 탄창에 탄약이 있고, 발사 쿨다운이 지났을 때만
 				int clip = GetEntProp(activeWep, Prop_Send, "m_iClip1");
 				float nextAttack = GetEntPropFloat(activeWep, Prop_Send, "m_flNextPrimaryAttack");
 				if(clip > 0 && nextAttack <= GetGameTime())
@@ -3991,11 +3990,19 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 					if(TR_DidHit(trace))
 					{
 						TR_GetEndPosition(endPos, trace);
-						int hitEnt = TR_GetEntityIndex(trace);
-						if(hitEnt > 0 && hitEnt <= MaxClients)
-							PrintToChatAll("[DEBUG] 개척자정의 발사! 적중=%N 위치=(%.0f,%.0f,%.0f)", hitEnt, endPos[0], endPos[1], endPos[2]);
-						else
-							PrintToChatAll("[DEBUG] 개척자정의 발사! 벽/월드 착탄=(%.0f,%.0f,%.0f)", endPos[0], endPos[1], endPos[2]);
+						int explode = CreateEntityByName("env_explosion");
+						if(IsValidEntity(explode))
+						{
+							DispatchKeyValue(explode, "iMagnitude", "50");
+							DispatchKeyValue(explode, "iRadiusOverride", "150");
+							DispatchKeyValue(explode, "spawnflags", "0");
+							SetEntPropEnt(explode, Prop_Data, "m_hOwner", client);
+							SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(client));
+							DispatchSpawn(explode);
+							TeleportEntity(explode, endPos, NULL_VECTOR, NULL_VECTOR);
+							AcceptEntityInput(explode, "Explode");
+							AcceptEntityInput(explode, "Kill");
+						}
 					}
 					delete trace;
 				}
@@ -7225,6 +7232,24 @@ public void OnPipeSpawnPost(int entity)
 
 public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 {
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(client <= 0 || !IsClientInGame(client) || IsBoss(client))
+		return;
+
+	int building = event.GetInt("index");
+	if(!IsValidEntity(building))
+		return;
+
+	// 유래카 효과(589) 소지 시 모든 건물 즉시 건설 (MvM 재설치 방식)
+	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+	if(!IsValidEntity(melee))
+		return;
+
+	int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
+	if(meleeIndex != 589)
+		return;
+
+	SetEntProp(building, Prop_Send, "m_bCarryDeploy", 1);
 }
 
 // =========================================================================
