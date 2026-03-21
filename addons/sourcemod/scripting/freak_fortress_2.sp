@@ -5670,14 +5670,7 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 
 						bChanged = true;
 					}
-					case 61, 1006:  //Ambassador, Festive Ambassador
-					{
-						if(damagecustom==TF_CUSTOM_HEADSHOT)
-						{
-							damage *= 2.0;
-							bChanged = true;
-						}
-					}
+					// case 61, 1006:  //Ambassador - 특수코드 제거
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander, Vita-Saw(?)
 					{
 						IncrementHeadCount(iAttacker);
