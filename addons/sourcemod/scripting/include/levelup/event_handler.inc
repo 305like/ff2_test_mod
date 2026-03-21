@@ -181,6 +181,10 @@ public Action Timer_ApplySharedAttribute(Handle timer, any client)
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
+    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+        return Plugin_Continue;
+
     int team = GetClientTeam(client);
 
     // 팀별 스탯 적용 여부 확인
@@ -345,6 +349,10 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
+    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+        return Plugin_Continue;
+
     // 데이터 로드 안됐으면 스킵
     if (!PlayerData_IsLoaded(client))
         return Plugin_Continue;
@@ -477,6 +485,10 @@ public Action Event_OnPlayerRegenerate(Event event, const char[] name, bool dont
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
+    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+        return Plugin_Continue;
+
     int team = GetClientTeam(client);
 
     // 팀별 스탯 적용 여부 확인
@@ -516,6 +528,10 @@ public Action Event_OnPlayerChangeClass(Event event, const char[] name, bool don
 
     // FF2 보스에게는 속성 적용하지 않음
     if (Levelup_IsBoss(client))
+        return Plugin_Continue;
+
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
+    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
         return Plugin_Continue;
 
     int team = GetClientTeam(client);
