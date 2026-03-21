@@ -86,35 +86,6 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float deVel
 			g_flChargeRemain[client] = GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
 	}
 
-	// Air charge
-	// 데모판의 돌진을 감지하고 Y축 속도값을 시야와 일치하도록 변경
-	float angles[3], yAngle;
-	GetClientEyeAngles(client, angles);
-
-	// y축 Index: angles = 0, velocity = 2
-	// angles 시야 기준, 맨 아래 90 ~ 맨 위 -90
-	if(TF2_IsPlayerInCondition(client, TFCond_Charging)
-		&& (buttons & (IN_JUMP|IN_DUCK)) == 0
-		&& (yAngle = angles[0] * -1.0) > 0.0)
-	{
-		float velocity[3];
-		GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
-
-		velocity[2] = yAngle * 10.0;
-		if(velocity[2] > 270.0) // maybe???
-		{
-			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
-
-			if(boss == -1 || !FF2_HasAbility(boss, THIS_PLUGIN_NAME, AIR_CHARGE_ABILITY))
-			{
-				float charge = GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
-				charge -= (12.5 / GetTickInterval()) * 0.002;
-
-				SetEntPropFloat(client, Prop_Send, "m_flChargeMeter", charge);				
-			}
-		}
-	}
-
 	return Plugin_Continue;
 }
 
