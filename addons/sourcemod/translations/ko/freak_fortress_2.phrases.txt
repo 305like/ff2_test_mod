@@ -88,7 +88,7 @@
 	"Super Jump Charge"
 	{
 		"#format"	"{1:i},{2:s}"
-		"ko"		"슈퍼점프: {1}%% ({2})"
+		"ko"		"슈퍼점프: {1}%% ({2}후 위를보세요)"
 	}
 	"Super Jump Hint"
 	{
