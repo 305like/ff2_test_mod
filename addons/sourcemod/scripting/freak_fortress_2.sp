@@ -7314,9 +7314,18 @@ public void Frame_FixBuildingHealth(int buildingRef)
 	if(!IsValidEntity(building))
 		return;
 
-	int maxHp = GetEntProp(building, Prop_Send, "m_iMaxHealth");
-	if(maxHp <= 0)
+	// 건물 종류별 1레벨 최대체력
+	char classname[64];
+	GetEntityClassname(building, classname, sizeof(classname));
+	int maxHp = 150;
+	if(StrEqual(classname, "obj_sentrygun"))
 		maxHp = 150;
+	else if(StrEqual(classname, "obj_dispenser"))
+		maxHp = 150;
+	else if(StrEqual(classname, "obj_teleporter"))
+		maxHp = 150;
+
+	SetEntProp(building, Prop_Send, "m_iMaxHealth", maxHp);
 	SetEntProp(building, Prop_Send, "m_iHealth", maxHp);
 }
 
