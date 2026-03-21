@@ -3969,7 +3969,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		}
 	}
 
-	// 개척자의 정의(141): 발사 감지 디버그 (IN_ATTACK 감지 + TraceRay)
+	// 개척자의 정의(141): 발사 감지 디버그 (IN_ATTACK + 탄약 체크 + TraceRay)
 	if(!IsBoss(client) && (buttons & IN_ATTACK) && !(g_iLastButtons[client] & IN_ATTACK))
 	{
 		int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -3978,21 +3978,27 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 			int wepIndex = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
 			if(wepIndex == 141)
 			{
-				float eyePos[3], eyeAng[3], endPos[3];
-				GetClientEyePosition(client, eyePos);
-				GetClientEyeAngles(client, eyeAng);
-
-				Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
-				if(TR_DidHit(trace))
+				// 탄창에 탄약이 있고, 발사 쿨다운이 지났을 때만
+				int clip = GetEntProp(activeWep, Prop_Send, "m_iClip1");
+				float nextAttack = GetEntPropFloat(activeWep, Prop_Send, "m_flNextPrimaryAttack");
+				if(clip > 0 && nextAttack <= GetGameTime())
 				{
-					TR_GetEndPosition(endPos, trace);
-					int hitEnt = TR_GetEntityIndex(trace);
-					if(hitEnt > 0 && hitEnt <= MaxClients)
-						PrintToChatAll("[DEBUG] 개척자정의 발사! 적중=%N 위치=(%.0f,%.0f,%.0f)", hitEnt, endPos[0], endPos[1], endPos[2]);
-					else
-						PrintToChatAll("[DEBUG] 개척자정의 발사! 벽/월드 착탄=(%.0f,%.0f,%.0f)", endPos[0], endPos[1], endPos[2]);
+					float eyePos[3], eyeAng[3], endPos[3];
+					GetClientEyePosition(client, eyePos);
+					GetClientEyeAngles(client, eyeAng);
+
+					Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
+					if(TR_DidHit(trace))
+					{
+						TR_GetEndPosition(endPos, trace);
+						int hitEnt = TR_GetEntityIndex(trace);
+						if(hitEnt > 0 && hitEnt <= MaxClients)
+							PrintToChatAll("[DEBUG] 개척자정의 발사! 적중=%N 위치=(%.0f,%.0f,%.0f)", hitEnt, endPos[0], endPos[1], endPos[2]);
+						else
+							PrintToChatAll("[DEBUG] 개척자정의 발사! 벽/월드 착탄=(%.0f,%.0f,%.0f)", endPos[0], endPos[1], endPos[2]);
+					}
+					delete trace;
 				}
-				delete trace;
 			}
 		}
 	}
