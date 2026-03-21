@@ -7303,6 +7303,21 @@ public void Frame_InstantBuild(int buildingRef)
 		SDKCall(g_hSDKStartBuilding, building);
 		SDKCall(g_hSDKFinishBuilding, building);
 	}
+
+	// 다음 프레임에 체력 보정
+	RequestFrame(Frame_FixBuildingHealth, EntIndexToEntRef(building));
+}
+
+public void Frame_FixBuildingHealth(int buildingRef)
+{
+	int building = EntRefToEntIndex(buildingRef);
+	if(!IsValidEntity(building))
+		return;
+
+	int maxHp = GetEntProp(building, Prop_Send, "m_iMaxHealth");
+	if(maxHp <= 0)
+		maxHp = 150;
+	SetEntProp(building, Prop_Send, "m_iHealth", maxHp);
 }
 
 // =========================================================================
