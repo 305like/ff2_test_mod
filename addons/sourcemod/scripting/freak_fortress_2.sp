@@ -7184,29 +7184,8 @@ public void OnPipeSpawnPost(int entity)
 	}
 }
 
-// =========================================================================
-// 유래카 효과(589): 텔레포터 건설 시 즉시 3단계
-// =========================================================================
 public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client <= 0 || !IsClientInGame(client) || IsBoss(client))
-		return;
-
-	int building = event.GetInt("index");
-	if(!IsValidEntity(building))
-		return;
-
-	// 유래카 효과(589) 소지 시 모든 건물 즉시 건설 (MvM 재설치 방식)
-	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if(!IsValidEntity(melee))
-		return;
-
-	int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
-	if(meleeIndex != 589)
-		return;
-
-	SetEntProp(building, Prop_Send, "m_bCarryDeploy", 1);
 }
 
 // =========================================================================
