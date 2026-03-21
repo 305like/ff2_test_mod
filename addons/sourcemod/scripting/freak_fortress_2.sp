@@ -7305,7 +7305,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 
 	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
-	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_healing_bolt"))
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_healing_bolt") || StrEqual(classname, "tf_projectile_arrow"))
 	{
 		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
 	}
