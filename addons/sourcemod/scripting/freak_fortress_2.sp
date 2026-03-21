@@ -564,6 +564,11 @@ public void OnMapStart()
 	doorCheckTimer=null;
 	RoundCount=0;
 
+	// 예방접종기 레이저 프리캐시
+	g_iVaccinatorLaser = PrecacheModel("sprites/laserbeam.vmt");
+	PrecacheSound("weapons/airboat/airboat_gun_energy1.wav");
+	PrecacheSound("weapons/airboat/airboat_gun_energy2.wav");
+
 	// 유도 시스템 + 파이프 벽폭발 초기화
 	for(int i = 0; i < HOMING_LIMIT; i++)
 	{
@@ -578,6 +583,7 @@ public void OnMapStart()
 		// FF2BasePlayer player = GetBasePlayer(client);
 		// player.Flags = 0;
 
+		g_hVaccinatorTimer[client] = null;
 		KSpreeTimer[client]=0.0;
 		Incoming[client]=-1;
 		MusicTimer[client]=null;
@@ -3228,27 +3234,20 @@ public Action ClientTimer(Handle timer)
 						TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.3);
 					}
 
-					// 예방접종기(998): 보스를 향해 공격 버튼 시 초당 12 데미지 (0.3초 틱 = 3.6)
+					// 예방접종기(998): 레이저 공격 타이머 관리
 					if(IsValidEntity(weapon))
 					{
 						int secIdx = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-						if(secIdx == 998 && (GetClientButtons(client) & IN_ATTACK))
+						if(secIdx == 998)
 						{
-							float eyePos[3], eyeAng[3], endPos[3];
-							GetClientEyePosition(client, eyePos);
-							GetClientEyeAngles(client, eyeAng);
-							Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
-							if(TR_DidHit(trace))
+							if(g_hVaccinatorTimer[client] == null)
 							{
-								int hitEnt = TR_GetEntityIndex(trace);
-								TR_GetEndPosition(endPos, trace);
-								if(hitEnt > 0 && hitEnt <= MaxClients && IsClientInGame(hitEnt) && IsPlayerAlive(hitEnt)
-									&& IsBoss(hitEnt) && GetVectorDistance(eyePos, endPos) <= 450.0)
-								{
-									SDKHooks_TakeDamage(hitEnt, client, client, 3.6, DMG_GENERIC);
-								}
+								g_hVaccinatorTimer[client] = CreateTimer(0.25, Timer_VaccinatorLaser, GetClientUserId(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 							}
-							delete trace;
+						}
+						else
+						{
+							Vaccinator_StopTimer(client);
 						}
 					}
 				}
@@ -7358,6 +7357,108 @@ public void Frame_FixBuildingHealth(int buildingRef)
 	// AddHealth 엔진 입력으로 체력 보정 (내부 상태 정상 반영)
 	SetVariantInt(150);
 	AcceptEntityInput(building, "AddHealth");
+}
+
+// =========================================================================
+// 예방접종기(998): 레이저 공격 시스템
+// =========================================================================
+public Action Timer_VaccinatorLaser(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if(client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
+	{
+		g_hVaccinatorTimer[client > 0 ? client : 0] = null;
+		return Plugin_Stop;
+	}
+
+	// 예방접종기를 들고 있는지 확인
+	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(!IsValidEntity(weapon))
+	{
+		Vaccinator_StopTimer(client);
+		return Plugin_Stop;
+	}
+
+	int secSlot = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+	if(weapon != secSlot)
+	{
+		Vaccinator_StopTimer(client);
+		return Plugin_Stop;
+	}
+
+	int secIdx = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+	if(secIdx != 998)
+	{
+		Vaccinator_StopTimer(client);
+		return Plugin_Stop;
+	}
+
+	// 350 반경 내 가장 가까운 보스 찾기
+	float clientPos[3];
+	GetClientAbsOrigin(client, clientPos);
+	clientPos[2] += 60.0; // 몸 중앙 높이
+
+	int closestBoss = -1;
+	float closestDist = 350.0;
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(!IsClientInGame(i) || !IsPlayerAlive(i) || !IsBoss(i))
+			continue;
+
+		float bossPos[3];
+		GetClientAbsOrigin(i, bossPos);
+		bossPos[2] += 40.0;
+
+		float dist = GetVectorDistance(clientPos, bossPos);
+		if(dist < closestDist)
+		{
+			closestDist = dist;
+			closestBoss = i;
+		}
+	}
+
+	if(closestBoss == -1)
+		return Plugin_Continue;
+
+	// 레이저 빔 이펙트 (붉은색)
+	float bossPos[3];
+	GetClientAbsOrigin(closestBoss, bossPos);
+	bossPos[2] += 40.0;
+
+	int color[4] = {255, 30, 30, 200};
+	TE_SetupBeamPoints(clientPos, bossPos, g_iVaccinatorLaser, 0, 0, 0, 0.2, 2.0, 2.0, 1, 0.0, color, 0);
+	TE_SendToAll();
+
+	// 발사 사운드 랜덤
+	if(GetRandomInt(0, 1) == 0)
+		EmitSoundToAll("weapons/airboat/airboat_gun_energy1.wav", client, _, _, _, 0.5);
+	else
+		EmitSoundToAll("weapons/airboat/airboat_gun_energy2.wav", client, _, _, _, 0.5);
+
+	// 데미지 15
+	SDKHooks_TakeDamage(closestBoss, client, client, 15.0, DMG_ENERGYBEAM);
+
+	// 우버 0.5% 충전
+	if(IsValidEntity(weapon))
+	{
+		float charge = GetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel");
+		charge += 0.005; // 0.5%
+		if(charge > 1.0)
+			charge = 1.0;
+		SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", charge);
+	}
+
+	return Plugin_Continue;
+}
+
+void Vaccinator_StopTimer(int client)
+{
+	if(g_hVaccinatorTimer[client] != null)
+	{
+		KillTimer(g_hVaccinatorTimer[client]);
+		g_hVaccinatorTimer[client] = null;
+	}
 }
 
 // =========================================================================

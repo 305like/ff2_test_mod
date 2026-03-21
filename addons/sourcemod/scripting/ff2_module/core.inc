@@ -114,6 +114,10 @@ int g_iLastClip141[MAXPLAYERS+1];
 Handle g_hSDKStartBuilding;
 Handle g_hSDKFinishBuilding;
 
+// 예방접종기(998) 레이저 공격
+Handle g_hVaccinatorTimer[MAXPLAYERS+1];
+int g_iVaccinatorLaser; // TE beam model index
+
 // 파이프 폭발 SDKCall + 벽폭발 추적
 Handle g_hSDKCallDetonate;
 bool g_bPipeWallExplode[HOMING_LIMIT]; // 벽 접촉시 즉시 폭발 대상 유탄
