@@ -306,6 +306,29 @@ public void OnPluginStart()
 		LogError("[FF2] Failed to load gamedata ff2_pipedetonate.txt");
 	}
 
+	// 유래카 즉시건설 SDKCall 초기화
+	Handle hBuildConf = LoadGameConfigFile("ff2_buildings");
+	if(hBuildConf != null)
+	{
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(hBuildConf, SDKConf_Virtual, "CBaseObject::StartBuilding");
+		g_hSDKStartBuilding = EndPrepSDKCall();
+		if(g_hSDKStartBuilding == null)
+			LogError("[FF2] Failed to create SDKCall for CBaseObject::StartBuilding");
+
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(hBuildConf, SDKConf_Virtual, "CBaseObject::FinishedBuilding");
+		g_hSDKFinishBuilding = EndPrepSDKCall();
+		if(g_hSDKFinishBuilding == null)
+			LogError("[FF2] Failed to create SDKCall for CBaseObject::FinishedBuilding");
+
+		delete hBuildConf;
+	}
+	else
+	{
+		LogError("[FF2] Failed to load gamedata ff2_buildings.txt");
+	}
+
 	// cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", _, true, 0.0);
@@ -3969,8 +3992,8 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		}
 	}
 
-	// 개척자의 정의(141): 발사 시 착탄 위치에 폭발 (데미지 50, 반경 150)
-	if(!IsBoss(client) && (buttons & IN_ATTACK) && !(g_iLastButtons[client] & IN_ATTACK))
+	// 개척자의 정의(141): 발사 감지 (clip 감소 감지) → 착탄 위치에 폭발
+	if(!IsBoss(client))
 	{
 		int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		if(IsValidEntity(activeWep))
@@ -3979,9 +4002,9 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 			if(wepIndex == 141)
 			{
 				int clip = GetEntProp(activeWep, Prop_Send, "m_iClip1");
-				float nextAttack = GetEntPropFloat(activeWep, Prop_Send, "m_flNextPrimaryAttack");
-				if(clip > 0 && nextAttack <= GetGameTime())
+				if(clip < g_iLastClip141[client] && g_iLastClip141[client] > 0)
 				{
+					// clip이 줄었다 = 실제 발사됨
 					float eyePos[3], eyeAng[3], endPos[3];
 					GetClientEyePosition(client, eyePos);
 					GetClientEyeAngles(client, eyeAng);
@@ -3990,22 +4013,37 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 					if(TR_DidHit(trace))
 					{
 						TR_GetEndPosition(endPos, trace);
-						int explode = CreateEntityByName("env_explosion");
-						if(IsValidEntity(explode))
+
+						// 시각 폭발 이펙트
+						int explosionModel = PrecacheModel("sprites/sprite_fire01.vmt");
+						TE_SetupExplosion(endPos, explosionModel, 10.0, 1, 0, 150, 50);
+						TE_SendToAll();
+
+						// 반경 150 내 플레이어에게 거리비례 데미지 (60~30, 자가피해 포함)
+						float flRadius = 150.0;
+						float flMaxDmg = 60.0;
+						float flMinDmg = 30.0;
+						for(int i = 1; i <= MaxClients; i++)
 						{
-							DispatchKeyValue(explode, "iMagnitude", "50");
-							DispatchKeyValue(explode, "iRadiusOverride", "150");
-							DispatchKeyValue(explode, "spawnflags", "0");
-							SetEntPropEnt(explode, Prop_Data, "m_hOwner", client);
-							SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(client));
-							DispatchSpawn(explode);
-							TeleportEntity(explode, endPos, NULL_VECTOR, NULL_VECTOR);
-							AcceptEntityInput(explode, "Explode");
-							AcceptEntityInput(explode, "Kill");
+							if(!IsClientInGame(i) || !IsPlayerAlive(i)) continue;
+							float targetPos[3];
+							GetEntPropVector(i, Prop_Send, "m_vecOrigin", targetPos);
+							targetPos[2] += 40.0;
+							float dist = GetVectorDistance(endPos, targetPos);
+							if(dist <= flRadius)
+							{
+								float dmg;
+								if(dist <= 60.0)
+									dmg = flMaxDmg;
+								else
+									dmg = flMaxDmg - (flMaxDmg - flMinDmg) * ((dist - 60.0) / (flRadius - 60.0));
+								SDKHooks_TakeDamage(i, client, client, dmg, DMG_BLAST);
+							}
 						}
 					}
 					delete trace;
 				}
+				g_iLastClip141[client] = clip;
 			}
 		}
 	}
@@ -7240,7 +7278,7 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 	if(!IsValidEntity(building))
 		return;
 
-	// 유래카 효과(589) 소지 시 모든 건물 즉시 건설 (MvM 재설치 방식)
+	// 유래카 효과(589) 소지 시 모든 건물 즉시 건설
 	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if(!IsValidEntity(melee))
 		return;
@@ -7249,7 +7287,22 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 	if(meleeIndex != 589)
 		return;
 
-	SetEntProp(building, Prop_Send, "m_bCarryDeploy", 1);
+	// 1프레임 뒤에 즉시 건설 처리 (엔티티가 완전히 스폰된 후)
+	RequestFrame(Frame_InstantBuild, EntIndexToEntRef(building));
+}
+
+public void Frame_InstantBuild(int buildingRef)
+{
+	int building = EntRefToEntIndex(buildingRef);
+	if(!IsValidEntity(building))
+		return;
+
+	// SDKCall로 즉시 건설 완료 (MvM 방식)
+	if(g_hSDKStartBuilding != null && g_hSDKFinishBuilding != null)
+	{
+		SDKCall(g_hSDKStartBuilding, building);
+		SDKCall(g_hSDKFinishBuilding, building);
+	}
 }
 
 // =========================================================================
