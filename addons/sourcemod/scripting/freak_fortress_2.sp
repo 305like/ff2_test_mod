@@ -540,12 +540,13 @@ public void OnMapStart()
 	doorCheckTimer=null;
 	RoundCount=0;
 
-	// 유도 시스템 초기화
+	// 유도 시스템 + 파이프 벽폭발 초기화
 	for(int i = 0; i < HOMING_LIMIT; i++)
 	{
 		g_iHomingOwner[i] = 0;
 		g_hHomingTimer[i] = INVALID_HANDLE;
 		g_flHomingProjStr[i] = 0.0;
+		g_bPipeWallExplode[i] = false;
 	}
 
 	for(int client = 0; client <= MaxClients; client++)
@@ -7027,6 +7028,30 @@ public void OnGameFrame()
 	if(!Enabled || CheckRoundState() == FF2RoundState_RoundEnd)
 		return;
 
+	// 파이프 벽 접촉 즉시 폭발 체크 (매 틱)
+	for(int ent = MaxClients + 1; ent < HOMING_LIMIT; ent++)
+	{
+		if(!g_bPipeWallExplode[ent])
+			continue;
+
+		if(!IsValidEntity(ent))
+		{
+			g_bPipeWallExplode[ent] = false;
+			continue;
+		}
+
+		// m_bTouched가 1이면 벽/바닥에 닿은 것
+		if(GetEntProp(ent, Prop_Send, "m_bTouched") == 1)
+		{
+			g_bPipeWallExplode[ent] = false;
+			PrintToChatAll("[DEBUG] OnGameFrame: ent=%d m_bTouched=1 → Detonate!", ent);
+			if(g_hSDKCallDetonate != null)
+			{
+				SDKCall(g_hSDKCallDetonate, ent);
+			}
+		}
+	}
+
 	g_iNeonFrameCount++;
 	if(g_iNeonFrameCount < 2)
 		return;
@@ -7129,8 +7154,6 @@ public void OnPipeSpawnPost(int entity)
 		return;
 
 	int owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
-	PrintToChatAll("[DEBUG] PipeSpawnPost: ent=%d, owner=%d", entity, owner);
-
 	if(owner <= 0 || owner > MaxClients || !IsClientInGame(owner))
 		return;
 
@@ -7142,46 +7165,14 @@ public void OnPipeSpawnPost(int entity)
 		return;
 
 	int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-	PrintToChatAll("[DEBUG] PipeSpawnPost: %N primary index=%d", owner, index);
-
 	if(index == 308 || index == 1151) // 로드앤로크, 무쇠폭탄발사기
 	{
-		SDKHook(entity, SDKHook_Touch, OnPipeTouch);
-		PrintToChatAll("[DEBUG] PipeSpawnPost: Touch 훅 등록 완료!");
+		if(entity > 0 && entity < HOMING_LIMIT)
+		{
+			g_bPipeWallExplode[entity] = true;
+			PrintToChatAll("[DEBUG] PipeSpawnPost: ent=%d 벽폭발 추적 등록!", entity);
+		}
 	}
-}
-
-public Action OnPipeTouch(int entity, int other)
-{
-	if(!IsValidEntity(entity))
-		return Plugin_Continue;
-
-	PrintToChatAll("[DEBUG] PipeTouch: ent=%d, other=%d", entity, other);
-
-	// 플레이어에 닿은 경우는 일반 처리
-	if(other > 0 && other <= MaxClients)
-		return Plugin_Continue;
-
-	PrintToChatAll("[DEBUG] PipeTouch: 벽/월드 접촉 → 폭발!");
-
-	SDKUnhook(entity, SDKHook_Touch, OnPipeTouch);
-
-	// SDKCall로 유탄 내부 Detonate() 직접 호출
-	if(g_hSDKCallDetonate != null)
-	{
-		SDKCall(g_hSDKCallDetonate, entity);
-		PrintToChatAll("[DEBUG] SDKCall Detonate 호출 완료!");
-	}
-	else
-	{
-		PrintToChatAll("[DEBUG] SDKCallDetonate 없음 → TakeDamage 방식 시도");
-		// 폴백: 유탄에 데미지를 줘서 폭발 유도
-		SetEntProp(entity, Prop_Data, "m_takedamage", 2);
-		SetEntProp(entity, Prop_Data, "m_iHealth", 1);
-		SDKHooks_TakeDamage(entity, 0, 0, 1.0);
-	}
-
-	return Plugin_Handled;
 }
 
 // =========================================================================
@@ -7394,16 +7385,17 @@ public bool HomingTraceFilter(int entity, int contentsMask, any data)
 
 public void OnEntityDestroyed(int entity)
 {
-	// 유도 투사체 정리
 	if(entity > 0 && entity < HOMING_LIMIT)
 	{
+		// 유도 투사체 정리
 		if(g_iHomingOwner[entity] != 0)
 		{
 			g_iHomingOwner[entity] = 0;
 			g_flHomingProjStr[entity] = 0.0;
-			// 타이머는 엔티티 소멸로 자동 중지되므로 KillTimer 하면 안됨
 			g_hHomingTimer[entity] = INVALID_HANDLE;
 		}
+		// 파이프 벽폭발 정리
+		g_bPipeWallExplode[entity] = false;
 	}
 
 	if(entity==g_Monoculus)
