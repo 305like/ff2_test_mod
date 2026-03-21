@@ -3101,7 +3101,7 @@ public Action ClientTimer(Handle timer)
 			g_bHomingEnabled[client] = false;
 			if(!IsBoss(client))
 			{
-				// 주 무기 체크: 통제불능 대포(996) 상시 치명타
+				// 주 무기 체크
 				int priWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 				if(IsValidEntity(priWeapon))
 				{
@@ -3109,6 +3109,16 @@ public Action ClientTimer(Handle timer)
 					if(priIndex == 996) // 통제불능 대포: 상시 치명타
 					{
 						TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
+					}
+					else if(priIndex == 527) // 과부제조기: 유도 미사일
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 1000.0;
+					}
+					else if(priIndex == 588) // 폼슨 6000: 유도 탄환
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 300.0;
 					}
 				}
 
@@ -5383,6 +5393,23 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
+				// 개척자의 정의(141): 적중 시 폭발 (데미지 50)
+				if(index == 141)
+				{
+					int explode = CreateEntityByName("env_explosion");
+					if(IsValidEntity(explode))
+					{
+						DispatchKeyValue(explode, "iMagnitude", "50");
+						DispatchKeyValue(explode, "iRadiusOverride", "150");
+						SetEntPropEnt(explode, Prop_Data, "m_hOwner", iAttacker);
+						SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(iAttacker));
+						DispatchSpawn(explode);
+						TeleportEntity(explode, damagePosition, NULL_VECTOR, NULL_VECTOR);
+						AcceptEntityInput(explode, "Explode");
+						AcceptEntityInput(explode, "Kill");
+					}
+				}
+
 				// 백버너(40/1146): 뒤에서 공격 시 데미지 x4
 				{
 					int activeWep = GetEntPropEnt(iAttacker, Prop_Send, "m_hActiveWeapon");
@@ -7137,7 +7164,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 
 	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
-	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas"))
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball"))
 	{
 		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
 	}

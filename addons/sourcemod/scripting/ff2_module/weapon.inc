@@ -1414,7 +1414,7 @@ switch(iItemDefinitionIndex)
 	
 		case 527: // 과부 제조기✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 642 ; 1 ; 4358 ; 200 ; 4577 ; 0.15 ; 103 ; 0.1 ; 4406 ; 3000 ; 4448 ; 0.15 ; 100 ; 0.1 ; 2 ; 15 ; 299 ; 0 ; 298 ; 25 ; 4421 ; 0.5 ; 6 ; 1.2");
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 642 ; 1 ; 103 ; 800 ; 100 ; 0.1 ; 2 ; 15 ; 299 ; 0 ; 298 ; 25 ; 6 ; 1.2");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1424,7 +1424,7 @@ switch(iItemDefinitionIndex)
 	
 		case 141: // 개척자의 정의✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.2 ; 45 ; 0.1 ; 1 ; 50 ; 96 ; 3.5 ; 6 ; 1.8 ; 4388 ; 50", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.2 ; 45 ; 0.1 ; 1 ; 50 ; 96 ; 3.5 ; 6 ; 1.8", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1434,7 +1434,7 @@ switch(iItemDefinitionIndex)
 	
 		case 588: // 폼슨 6000✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4358 ; 300 ; 4539 ; 1 ; 6 ; 3 ; 307 ; 1 ; 335 ; 9999 ; 97 ; 0 ; 15 ; 1 ; 288 ; 1 ; 869 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 3 ; 307 ; 1 ; 335 ; 9999 ; 97 ; 0 ; 15 ; 1 ; 288 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
