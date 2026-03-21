@@ -106,6 +106,9 @@ int g_iHomingOwner[HOMING_LIMIT];
 Handle g_hHomingTimer[HOMING_LIMIT];
 float g_flHomingProjStr[HOMING_LIMIT];
 
+// 개척자정의 발사 감지용
+int g_iLastButtons[MAXPLAYERS+1];
+
 // 파이프 폭발 SDKCall + 벽폭발 추적
 Handle g_hSDKCallDetonate;
 bool g_bPipeWallExplode[HOMING_LIMIT]; // 벽 접촉시 즉시 폭발 대상 유탄

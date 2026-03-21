@@ -2804,7 +2804,6 @@ public Action Command_Point_Enable(int client, int args)
 public void OnClientPostAdminCheck(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
-    SDKHook(client, SDKHook_FireBulletsPost, OnFireBulletsPost);
     Goomba_OnClientPutInServer(client);
 
     uberTarget[client]=-1;
@@ -3970,7 +3969,41 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		}
 	}
 
+	// 개척자의 정의(141): 발사 감지 디버그 (IN_ATTACK 감지 + TraceRay)
+	if(!IsBoss(client) && (buttons & IN_ATTACK) && !(g_iLastButtons[client] & IN_ATTACK))
+	{
+		int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		if(IsValidEntity(activeWep))
+		{
+			int wepIndex = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
+			if(wepIndex == 141)
+			{
+				float eyePos[3], eyeAng[3], endPos[3];
+				GetClientEyePosition(client, eyePos);
+				GetClientEyeAngles(client, eyeAng);
+
+				Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
+				if(TR_DidHit(trace))
+				{
+					TR_GetEndPosition(endPos, trace);
+					int hitEnt = TR_GetEntityIndex(trace);
+					if(hitEnt > 0 && hitEnt <= MaxClients)
+						PrintToChatAll("[DEBUG] 개척자정의 발사! 적중=%N 위치=(%.0f,%.0f,%.0f)", hitEnt, endPos[0], endPos[1], endPos[2]);
+					else
+						PrintToChatAll("[DEBUG] 개척자정의 발사! 벽/월드 착탄=(%.0f,%.0f,%.0f)", endPos[0], endPos[1], endPos[2]);
+				}
+				delete trace;
+			}
+		}
+	}
+	g_iLastButtons[client] = buttons;
+
 	return Plugin_Continue;
+}
+
+public bool TraceFilter_Bullet(int entity, int contentsMask, int client)
+{
+	return (entity != client);
 }
 
 public Action Timer_Kritz(Handle timer, int medigunid)
@@ -7186,44 +7219,6 @@ public void OnPipeSpawnPost(int entity)
 
 public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 {
-}
-
-// =========================================================================
-// 개척자의 정의(141): 발사 디버그 (FireBulletsPost + TraceRay)
-// =========================================================================
-public void OnFireBulletsPost(int client, int shots, const char[] weaponname)
-{
-	if(!IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
-		return;
-
-	int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(!IsValidEntity(activeWep))
-		return;
-
-	int index = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
-	if(index != 141)
-		return;
-
-	float eyePos[3], eyeAng[3], endPos[3];
-	GetClientEyePosition(client, eyePos);
-	GetClientEyeAngles(client, eyeAng);
-
-	Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
-	if(TR_DidHit(trace))
-	{
-		TR_GetEndPosition(endPos, trace);
-		int hitEntity = TR_GetEntityIndex(trace);
-		if(hitEntity > 0 && hitEntity <= MaxClients)
-			PrintToChatAll("[DEBUG] 개척자정의 발사! 적중=%N 위치=(%.0f,%.0f,%.0f)", hitEntity, endPos[0], endPos[1], endPos[2]);
-		else
-			PrintToChatAll("[DEBUG] 개척자정의 발사! 벽/월드 착탄 위치=(%.0f,%.0f,%.0f)", endPos[0], endPos[1], endPos[2]);
-	}
-	delete trace;
-}
-
-public bool TraceFilter_Bullet(int entity, int contentsMask, int client)
-{
-	return (entity != client);
 }
 
 // =========================================================================
