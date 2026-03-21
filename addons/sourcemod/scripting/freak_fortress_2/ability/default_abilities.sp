@@ -472,6 +472,26 @@ void Charge_BraveJump(const char[] abilityName, int boss, int slot, int status)
 
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 
+			char sound[PLATFORM_MAX_PATH];
+			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
+			{
+				if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
+				{
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				}
+
+				for(int target=1; target<=MaxClients; target++)
+				{
+					if(IsClientInGame(target) && target!=client && FF2_CheckSoundFlags(target, FF2SOUND_MUTEVOICE))
+					{
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+					}
+				}
+			}
 		}
 	}
 }
