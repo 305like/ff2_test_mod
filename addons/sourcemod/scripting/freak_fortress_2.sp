@@ -7314,19 +7314,18 @@ public void Frame_FixBuildingHealth(int buildingRef)
 	if(!IsValidEntity(building))
 		return;
 
-	// 건물 종류별 1레벨 최대체력
-	char classname[64];
-	GetEntityClassname(building, classname, sizeof(classname));
-	int maxHp = 150;
-	if(StrEqual(classname, "obj_sentrygun"))
-		maxHp = 150;
-	else if(StrEqual(classname, "obj_dispenser"))
-		maxHp = 150;
-	else if(StrEqual(classname, "obj_teleporter"))
+	// AddHealth 엔진 입력으로 체력 보정 (내부 상태 정상 반영)
+	int curHp = GetEntProp(building, Prop_Send, "m_iHealth");
+	int maxHp = GetEntProp(building, Prop_Send, "m_iMaxHealth");
+	if(maxHp <= 0)
 		maxHp = 150;
 
-	SetEntProp(building, Prop_Send, "m_iMaxHealth", maxHp);
-	SetEntProp(building, Prop_Send, "m_iHealth", maxHp);
+	int addHp = maxHp - curHp;
+	if(addHp > 0)
+	{
+		SetVariantInt(addHp);
+		AcceptEntityInput(building, "AddHealth");
+	}
 }
 
 // =========================================================================
