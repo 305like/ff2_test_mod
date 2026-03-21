@@ -3144,6 +3144,11 @@ public Action ClientTimer(Handle timer)
 						g_bHomingEnabled[client] = true;
 						g_flHomingStrength[client] = 300.0;
 					}
+					else if(priIndex == 305) // 십자군의 석궁: 약한 유도
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 50.0;
+					}
 				}
 
 				// 보조 무기 체크: 유도 + 가스패서 탄약
@@ -3221,6 +3226,30 @@ public Action ClientTimer(Handle timer)
 						&& GetClientTeam(healtarget) == GetClientTeam(client))
 					{
 						TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.3);
+					}
+
+					// 예방접종기(998): 보스를 향해 공격 버튼 시 초당 12 데미지 (0.3초 틱 = 3.6)
+					if(IsValidEntity(weapon))
+					{
+						int secIdx = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+						if(secIdx == 998 && (GetClientButtons(client) & IN_ATTACK))
+						{
+							float eyePos[3], eyeAng[3], endPos[3];
+							GetClientEyePosition(client, eyePos);
+							GetClientEyeAngles(client, eyeAng);
+							Handle trace = TR_TraceRayFilterEx(eyePos, eyeAng, MASK_SHOT, RayType_Infinite, TraceFilter_Bullet, client);
+							if(TR_DidHit(trace))
+							{
+								int hitEnt = TR_GetEntityIndex(trace);
+								TR_GetEndPosition(endPos, trace);
+								if(hitEnt > 0 && hitEnt <= MaxClients && IsClientInGame(hitEnt) && IsPlayerAlive(hitEnt)
+									&& IsBoss(hitEnt) && GetVectorDistance(eyePos, endPos) <= 450.0)
+								{
+									SDKHooks_TakeDamage(hitEnt, client, client, 3.6, DMG_GENERIC);
+								}
+							}
+							delete trace;
+						}
 					}
 				}
 
@@ -5467,6 +5496,12 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
+				// 블루트자우거(36)/약물남용(412): 적중 시 0.3초 우버
+				if(index == 36 || index == 412)
+				{
+					TF2_AddCondition(iAttacker, TFCond_Ubercharged, 0.3);
+				}
+
 				// 가정파괴범: 적중 시 보스 3초 스턴
 				if(index == 153 && IsBoss(client))
 				{
@@ -7233,7 +7268,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 
 	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
-	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring"))
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_arrow"))
 	{
 		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
 	}
