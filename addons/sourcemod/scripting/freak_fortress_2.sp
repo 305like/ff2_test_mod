@@ -290,6 +290,22 @@ public void OnPluginStart()
 {
 	LogMessage("===Freak Fortress 2 Initializing-v%s===", PLUGIN_VERSION);
 
+	// 파이프 폭발 SDKCall 초기화
+	Handle hGameConf = LoadGameConfigFile("ff2_pipedetonate");
+	if(hGameConf != null)
+	{
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(hGameConf, SDKConf_Virtual, "CBaseGrenade::Detonate");
+		g_hSDKCallDetonate = EndPrepSDKCall();
+		if(g_hSDKCallDetonate == null)
+			LogError("[FF2] Failed to create SDKCall for CBaseGrenade::Detonate");
+		delete hGameConf;
+	}
+	else
+	{
+		LogError("[FF2] Failed to load gamedata ff2_pipedetonate.txt");
+	}
+
 	// cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", _, true, 0.0);
@@ -7093,6 +7109,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	// 로드앤로크(308)/무쇠폭탄발사기(1151): 유탄 벽 접촉 시 즉시 폭발
 	if(StrEqual(classname, "tf_projectile_pipe"))
 	{
+		PrintToChatAll("[DEBUG] tf_projectile_pipe 감지! ent=%d", entity);
 		SDKHook(entity, SDKHook_SpawnPost, OnPipeSpawnPost);
 	}
 
@@ -7112,6 +7129,8 @@ public void OnPipeSpawnPost(int entity)
 		return;
 
 	int owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	PrintToChatAll("[DEBUG] PipeSpawnPost: ent=%d, owner=%d", entity, owner);
+
 	if(owner <= 0 || owner > MaxClients || !IsClientInGame(owner))
 		return;
 
@@ -7123,9 +7142,12 @@ public void OnPipeSpawnPost(int entity)
 		return;
 
 	int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+	PrintToChatAll("[DEBUG] PipeSpawnPost: %N primary index=%d", owner, index);
+
 	if(index == 308 || index == 1151) // 로드앤로크, 무쇠폭탄발사기
 	{
 		SDKHook(entity, SDKHook_Touch, OnPipeTouch);
+		PrintToChatAll("[DEBUG] PipeSpawnPost: Touch 훅 등록 완료!");
 	}
 }
 
@@ -7134,15 +7156,32 @@ public Action OnPipeTouch(int entity, int other)
 	if(!IsValidEntity(entity))
 		return Plugin_Continue;
 
+	PrintToChatAll("[DEBUG] PipeTouch: ent=%d, other=%d", entity, other);
+
 	// 플레이어에 닿은 경우는 일반 처리
 	if(other > 0 && other <= MaxClients)
 		return Plugin_Continue;
 
-	// 벽/바닥/월드/브러쉬에 닿음 → 즉시 폭발 (detonation 타이머를 현재 시간으로)
-	SetEntPropFloat(entity, Prop_Send, "m_flDetonateTime", GetGameTime());
+	PrintToChatAll("[DEBUG] PipeTouch: 벽/월드 접촉 → 폭발!");
+
 	SDKUnhook(entity, SDKHook_Touch, OnPipeTouch);
 
-	return Plugin_Continue;
+	// SDKCall로 유탄 내부 Detonate() 직접 호출
+	if(g_hSDKCallDetonate != null)
+	{
+		SDKCall(g_hSDKCallDetonate, entity);
+		PrintToChatAll("[DEBUG] SDKCall Detonate 호출 완료!");
+	}
+	else
+	{
+		PrintToChatAll("[DEBUG] SDKCallDetonate 없음 → TakeDamage 방식 시도");
+		// 폴백: 유탄에 데미지를 줘서 폭발 유도
+		SetEntProp(entity, Prop_Data, "m_takedamage", 2);
+		SetEntProp(entity, Prop_Data, "m_iHealth", 1);
+		SDKHooks_TakeDamage(entity, 0, 0, 1.0);
+	}
+
+	return Plugin_Handled;
 }
 
 // =========================================================================

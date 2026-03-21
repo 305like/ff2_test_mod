@@ -1,0 +1,24 @@
+"Games"
+{
+	"tf"
+	{
+		"Functions"
+		{
+			"CBaseGrenade::Detonate"
+			{
+				"offset"	"CBaseGrenade::Detonate"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+		}
+		"Offsets"
+		{
+			"CBaseGrenade::Detonate"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+		}
+	}
+}

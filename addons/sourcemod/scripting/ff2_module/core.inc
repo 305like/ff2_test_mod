@@ -106,6 +106,9 @@ int g_iHomingOwner[HOMING_LIMIT];
 Handle g_hHomingTimer[HOMING_LIMIT];
 float g_flHomingProjStr[HOMING_LIMIT];
 
+// 파이프 폭발 SDKCall
+Handle g_hSDKCallDetonate;
+
 // ========================================================================
 // Enums
 // ========================================================================
