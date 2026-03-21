@@ -7315,17 +7315,8 @@ public void Frame_FixBuildingHealth(int buildingRef)
 		return;
 
 	// AddHealth 엔진 입력으로 체력 보정 (내부 상태 정상 반영)
-	int curHp = GetEntProp(building, Prop_Send, "m_iHealth");
-	int maxHp = GetEntProp(building, Prop_Send, "m_iMaxHealth");
-	if(maxHp <= 0)
-		maxHp = 150;
-
-	int addHp = maxHp - curHp;
-	if(addHp > 0)
-	{
-		SetVariantInt(addHp);
-		AcceptEntityInput(building, "AddHealth");
-	}
+	SetVariantInt(150);
+	AcceptEntityInput(building, "AddHealth");
 }
 
 // =========================================================================
