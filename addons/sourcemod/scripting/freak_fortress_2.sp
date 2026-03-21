@@ -3147,7 +3147,7 @@ public Action ClientTimer(Handle timer)
 					else if(priIndex == 305) // 십자군의 석궁: 약한 유도
 					{
 						g_bHomingEnabled[client] = true;
-						g_flHomingStrength[client] = 50.0;
+						g_flHomingStrength[client] = 100.0;
 					}
 				}
 
