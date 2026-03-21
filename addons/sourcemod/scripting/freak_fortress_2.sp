@@ -344,6 +344,7 @@ public void OnPluginStart()
 	HookEvent("player_healed", OnPlayerHealed);
 	HookEvent("medigun_shield_blocked_damage", OnMedigunBlockDamage);
 	HookEvent("player_builtobject", OnObjectBuilt);
+	HookEvent("bullet_impact", OnBulletImpact);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -5394,23 +5395,6 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
-				// 개척자의 정의(141): 적중 시 폭발 (데미지 50)
-				if(index == 141)
-				{
-					int explode = CreateEntityByName("env_explosion");
-					if(IsValidEntity(explode))
-					{
-						DispatchKeyValue(explode, "iMagnitude", "50");
-						DispatchKeyValue(explode, "iRadiusOverride", "150");
-						SetEntPropEnt(explode, Prop_Data, "m_hOwner", iAttacker);
-						SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(iAttacker));
-						DispatchSpawn(explode);
-						TeleportEntity(explode, damagePosition, NULL_VECTOR, NULL_VECTOR);
-						AcceptEntityInput(explode, "Explode");
-						AcceptEntityInput(explode, "Kill");
-					}
-				}
-
 				// 백버너(40/1146): 뒤에서 공격 시 데미지 x4
 				{
 					int activeWep = GetEntPropEnt(iAttacker, Prop_Send, "m_hActiveWeapon");
@@ -7237,6 +7221,64 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 	SetEntProp(building, Prop_Send, "m_bBuilding", 0);
 	SetEntProp(building, Prop_Send, "m_bPlacing", 0);
 	SetEntProp(building, Prop_Send, "m_iUpgradeMetal", 0);
+}
+
+// =========================================================================
+// 개척자의 정의(141): 폭발 생성 (이펙트 + 범위 데미지)
+// =========================================================================
+void CreateFrontierExplosion(int attacker, float pos[3])
+{
+	// 폭발 이펙트
+	TE_SetupExplosion(pos, PrecacheModel("sprites/sprite_fire01.vmt"), 5.0, 1, 0, 150, 50);
+	TE_SendToAll();
+
+	// 범위 150 내 적에게 데미지 50
+	int attackerTeam = GetClientTeam(attacker);
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(!IsClientInGame(i) || !IsPlayerAlive(i))
+			continue;
+
+		if(GetClientTeam(i) == attackerTeam)
+			continue;
+
+		float targetPos[3];
+		GetClientAbsOrigin(i, targetPos);
+		if(GetVectorDistance(pos, targetPos) <= 150.0)
+		{
+			SDKHooks_TakeDamage(i, attacker, attacker, 50.0, DMG_BLAST);
+		}
+	}
+}
+
+// =========================================================================
+// 개척자의 정의(141): 벽 피격 시 폭발 (bullet_impact)
+// =========================================================================
+public void OnBulletImpact(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
+		return;
+
+	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
+	if(!IsValidEntity(weapon))
+		return;
+
+	int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+	if(index != 141)
+		return;
+
+	// 현재 들고 있는 무기가 개척자의 정의인지 확인
+	int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(activeWep != weapon)
+		return;
+
+	float pos[3];
+	pos[0] = event.GetFloat("x");
+	pos[1] = event.GetFloat("y");
+	pos[2] = event.GetFloat("z");
+
+	CreateFrontierExplosion(client, pos);
 }
 
 // =========================================================================

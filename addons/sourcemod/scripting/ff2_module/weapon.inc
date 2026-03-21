@@ -1414,7 +1414,7 @@ switch(iItemDefinitionIndex)
 	
 		case 527: // 과부 제조기✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 642 ; 1 ; 103 ; 800 ; 100 ; 0.1 ; 2 ; 15 ; 299 ; 0 ; 298 ; 25 ; 6 ; 1.2");
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 642 ; 1 ; 103 ; 0.75 ; 100 ; 0.1 ; 2 ; 15 ; 299 ; 0 ; 298 ; 25 ; 6 ; 1.2");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
