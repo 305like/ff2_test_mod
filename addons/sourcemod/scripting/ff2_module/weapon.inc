@@ -1521,6 +1521,16 @@ switch(iItemDefinitionIndex)
 	}
 	
 		
+		case 589: // 유래카 효과✅
+	{
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -25 ; 93 ; 1 ; 732 ; 1 ; 790 ; 1");
+		if(itemOverride!=null)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
+
 		case 142: // 총잡이✅
 	{
 		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 75");
