@@ -1243,7 +1243,7 @@ switch(iItemDefinitionIndex)
 	
 		case 425: // 가족사업✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 45 ; 5 ; 36 ; 5 ; 96 ; 25 ; 79 ; 0.13 ; 1 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 45 ; 5 ; 36 ; 5 ; 96 ; 15 ; 79 ; 0.13 ; 1 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1253,7 +1253,7 @@ switch(iItemDefinitionIndex)
 	
 		case 1153: // 공황공격✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 6 ; 0.25 ; 4 ; 5 ; 97 ; 0.1 ; 78 ; 2 ; 96 ; 10 ; 1 ; 1 ; 45 ; 0.34 ; 106 ; 0.2", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 6 ; 0.25 ; 4 ; 5 ; 97 ; 0.25 ; 78 ; 2 ; 1 ; 1 ; 45 ; 0.34 ; 106 ; 0.2", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
