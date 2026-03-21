@@ -72,7 +72,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float deVel
 	{
 		if(!TF2_IsPlayerInCondition(client, TFCond_Charging)
 			&& !TF2_IsPlayerInCondition(client, TFCond_Dazed)
-			&& ((buttons & (IN_ATTACK2|IN_RELOAD)) > 0)
+			&& ((buttons & IN_ATTACK2) > 0)
 			&& GetEntPropFloat(client, Prop_Send, "m_flChargeMeter") > 10.0)
 		{
 			SetEntPropFloat(client, Prop_Send, "m_flChargeMeter", 100.0);
