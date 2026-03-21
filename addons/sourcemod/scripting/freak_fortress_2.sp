@@ -7214,27 +7214,19 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 // =========================================================================
 void CreateFrontierExplosion(int attacker, float pos[3])
 {
-	// 폭발 이펙트
-	TE_SetupExplosion(pos, PrecacheModel("sprites/sprite_fire01.vmt"), 5.0, 1, 0, 150, 50);
-	TE_SendToAll();
+	int explode = CreateEntityByName("env_explosion");
+	if(!IsValidEntity(explode))
+		return;
 
-	// 범위 150 내 적에게 데미지 50
-	int attackerTeam = GetClientTeam(attacker);
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(!IsClientInGame(i) || !IsPlayerAlive(i))
-			continue;
-
-		if(GetClientTeam(i) == attackerTeam)
-			continue;
-
-		float targetPos[3];
-		GetClientAbsOrigin(i, targetPos);
-		if(GetVectorDistance(pos, targetPos) <= 150.0)
-		{
-			SDKHooks_TakeDamage(i, attacker, attacker, 50.0, DMG_BLAST);
-		}
-	}
+	DispatchKeyValue(explode, "iMagnitude", "50");
+	DispatchKeyValue(explode, "iRadiusOverride", "150");
+	DispatchKeyValue(explode, "spawnflags", "0");
+	SetEntPropEnt(explode, Prop_Data, "m_hOwner", attacker);
+	SetEntProp(explode, Prop_Send, "m_iTeamNum", GetClientTeam(attacker));
+	DispatchSpawn(explode);
+	TeleportEntity(explode, pos, NULL_VECTOR, NULL_VECTOR);
+	AcceptEntityInput(explode, "Explode");
+	AcceptEntityInput(explode, "Kill");
 }
 
 // =========================================================================
