@@ -7274,6 +7274,13 @@ public void OnGameFrame()
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
+	// 룬 삭제
+	if(StrEqual(classname, "item_powerup_rune"))
+	{
+		AcceptEntityInput(entity, "Kill");
+		return;
+	}
+
 	if(cvarHealthBar.BoolValue)
 	{
 		/*
