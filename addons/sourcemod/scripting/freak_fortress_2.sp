@@ -5533,6 +5533,12 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, view_as<TFCond>(16), 5.0);
 				}
 
+				// 이방인(224): 적중 시 자신에게 addcond 66 3초
+				if(index == 224)
+				{
+					TF2_AddCondition(iAttacker, view_as<TFCond>(66), 3.0);
+				}
+
 				// 가정파괴범: 적중 시 보스 3초 스턴
 				if(index == 153 && IsBoss(client))
 				{
@@ -5627,7 +5633,7 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					{
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
 						{
-							damage=255.0 > damage ? damage : 255.0;
+							damage *= 2.0;
 							bChanged = true;
 						}
 					}

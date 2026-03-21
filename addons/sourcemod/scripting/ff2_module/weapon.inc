@@ -1919,16 +1919,6 @@ switch(iItemDefinitionIndex)
 		}
 	}
 		
-		case 61, 1006: // 외교대사✅
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "5 ; 0.75 ; 3 ; 0.67 ; 1 ; 1 ; 4421 ; 5 ; 4397 ; 1 ; 4396 ; 1 ; 51 ; 0", false);
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-		
 		case 161: // 빅킬✅
 	{
 		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.8 ; 2 ; 1.1");
@@ -1943,16 +1933,6 @@ switch(iItemDefinitionIndex)
 		case 224: // 이방인✅
 	{
 		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 4477 ; 66 ; 4478 ; 3");
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-		
-		case 460: // 집행자✅
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4343 ; 1 ; 410 ; 1.3 ; 5 ; 1.2");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
