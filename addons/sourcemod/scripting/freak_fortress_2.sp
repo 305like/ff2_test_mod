@@ -343,6 +343,7 @@ public void OnPluginStart()
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("player_healed", OnPlayerHealed);
 	HookEvent("medigun_shield_blocked_damage", OnMedigunBlockDamage);
+	HookEvent("player_builtobject", OnObjectBuilt);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -7197,6 +7198,45 @@ public void OnPipeSpawnPost(int entity)
 			g_bPipeWallExplode[entity] = true;
 		}
 	}
+}
+
+// =========================================================================
+// 유래카 효과(589): 텔레포터 건설 시 즉시 3단계
+// =========================================================================
+public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(client <= 0 || !IsClientInGame(client) || IsBoss(client))
+		return;
+
+	int building = event.GetInt("index");
+	if(!IsValidEntity(building))
+		return;
+
+	// 텔레포터인지 확인 (TFObject_Teleporter = 1)
+	int objType = GetEntProp(building, Prop_Send, "m_iObjectType");
+	if(objType != 1) // 텔레포터가 아니면 무시
+		return;
+
+	// 유래카 효과를 들고 있는지 확인 (근접무기 슬롯)
+	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+	if(!IsValidEntity(melee))
+		return;
+
+	int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
+	if(meleeIndex != 589) // 유래카 효과가 아니면 무시
+		return;
+
+	// 즉시 3단계로 업그레이드
+	SetVariantInt(2); // 0→1→2 (3단계)
+	AcceptEntityInput(building, "SetSolidToPlayer");
+	SetEntProp(building, Prop_Send, "m_iUpgradeLevel", 3);
+	SetEntProp(building, Prop_Send, "m_iHighestUpgradeLevel", 3);
+	SetEntProp(building, Prop_Data, "m_iMaxHealth", 216);
+	SetEntProp(building, Prop_Data, "m_iHealth", 216);
+	SetEntProp(building, Prop_Send, "m_bBuilding", 0);
+	SetEntProp(building, Prop_Send, "m_bPlacing", 0);
+	SetEntProp(building, Prop_Send, "m_iUpgradeMetal", 0);
 }
 
 // =========================================================================

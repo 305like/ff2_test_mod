@@ -1523,7 +1523,7 @@ switch(iItemDefinitionIndex)
 		
 		case 589: // 유래카 효과✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -25 ; 4357 ; 0.75 ; 93 ; 1 ; 732 ; 1 ; 790 ; 1");
+		Handle itemOverride=PrepareItemHandle(item, _, _, "125 ; -25 ; 93 ; 1 ; 732 ; 1 ; 790 ; 1");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1533,7 +1533,7 @@ switch(iItemDefinitionIndex)
 	
 		case 142: // 총잡이✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "124 ; 0 ; 26 ; 75 ; 4353 ; 1");
+		Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 75");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
