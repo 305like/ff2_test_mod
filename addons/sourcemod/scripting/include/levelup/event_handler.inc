@@ -569,6 +569,9 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
         g_Timer_AddRevivePoint = INVALID_HANDLE;
     }
 
+    // 라운드 종료 시 모든 플레이어 데이터 저장
+    Levelup_SaveAllPlayers();
+
     return Plugin_Continue;
 }
 

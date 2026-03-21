@@ -632,8 +632,19 @@ public void OnMapEnd()
 	{
 		DisableFF2();  //This resets all the variables for safety
 	}
+
+	// 보스 관련 변수 완전 초기화
 	for(int i = 0; i <= MaxClients; i++)
 	{
+		Boss[i] = 0;
+		BossHealth[i] = 0;
+		BossHealthMax[i] = 0;
+		BossHealthLast[i] = 0;
+		BossLives[i] = 0;
+		BossLivesMax[i] = 0;
+		for(int slot = 0; slot < 8; slot++)
+			BossCharge[i][slot] = 0.0;
+		character[i] = 0;
 		OverCharge[i] = 0.0;
 	}
 }

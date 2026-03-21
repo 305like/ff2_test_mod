@@ -206,15 +206,7 @@ public void OnPluginEnd()
 {
     PrintToServer("TF2 Levelup System v2.0 - Unloading...");
 
-    // 모든 플레이어 데이터 저장
-    for (int client = 1; client <= MaxClients; client++)
-    {
-        if (IsClientConnected(client) && !IsFakeClient(client))
-        {
-            DB_SavePlayerData(client);
-            DB_SaveAllAttributes(client);
-        }
-    }
+    Levelup_SaveAllPlayers();
 
     // 타이머 정리
     Timer_Cleanup();
@@ -231,6 +223,13 @@ public void OnMapStart()
     PrecacheSound("misc/achievement_earned.wav");
     PrecacheSound("ui/item_store_add_to_cart.wav");
 
+    // DB 연결 확인 (맵 변경 후 재연결)
+    if (!DB_IsConnected())
+    {
+        DB_Initialize();
+        PrintToServer("[Levelup] DB reconnected on map start");
+    }
+
     PrintToServer("Map started - TF2 Levelup System v2.0 active");
 }
 
@@ -239,15 +238,30 @@ public void OnMapStart()
  */
 public void OnMapEnd()
 {
-    // 모든 플레이어 데이터 저장
+    Levelup_SaveAllPlayers();
+
+    // 타이머 정리
+    Timer_Cleanup();
+
+    PrintToServer("[Levelup] Map ended - all data saved");
+}
+
+/**
+ * 모든 플레이어 데이터 저장 (공용)
+ */
+stock void Levelup_SaveAllPlayers()
+{
+    int saved = 0;
     for (int client = 1; client <= MaxClients; client++)
     {
         if (IsClientConnected(client) && !IsFakeClient(client) && PlayerData_IsLoaded(client))
         {
             DB_SavePlayerData(client);
             DB_SaveAllAttributes(client);
+            saved++;
         }
     }
+    PrintToServer("[Levelup] Saved %d player(s) data", saved);
 }
 
 // =============================================================================
