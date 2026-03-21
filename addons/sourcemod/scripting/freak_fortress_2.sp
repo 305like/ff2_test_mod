@@ -7349,9 +7349,15 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 
 	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
-	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_healing_bolt") || StrEqual(classname, "tf_projectile_arrow"))
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_healing_bolt"))
 	{
 		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
+	}
+
+	// 화살 투사체: m_hOwnerEntity가 SpawnPost에서 안 잡힐 수 있으므로 RequestFrame 사용
+	if(StrEqual(classname, "tf_projectile_arrow"))
+	{
+		RequestFrame(Frame_HomingArrowCheck, EntIndexToEntRef(entity));
 	}
 }
 
@@ -7570,6 +7576,30 @@ bool IsBackAttack(int attacker, int victim)
 // =========================================================================
 
 // SpawnPost 훅: 투사체 생성 후 owner 확인 → 유도 타이머 시작
+public void Frame_HomingArrowCheck(int entRef)
+{
+	int entity = EntRefToEntIndex(entRef);
+	if(entity == INVALID_ENT_REFERENCE || !IsValidEntity(entity))
+		return;
+	if(!Enabled || entity <= 0 || entity >= HOMING_LIMIT)
+		return;
+
+	int owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if(owner <= 0 || owner > MaxClients)
+		return;
+
+	if(!IsClientInGame(owner) || !IsPlayerAlive(owner))
+		return;
+
+	if(!g_bHomingEnabled[owner])
+		return;
+
+	float strength = g_flHomingStrength[owner];
+	g_iHomingOwner[entity] = owner;
+	g_flHomingProjStr[entity] = strength;
+	g_hHomingTimer[entity] = CreateTimer(0.01, Timer_HomingUpdate, EntIndexToEntRef(entity), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
 public void Hook_OnHomingProjectileSpawnPost(int entity)
 {
 	if(!Enabled || entity <= 0 || entity >= HOMING_LIMIT)
