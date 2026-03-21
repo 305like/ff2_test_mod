@@ -395,8 +395,9 @@ public Action:Timer_PostRoundStartInits(Handle:timer)
 		if (!IsLivingPlayer(clientIdx))
 			continue;
 
-		// in case of last second respawns, disable fall damage here
-		SDKHook(clientIdx, SDKHook_OnTakeDamage, ROTTDamageMonitor);
+		// ROTT 기능이 활성화된 라운드에서만 데미지 모니터 훅 등록
+		if (RP_ActiveThisRound || RW_ActiveThisRound)
+			SDKHook(clientIdx, SDKHook_OnTakeDamage, ROTTDamageMonitor);
 
 		// boss-only inits
 		new bossIdx = FF2_GetBossIndex(clientIdx);
