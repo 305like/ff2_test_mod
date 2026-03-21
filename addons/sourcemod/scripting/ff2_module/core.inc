@@ -108,6 +108,10 @@ float g_flHomingProjStr[HOMING_LIMIT];
 
 // 개척자정의 발사 감지용
 int g_iLastButtons[MAXPLAYERS+1];
+int g_iLastClip141[MAXPLAYERS+1];
+
+// 유래카 건설속도 5배 타이머
+Handle g_hBuildTimer[2048];
 
 // 파이프 폭발 SDKCall + 벽폭발 추적
 Handle g_hSDKCallDetonate;
