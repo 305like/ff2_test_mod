@@ -110,8 +110,9 @@ float g_flHomingProjStr[HOMING_LIMIT];
 int g_iLastButtons[MAXPLAYERS+1];
 int g_iLastClip141[MAXPLAYERS+1];
 
-// 유래카 건설속도 5배 타이머
-Handle g_hBuildTimer[2048];
+// 유래카 즉시건설 SDKCall
+Handle g_hSDKStartBuilding;
+Handle g_hSDKFinishBuilding;
 
 // 파이프 폭발 SDKCall + 벽폭발 추적
 Handle g_hSDKCallDetonate;

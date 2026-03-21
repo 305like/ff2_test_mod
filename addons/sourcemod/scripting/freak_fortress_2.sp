@@ -306,8 +306,28 @@ public void OnPluginStart()
 		LogError("[FF2] Failed to load gamedata ff2_pipedetonate.txt");
 	}
 
-	// 유래카 업그레이드 속도 이벤트 후킹
-	HookEvent("player_upgradedobject", OnObjectUpgraded);
+	// 유래카 즉시건설 SDKCall 초기화
+	Handle hBuildConf = LoadGameConfigFile("ff2_buildings");
+	if(hBuildConf != null)
+	{
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(hBuildConf, SDKConf_Virtual, "CBaseObject::StartBuilding");
+		g_hSDKStartBuilding = EndPrepSDKCall();
+		if(g_hSDKStartBuilding == null)
+			LogError("[FF2] Failed to create SDKCall for CBaseObject::StartBuilding");
+
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(hBuildConf, SDKConf_Virtual, "CBaseObject::FinishedBuilding");
+		g_hSDKFinishBuilding = EndPrepSDKCall();
+		if(g_hSDKFinishBuilding == null)
+			LogError("[FF2] Failed to create SDKCall for CBaseObject::FinishedBuilding");
+
+		delete hBuildConf;
+	}
+	else
+	{
+		LogError("[FF2] Failed to load gamedata ff2_buildings.txt");
+	}
 
 	// cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
@@ -7258,7 +7278,7 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 	if(!IsValidEntity(building))
 		return;
 
-	// 유래카 효과(589) 소지 시 건설 속도 5배
+	// 유래카 효과(589) 소지 시 모든 건물 즉시 건설
 	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if(!IsValidEntity(melee))
 		return;
@@ -7267,83 +7287,22 @@ public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 	if(meleeIndex != 589)
 		return;
 
-	// 기존 타이머가 있으면 제거
-	if(building < 2048 && g_hBuildTimer[building] != null)
-	{
-		KillTimer(g_hBuildTimer[building]);
-		g_hBuildTimer[building] = null;
-	}
-
-	// 0.1초마다 건설 진행도를 5배속으로 증가시키는 타이머
-	DataPack pack;
-	g_hBuildTimer[building] = CreateDataTimer(0.1, Timer_FastBuild, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	pack.WriteCell(EntIndexToEntRef(building));
-	pack.WriteCell(building);
+	// 1프레임 뒤에 즉시 건설 처리 (엔티티가 완전히 스폰된 후)
+	RequestFrame(Frame_InstantBuild, EntIndexToEntRef(building));
 }
 
-public void OnObjectUpgraded(Event event, const char[] name, bool dontBroadcast)
+public void Frame_InstantBuild(int buildingRef)
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client <= 0 || !IsClientInGame(client) || IsBoss(client))
-		return;
-
-	int building = event.GetInt("index");
-	if(!IsValidEntity(building))
-		return;
-
-	// 유래카 효과(589) 소지 시 업그레이드 속도 5배
-	int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if(!IsValidEntity(melee))
-		return;
-
-	int meleeIndex = GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex");
-	if(meleeIndex != 589)
-		return;
-
-	// 기존 타이머가 있으면 제거
-	if(building < 2048 && g_hBuildTimer[building] != null)
-	{
-		KillTimer(g_hBuildTimer[building]);
-		g_hBuildTimer[building] = null;
-	}
-
-	DataPack pack;
-	g_hBuildTimer[building] = CreateDataTimer(0.1, Timer_FastBuild, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	pack.WriteCell(EntIndexToEntRef(building));
-	pack.WriteCell(building);
-}
-
-public Action Timer_FastBuild(Handle timer, DataPack pack)
-{
-	pack.Reset();
-	int buildingRef = pack.ReadCell();
-	int buildingIndex = pack.ReadCell();
-
 	int building = EntRefToEntIndex(buildingRef);
 	if(!IsValidEntity(building))
+		return;
+
+	// SDKCall로 즉시 건설 완료 (MvM 방식)
+	if(g_hSDKStartBuilding != null && g_hSDKFinishBuilding != null)
 	{
-		if(buildingIndex < 2048)
-			g_hBuildTimer[buildingIndex] = null;
-		return Plugin_Stop;
+		SDKCall(g_hSDKStartBuilding, building);
+		SDKCall(g_hSDKFinishBuilding, building);
 	}
-
-	float progress = GetEntPropFloat(building, Prop_Send, "m_flPercentageConstructed");
-	if(progress >= 1.0)
-	{
-		if(buildingIndex < 2048)
-			g_hBuildTimer[buildingIndex] = null;
-		return Plugin_Stop;
-	}
-
-	// 건설 진행도를 추가로 증가 (기본 1배 + 추가 4배 = 5배속)
-	// 기본 건설시간 약 10초, 0.1초 간격 타이머에서 4배분 추가
-	float addProgress = 4.0 * (0.1 / 10.0);  // 4배분 추가 (0.04)
-	progress += addProgress;
-	if(progress > 1.0)
-		progress = 1.0;
-	SetEntPropFloat(building, Prop_Send, "m_flPercentageConstructed", progress);
-
-	return Plugin_Continue;
 }
 
 // =========================================================================
