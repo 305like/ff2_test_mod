@@ -5496,10 +5496,16 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
-				// 블루트자우거(36)/약물남용(412): 적중 시 0.3초 우버
-				if(index == 36 || index == 412)
+				// 블루트자우거(36): 적중 시 0.3초 우버
+				if(index == 36)
 				{
 					TF2_AddCondition(iAttacker, TFCond_Ubercharged, 0.3);
+				}
+
+				// 약물남용(412): 적중 시 이속 버프 3초
+				if(index == 412)
+				{
+					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
 				// 가정파괴범: 적중 시 보스 3초 스턴
@@ -7268,7 +7274,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 
 	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
-	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_arrow"))
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas") || StrEqual(classname, "tf_projectile_energy_ball") || StrEqual(classname, "tf_projectile_energy_ring") || StrEqual(classname, "tf_projectile_healing_bolt"))
 	{
 		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
 	}
