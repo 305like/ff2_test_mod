@@ -3169,9 +3169,10 @@ public Action ClientTimer(Handle timer)
 						g_bHomingEnabled[client] = true;
 						g_flHomingStrength[client] = 100.0;
 					}
-					else if(priIndex == 1098) // 클래식: 상시 치명타
+					else if(priIndex == 1098) // 클래식: 들고 있을 때만 상시 치명타
 					{
-						TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
+						if(GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") == priWeapon)
+							TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
 					}
 				}
 
