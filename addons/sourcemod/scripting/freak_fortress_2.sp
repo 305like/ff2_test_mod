@@ -3164,10 +3164,10 @@ public Action ClientTimer(Handle timer)
 						g_bHomingEnabled[client] = true;
 						g_flHomingStrength[client] = 1000.0;
 					}
-					else if(priIndex == 56) // 헌츠맨: 유도
+					else if(priIndex == 56 || priIndex == 1005) // 헌츠맨/축제용 헌츠맨: 유도
 					{
 						g_bHomingEnabled[client] = true;
-						g_flHomingStrength[client] = 100.0;
+						g_flHomingStrength[client] = 1000.0;
 					}
 					// 클래식은 블랙박스와 같은 방식으로 활성무기 index 체크에서 처리
 				}
