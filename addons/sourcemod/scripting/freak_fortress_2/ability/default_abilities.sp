@@ -472,26 +472,22 @@ void Charge_BraveJump(const char[] abilityName, int boss, int slot, int status)
 
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 
-			static const char g_szChargeWindup[][] = {
-				"weapons/demo_charge_windup1.wav",
-				"weapons/demo_charge_windup2.wav",
-				"weapons/demo_charge_windup3.wav"
-			};
 			char sound[PLATFORM_MAX_PATH];
-			strcopy(sound, sizeof(sound), g_szChargeWindup[GetRandomInt(0, sizeof(g_szChargeWindup) - 1)]);
-
-			if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
+			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
-				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-			}
-
-			for(int target=1; target<=MaxClients; target++)
-			{
-				if(IsClientInGame(target) && target!=client && FF2_CheckSoundFlags(target, FF2SOUND_MUTEVOICE))
+				if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
 				{
-					EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
-					EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				}
+
+				for(int target=1; target<=MaxClients; target++)
+				{
+					if(IsClientInGame(target) && target!=client && FF2_CheckSoundFlags(target, FF2SOUND_MUTEVOICE))
+					{
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+					}
 				}
 			}
 		}
