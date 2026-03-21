@@ -72,6 +72,7 @@ enum struct PlayerData
 
     int revivePoint;            // 부활 포인트
     int reviveCount;            // 부활 횟수
+    int roundDamage;            // 라운드 데미지
 
     bool isLoadComplete;        // 데이터 로드 완료 여부
     int loadStatus;             // 현재 로드 상태 (LOAD_NONE, LOAD_PLAYERDATA, LOAD_CLASSATTRIBUTEDATA)
@@ -116,6 +117,7 @@ stock void PlayerData_Initialize(int client)
     g_playerDataList[client].damage = 0;
     g_playerDataList[client].revivePoint = 0;
     g_playerDataList[client].reviveCount = 0;
+    g_playerDataList[client].roundDamage = 0;
     g_playerDataList[client].loadStatus = LOAD_NONE;
 	PlayerData_SetLoaded(client, false);
 
@@ -554,6 +556,45 @@ stock void PlayerData_AddReviveCount(int client, int amount = 1)
     if (!IsValidClient(client))
         return;
     g_playerDataList[client].reviveCount += amount;
+}
+
+/**
+ * 라운드 데미지 가져오기
+ *
+ * @param client    플레이어 인덱스
+ * @return          라운드 데미지
+ */
+stock int PlayerData_GetRoundDamage(int client)
+{
+    if (!IsValidClient(client))
+        return 0;
+    return g_playerDataList[client].roundDamage;
+}
+
+/**
+ * 라운드 데미지 설정
+ *
+ * @param client    플레이어 인덱스
+ * @param damage    라운드 데미지
+ */
+stock void PlayerData_SetRoundDamage(int client, int damage)
+{
+    if (!IsValidClient(client))
+        return;
+    g_playerDataList[client].roundDamage = damage;
+}
+
+/**
+ * 라운드 데미지 추가
+ *
+ * @param client    플레이어 인덱스
+ * @param damage    추가할 데미지
+ */
+stock void PlayerData_AddRoundDamage(int client, int damage)
+{
+    if (!IsValidClient(client))
+        return;
+    g_playerDataList[client].roundDamage += damage;
 }
 
 /**

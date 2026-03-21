@@ -184,10 +184,14 @@ stock void Attribute_ApplyToPlayer(int client, TFClassType tfClass)
         
         if (upgrade <= 0)
             continue;
-        
+
+        // 비활성화된 속성 건너뛰기 (uid가 비어있으면 스킵)
+        if (StrEqual(g_attributeTable[classIdx][i].uid, ""))
+            continue;
+
         // 속성값 계산
         float result = Attribute_Calculate(g_attributeTable[classIdx][i], upgrade);
-        
+
         // TF2 속성 적용
         TF2Attrib_SetByName(client, g_attributeTable[classIdx][i].uid, result);
     }
@@ -215,7 +219,10 @@ public Action Timer_ApplySharedAttribute2(Handle timer, any client)
         int upgrade = PlayerData_GetAttributeUpgrade(client, CLASS_SHARED, i);
         if (upgrade <= 0)
             continue;
-        
+
+        if (StrEqual(g_attributeTable[CLASS_SHARED][i].uid, ""))
+            continue;
+
         float result = Attribute_Calculate(g_attributeTable[CLASS_SHARED][i], upgrade);
         TF2Attrib_SetByName(client, g_attributeTable[CLASS_SHARED][i].uid, result);
     }
@@ -249,7 +256,10 @@ stock void Attribute_ApplyToWeapons(int client)
             int upgrade = PlayerData_GetAttributeUpgrade(client, CLASS_WEAPON, i);
             if (upgrade <= 0)
                 continue;
-            
+
+            if (StrEqual(g_attributeTable[CLASS_WEAPON][i].uid, ""))
+                continue;
+
             float result = Attribute_Calculate(g_attributeTable[CLASS_WEAPON][i], upgrade);
             TF2Attrib_SetByName(weapon, g_attributeTable[CLASS_WEAPON][i].uid, result);
         }
@@ -351,9 +361,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_SCOUT][5].title = "적중 시 체력 %.0f 회복 (%dpt)(%d/%d)";	
 	
 	g_attributeTable[CLASS_SCOUT][6].class = CLASS_SCOUT; 
-	g_attributeTable[CLASS_SCOUT][6].max = 5;
+	g_attributeTable[CLASS_SCOUT][6].max = 0;
 	g_attributeTable[CLASS_SCOUT][6].point = 2;
-	g_attributeTable[CLASS_SCOUT][6].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_SCOUT][6].uid = "";
 	g_attributeTable[CLASS_SCOUT][6].value = float(1);
 	g_attributeTable[CLASS_SCOUT][6].defaultValue = float(100);
 	g_attributeTable[CLASS_SCOUT][6].additiveMode = ADDITIVE_PERCENT;		
@@ -460,9 +470,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_SOLDIER][4].title = "적중시 체력 %.0f 회복 (%dpt)(%d/%d)";	
 	
 	g_attributeTable[CLASS_SOLDIER][5].class = CLASS_SOLDIER;
-	g_attributeTable[CLASS_SOLDIER][5].max = 5;
+	g_attributeTable[CLASS_SOLDIER][5].max = 0;
 	g_attributeTable[CLASS_SOLDIER][5].point = 2;
-	g_attributeTable[CLASS_SOLDIER][5].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_SOLDIER][5].uid = "";
 	g_attributeTable[CLASS_SOLDIER][5].value = float(1);
 	g_attributeTable[CLASS_SOLDIER][5].defaultValue = float(100);
 	g_attributeTable[CLASS_SOLDIER][5].additiveMode = ADDITIVE_PERCENT;	
@@ -596,9 +606,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_PYRO][6].title = "화상 지속시간 %.0f%% 증가 (%dpt)(%d/%d)";		
 	
 	g_attributeTable[CLASS_PYRO][7].class = CLASS_PYRO;
-	g_attributeTable[CLASS_PYRO][7].max = 5;
+	g_attributeTable[CLASS_PYRO][7].max = 0;
 	g_attributeTable[CLASS_PYRO][7].point = 2;
-	g_attributeTable[CLASS_PYRO][7].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_PYRO][7].uid = "";
 	g_attributeTable[CLASS_PYRO][7].value = float(1);
 	g_attributeTable[CLASS_PYRO][7].defaultValue = float(100);
 	g_attributeTable[CLASS_PYRO][7].additiveMode = ADDITIVE_PERCENT;	
@@ -706,9 +716,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_DEMOMAN][5].title = "점착 폭탄 충전속도 %.0f%% 증가 (%dpt)(%d/%d)";	
 	
 	g_attributeTable[CLASS_DEMOMAN][6].class = CLASS_DEMOMAN;
-	g_attributeTable[CLASS_DEMOMAN][6].max = 5;
+	g_attributeTable[CLASS_DEMOMAN][6].max = 0;
 	g_attributeTable[CLASS_DEMOMAN][6].point = 2;
-	g_attributeTable[CLASS_DEMOMAN][6].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_DEMOMAN][6].uid = "";
 	g_attributeTable[CLASS_DEMOMAN][6].value = float(1);
 	g_attributeTable[CLASS_DEMOMAN][6].defaultValue = float(100);
 	g_attributeTable[CLASS_DEMOMAN][6].additiveMode = ADDITIVE_PERCENT;	
@@ -842,9 +852,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_HEAVY][4].title = "재충전속도 %.0f%% 증가 (%dpt)(%d/%d)";	
 
 	g_attributeTable[CLASS_HEAVY][5].class = CLASS_HEAVY;
-	g_attributeTable[CLASS_HEAVY][5].max = 5;
+	g_attributeTable[CLASS_HEAVY][5].max = 0;
 	g_attributeTable[CLASS_HEAVY][5].point = 2;
-	g_attributeTable[CLASS_HEAVY][5].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_HEAVY][5].uid = "";
 	g_attributeTable[CLASS_HEAVY][5].value = float(1);
 	g_attributeTable[CLASS_HEAVY][5].defaultValue = float(100);
 	g_attributeTable[CLASS_HEAVY][5].additiveMode = ADDITIVE_PERCENT;		
@@ -988,9 +998,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_ENGINEER][6].title = "집탄률 %.0f%% 증가 (%dpt)(%d/%d)";	
 	
 	g_attributeTable[CLASS_ENGINEER][7].class = CLASS_ENGINEER;
-	g_attributeTable[CLASS_ENGINEER][7].max = 5;
+	g_attributeTable[CLASS_ENGINEER][7].max = 0;
 	g_attributeTable[CLASS_ENGINEER][7].point = 2;
-	g_attributeTable[CLASS_ENGINEER][7].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_ENGINEER][7].uid = "";
 	g_attributeTable[CLASS_ENGINEER][7].value = float(1);
 	g_attributeTable[CLASS_ENGINEER][7].defaultValue = float(100);
 	g_attributeTable[CLASS_ENGINEER][7].additiveMode = ADDITIVE_PERCENT;		
@@ -1124,9 +1134,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_MEDIC][3].title = "적중시 체력 %.0f 회복 (%dpt)(%d/%d)";		
 
 	g_attributeTable[CLASS_MEDIC][4].class = CLASS_MEDIC;
-	g_attributeTable[CLASS_MEDIC][4].max = 5;
+	g_attributeTable[CLASS_MEDIC][4].max = 0;
 	g_attributeTable[CLASS_MEDIC][4].point = 2;
-	g_attributeTable[CLASS_MEDIC][4].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_MEDIC][4].uid = "";
 	g_attributeTable[CLASS_MEDIC][4].value = float(1);
 	g_attributeTable[CLASS_MEDIC][4].defaultValue = float(100);
 	g_attributeTable[CLASS_MEDIC][4].additiveMode = ADDITIVE_PERCENT;	
@@ -1279,9 +1289,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_SNIPER][6].title = "재충전속도 %.0f%% 증가 (%dpt)(%d/%d)";		
 
 	g_attributeTable[CLASS_SNIPER][7].class = CLASS_SNIPER;
-	g_attributeTable[CLASS_SNIPER][7].max = 5;
+	g_attributeTable[CLASS_SNIPER][7].max = 0;
 	g_attributeTable[CLASS_SNIPER][7].point = 2;
-	g_attributeTable[CLASS_SNIPER][7].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_SNIPER][7].uid = "";
 	g_attributeTable[CLASS_SNIPER][7].value = float(1);
 	g_attributeTable[CLASS_SNIPER][7].defaultValue = float(100);
 	g_attributeTable[CLASS_SNIPER][7].additiveMode = ADDITIVE_PERCENT;	
@@ -1415,9 +1425,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_SPY][6].title = "적중시 체력 %.0f 회복 (%dpt)(%d/%d)";
 
 	g_attributeTable[CLASS_SPY][7].class = CLASS_SPY;
-	g_attributeTable[CLASS_SPY][7].max = 5;
+	g_attributeTable[CLASS_SPY][7].max = 0;
 	g_attributeTable[CLASS_SPY][7].point = 2;
-	g_attributeTable[CLASS_SPY][7].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_SPY][7].uid = "";
 	g_attributeTable[CLASS_SPY][7].value = float(1);
 	g_attributeTable[CLASS_SPY][7].defaultValue = float(100);
 	g_attributeTable[CLASS_SPY][7].additiveMode = ADDITIVE_PERCENT;
@@ -1535,9 +1545,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_SHARED][0].title = "5초마다 탄약 %.0f%%생성 (%dpt)(%d/%d)";		
 
 	g_attributeTable[CLASS_SHARED][1].class = CLASS_SHARED;
-	g_attributeTable[CLASS_SHARED][1].max = 5;
+	g_attributeTable[CLASS_SHARED][1].max = 0;
 	g_attributeTable[CLASS_SHARED][1].point = 2;
-	g_attributeTable[CLASS_SHARED][1].uid = "damage bonus HIDDEN";
+	g_attributeTable[CLASS_SHARED][1].uid = "";
 	g_attributeTable[CLASS_SHARED][1].value = float(1);
 	g_attributeTable[CLASS_SHARED][1].defaultValue = float(100);
 	g_attributeTable[CLASS_SHARED][1].additiveMode = ADDITIVE_PERCENT;	

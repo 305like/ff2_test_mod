@@ -35,7 +35,7 @@ const int KILL_REWARD_EXP = 20;                     // 처치 시 경험치
 
 // 부활 시스템 설정
 const int REVIVE_POINT_BASE = 200;                  // 기본 부활 비용
-const int REVIVE_COUNT_BASE = 2;                    // 기본 부활 횟수
+const int REVIVE_COUNT_BASE = 1;                    // 기본 부활 횟수
 const int REVIVE_POINT_MULTIPLIER = 2;              // 부활 시 가격 배수
 const int REVIVE_POINT_INCREMENT = 100;             // 시간당 부활 포인트 증가량
 const float REVIVE_POINT_INTERVAL = 300.0;          // 부활 포인트 증가 간격 (5분)
@@ -217,6 +217,10 @@ public Action Timer_ApplySharedAttribute(Handle timer, any client)
                     continue;
                 }
 
+                // 비활성화된 속성 건너뛰기
+                if (StrEqual(g_attributeTable[CLASS_WEAPON][id].uid, ""))
+                    continue;
+
                 float result = 0.0;
                 Address attr = TF2Attrib_GetByName(client, g_attributeTable[CLASS_WEAPON][id].uid);
 
@@ -246,6 +250,10 @@ public Action Timer_ApplySharedAttribute(Handle timer, any client)
         {
             continue;
         }
+
+        // 비활성화된 속성 건너뛰기
+        if (StrEqual(g_attributeTable[CLASS_SHARED][id].uid, ""))
+            continue;
 
         Address attr = TF2Attrib_GetByName(client, g_attributeTable[CLASS_SHARED][id].uid);
         float result = 0.0;
@@ -391,6 +399,9 @@ public Action Event_OnPlayerHurt(Event event, const char[] name, bool dontBroadc
     //g_playerDataList[attacker].damage += damage;
 
 	ExpLevel_TrackDamage(attacker, damage);
+
+    // 라운드 데미지 추적 (부활 시 보스 회복용)
+    PlayerData_AddRoundDamage(attacker, damage);
 
 	/*
     // 누적 데미지 달성 확인
@@ -549,6 +560,7 @@ public Action Event_OnRoundStart(Event event, const char[] name, bool dontBroadc
         }
 
         Revive_Initialize(client);
+        g_playerDataList[client].roundDamage = 0;
     }
 
     return Plugin_Continue;
@@ -653,6 +665,28 @@ void Revive_DoRevive(int client)
 
     // 플레이어 부활
     TF2_RespawnPlayer(client);
+
+    // 부활 시 보스 회복: 입힌 데미지의 절반만큼 보스 체력 회복
+    int roundDmg = g_playerDataList[client].roundDamage;
+    if (roundDmg > 0 && LibraryExists("freak_fortress_2"))
+    {
+        int healAmount = roundDmg / 2;
+        // 보스 찾기 (인덱스 0이 메인 보스)
+        int bossClient = GetClientOfUserId(FF2_GetBossUserId(0));
+        if (bossClient > 0 && IsClientInGame(bossClient))
+        {
+            int curHP = FF2_GetBossHealth(0);
+            int maxHP = FF2_GetBossMaxHealth(0);
+            int newHP = curHP + healAmount;
+            if (newHP > maxHP)
+                newHP = maxHP;
+            FF2_SetBossHealth(0, newHP);
+
+            // 보스 회복 알림
+            CPrintToChatAll("{olive}[레벨업]{default} %s님의 부활로 보스가 {unusual}%d{default} 체력을 회복했습니다!",
+                g_playerDataList[client].basenick, healAmount);
+        }
+    }
 
     // 효과음 재생 및 무적 부여
     EmitSoundToAll("misc/point_revive.mp3");
