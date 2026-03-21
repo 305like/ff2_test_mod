@@ -3155,6 +3155,20 @@ public Action ClientTimer(Handle timer)
 						g_bHomingEnabled[client] = true;
 						g_flHomingStrength[client] = 100.0;
 					}
+					else if(priIndex == 1092) // 강화된 콤파운드 보우: 강한 유도
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 1000.0;
+					}
+					else if(priIndex == 56) // 헌츠맨: 유도
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 100.0;
+					}
+					else if(priIndex == 1098) // 클래식: 상시 치명타
+					{
+						TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
+					}
 				}
 
 				// 보조 무기 체크: 유도 + 가스패서 탄약
@@ -5505,6 +5519,18 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 				if(index == 412)
 				{
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
+				}
+
+				// 시장 흥정품(402): 적중 시 자신에게 addcond 91 3초
+				if(index == 402)
+				{
+					TF2_AddCondition(iAttacker, view_as<TFCond>(91), 3.0);
+				}
+
+				// 단축형 소총(751): 적중 시 자신에게 addcond 16 5초
+				if(index == 751)
+				{
+					TF2_AddCondition(iAttacker, view_as<TFCond>(16), 5.0);
 				}
 
 				// 가정파괴범: 적중 시 보스 3초 스턴

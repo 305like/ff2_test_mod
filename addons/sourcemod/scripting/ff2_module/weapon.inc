@@ -1781,7 +1781,7 @@ switch(iItemDefinitionIndex)
 	
 		case 752: // 청부업자의 사건제조기✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 76 ; 4 ; 392 ; 1 ; 4521 ; -3 ; 4522 ; 10 ; 6 ; 0.1 ; 91 ; -100", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.75 ; 76 ; 4 ; 392 ; 1 ; 4521 ; -3 ; 4522 ; 10 ; 6 ; 0.25 ; 91 ; -100", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
