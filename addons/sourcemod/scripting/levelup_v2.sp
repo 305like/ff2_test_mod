@@ -93,6 +93,53 @@ stock bool Levelup_IsBoss(int client)
 }
 
 // =============================================================================
+// FF2 보스 체력 보정 (플레이어 레벨 합산 * 10 추가)
+// =============================================================================
+
+#define BOSS_HP_PER_LEVEL 10
+
+/**
+ * 모든 플레이어 레벨 합산
+ */
+stock int Levelup_GetTotalPlayerLevels()
+{
+    int total = 0;
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i) && !IsFakeClient(i) && !Levelup_IsBoss(i) && PlayerData_IsLoaded(i))
+        {
+            total += PlayerData_GetLevel(i);
+        }
+    }
+    return total;
+}
+
+/**
+ * FF2 보스 체력 보정 포워드
+ * 라운드 시작 시 FF2가 호출, multiplier를 조정하면 보스 체력에 반영됨
+ */
+public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
+{
+    int totalLevels = Levelup_GetTotalPlayerLevels();
+    if (totalLevels <= 0)
+        return Plugin_Continue;
+
+    int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
+    int bossMaxHP = FF2_GetBossMaxHealth(boss);
+
+    if (bossMaxHP <= 0)
+        return Plugin_Continue;
+
+    // multiplier 기반으로 고정 HP 추가량을 변환
+    multiplier = 1.0 + (float(bonusHP) / float(bossMaxHP));
+
+    PrintToServer("[Levelup] Boss %d health correction: +%d HP (total levels: %d, multiplier: %.3f)",
+        boss, bonusHP, totalLevels, multiplier);
+
+    return Plugin_Changed;
+}
+
+// =============================================================================
 // 플러그인 라이프사이클
 // =============================================================================
 
