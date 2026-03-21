@@ -344,7 +344,6 @@ public void OnPluginStart()
 	HookEvent("player_healed", OnPlayerHealed);
 	HookEvent("medigun_shield_blocked_damage", OnMedigunBlockDamage);
 	HookEvent("player_builtobject", OnObjectBuilt);
-	HookEvent("bullet_impact", OnBulletImpact);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -7186,31 +7185,6 @@ public void OnPipeSpawnPost(int entity)
 
 public void OnObjectBuilt(Event event, const char[] name, bool dontBroadcast)
 {
-}
-
-// =========================================================================
-// 개척자의 정의(141): 발사 디버그 (bullet_impact)
-// =========================================================================
-public void OnBulletImpact(Event event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
-		return;
-
-	int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(!IsValidEntity(activeWep))
-		return;
-
-	int index = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
-	if(index != 141)
-		return;
-
-	float pos[3];
-	pos[0] = event.GetFloat("x");
-	pos[1] = event.GetFloat("y");
-	pos[2] = event.GetFloat("z");
-
-	PrintToChatAll("[DEBUG] 개척자정의 발사감지! 착탄위치=(%.0f, %.0f, %.0f)", pos[0], pos[1], pos[2]);
 }
 
 // =========================================================================
