@@ -569,6 +569,10 @@ public void OnMapStart()
 	PrecacheSound("weapons/airboat/airboat_gun_energy1.wav");
 	PrecacheSound("weapons/airboat/airboat_gun_energy2.wav");
 
+	// 메딕 러버점프 사운드 프리캐시
+	PrecacheSound("misc/rubberglove_stretch.wav");
+	PrecacheSound("misc/rubberglove_snap.wav");
+
 	// 유도 시스템 + 파이프 벽폭발 초기화
 	for(int i = 0; i < HOMING_LIMIT; i++)
 	{
@@ -4090,6 +4094,43 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		}
 	}
 	g_iLastButtons[client] = buttons;
+
+	// 메딕 러버점프: 힐 대상과 공중에서 점프키 누르면 대상 쪽으로 끌려감
+	if(!IsBoss(client) && TF2_GetPlayerClass(client) == TFClass_Medic)
+	{
+		if(!(GetEntityFlags(client) & FL_ONGROUND))
+		{
+			int healTarget = GetHealingTarget(client, true);
+			if(IsValidClient(healTarget) && IsPlayerAlive(healTarget) && !(GetEntityFlags(healTarget) & FL_ONGROUND))
+			{
+				if(buttons & IN_JUMP)
+				{
+					float targetPos[3], clientPos[3];
+					GetClientAbsOrigin(healTarget, targetPos);
+					GetClientAbsOrigin(client, clientPos);
+					targetPos[2] += 120.0;
+
+					float diffPos[3];
+					SubtractVectors(targetPos, clientPos, diffPos);
+					ScaleVector(diffPos, 0.05);
+
+					float clientVelocity[3];
+					GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", clientVelocity);
+					AddVectors(clientVelocity, diffPos, clientVelocity);
+					SetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", clientVelocity);
+
+					if(GetVectorDistance(clientPos, targetPos) / 50.0 > 4.5)
+					{
+						int activeWep = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+						if(IsValidEntity(activeWep))
+						{
+							EmitSoundToAll("misc/rubberglove_stretch.wav", activeWep, _, _, _, 0.8);
+						}
+					}
+				}
+			}
+		}
+	}
 
 	return Plugin_Continue;
 }
