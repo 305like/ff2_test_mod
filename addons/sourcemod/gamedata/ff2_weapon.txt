@@ -1,0 +1,14 @@
+"Games"
+{
+	"tf"
+	{
+		"Offsets"
+		{
+			"CTFWeaponBase::PrimaryAttack"
+			{
+				"windows"	"287"
+				"linux"		"293"
+			}
+		}
+	}
+}

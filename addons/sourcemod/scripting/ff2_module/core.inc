@@ -114,6 +114,9 @@ int g_iLastClip141[MAXPLAYERS+1];
 Handle g_hSDKStartBuilding;
 Handle g_hSDKFinishBuilding;
 
+// 외교대사 헤드샷 판정용
+int g_iLastHitGroup[MAXPLAYERS+1];
+
 // 예방접종기(998) 레이저 공격
 Handle g_hVaccinatorTimer[MAXPLAYERS+1];
 int g_iVaccinatorLaser; // TE beam model index

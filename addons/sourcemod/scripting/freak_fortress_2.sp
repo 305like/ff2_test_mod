@@ -329,6 +329,7 @@ public void OnPluginStart()
 		LogError("[FF2] Failed to load gamedata ff2_buildings.txt");
 	}
 
+
 	// cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", _, true, 0.0);
@@ -2837,6 +2838,7 @@ public Action Command_Point_Enable(int client, int args)
 public void OnClientPostAdminCheck(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
+    SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
     Goomba_OnClientPutInServer(client);
 
     uberTarget[client]=-1;
@@ -3221,6 +3223,12 @@ public Action ClientTimer(Handle timer)
 
 			// 클래식: 들고 있을 때 상시 치명타
 			if(index == 1098 && !IsBoss(client))
+			{
+				TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
+			}
+
+			// 집행자: 변장 중 들고 있을 때 치명타
+			if(index == 460 && !IsBoss(client) && TF2_IsPlayerInCondition(client, TFCond_Disguised))
 			{
 				TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
 			}
@@ -5290,6 +5298,12 @@ public Action OverChargeTimer(Handle timer)
 		if (!shield[client])
 			continue;
 
+		if(!IsValidEntity(shield[client]))
+		{
+			shield[client] = 0;
+			continue;
+		}
+
 		int index = GetEntProp(shield[client], Prop_Send, "m_iItemDefinitionIndex");
 
 		// Splendid Screen 제외 가능
@@ -5299,6 +5313,13 @@ public Action OverChargeTimer(Handle timer)
 		OverCharge[client] = min(100.0, OverCharge[client] + 5.0);
 	}
 
+	return Plugin_Continue;
+}
+
+public Action OnTraceAttack(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
+{
+	if(attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker))
+		g_iLastHitGroup[victim] = hitgroup;
 	return Plugin_Continue;
 }
 
@@ -5673,8 +5694,25 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 
 						bChanged = true;
 					}
-					// case 61, 1006:  //Ambassador - 특수코드 제거
-					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander, Vita-Saw(?)
+					case 61, 1006:  //Ambassador - 머리 적중시 고정 데미지 x5
+					{
+						if(g_iLastHitGroup[client] == 1) // HITGROUP_HEAD
+						{
+							float baseDmg = 48.0;
+							if(IsValidEntity(weapon))
+							{
+								float dmgMult = 1.0;
+								Address attr = TF2Attrib_GetByDefIndex(weapon, 2);
+								if(attr != Address_Null)
+									dmgMult = TF2Attrib_GetValue(attr);
+								baseDmg *= dmgMult;
+							}
+							damage = baseDmg * 5.0;
+							damagetype |= DMG_CRIT;
+							bChanged = true;
+						}
+					}
+						case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander, Vita-Saw(?)
 					{
 						IncrementHeadCount(iAttacker);
 					}
