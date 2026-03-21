@@ -478,14 +478,12 @@ void Charge_BraveJump(const char[] abilityName, int boss, int slot, int status)
 				if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
 				{
 					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 				}
 
 				for(int target=1; target<=MaxClients; target++)
 				{
 					if(IsClientInGame(target) && target!=client && FF2_CheckSoundFlags(target, FF2SOUND_MUTEVOICE))
 					{
-						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 					}
 				}
