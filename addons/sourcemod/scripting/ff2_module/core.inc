@@ -96,6 +96,16 @@ FF2HudQueue PlayerHudQueue[MAXPLAYERS+1] = {null, ...};
 // TODO: REMOVE THIS
 int shortname[MAXPLAYERS+1];
 
+// 투사체 유도 시스템
+// 플레이어별: 유도 활성화 및 강도
+bool g_bHomingEnabled[MAXPLAYERS+1];
+float g_flHomingStrength[MAXPLAYERS+1];
+// 투사체별: owner, 타이머, 강도 (homing-rocket2.sp 방식)
+#define HOMING_LIMIT 2048
+int g_iHomingOwner[HOMING_LIMIT];
+Handle g_hHomingTimer[HOMING_LIMIT];
+float g_flHomingProjStr[HOMING_LIMIT];
+
 // ========================================================================
 // Enums
 // ========================================================================

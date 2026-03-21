@@ -743,14 +743,8 @@ switch(iItemDefinitionIndex)
 		}
 	}
 	
-		case 40, 1146: // 백버너✅
+		case 40, 1146: // 백버너✅ (뒤에서 공격 시 x4 데미지 → 코드로 처리)
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4421 ; 4.0");
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
 	}
 	
 		case 215: // 기름때 제거기✅
@@ -806,7 +800,7 @@ switch(iItemDefinitionIndex)
 
 		case 39, 351, 1081: // 조명탄 발사기, 기폭장치✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 4358 ; 20 ; 20 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "58 ; 3.2 ; 144 ; 1.0", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -826,7 +820,7 @@ switch(iItemDefinitionIndex)
 	
 		case 1180: // 가스패서✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "848 ; 0 ; 878 ; 0 ; 874 ; 0.5 ; 879 ; 0 ; 845 ; 0 ; 801 ; 10 ; 856 ; 3 ; 280 ; 2 ; 103 ; 1.5 ; 4358 ; 500 ; 1 ; 1.5 ; 208 ; 1 ; 642 ; 1 ; 6 ; 2", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 2 ; 103 ; 1.5 ; 208 ; 1 ; 642 ; 1 ; 801 ; 10 ; 6 ; 1.5");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -846,7 +840,7 @@ switch(iItemDefinitionIndex)
 	
 		case 595: // 인간 융해 장치✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.05 ; 411 ; 2.5 ; 103 ; 2 ; 1 ; 0.67 ; 4521 ; -5 ; 4522 ; 5 ; 4428 ; 5000", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.2 ; 411 ; 2.5 ; 103 ; 2 ; 1 ; 0.33", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -888,7 +882,7 @@ switch(iItemDefinitionIndex)
 	
 		case 153: // 가정파괴범✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "137 ; 1 ; 138 ; 1 ; 4644 ; 3 ; 6 ; 3", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "137 ; 1 ; 138 ; 1 ; 6 ; 5", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -955,7 +949,7 @@ switch(iItemDefinitionIndex)
 	}
 		case 813, 834: // 네온전멸기✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "138 ; 1 ; 4367 ; 100 ; 4548 ; -1 ; 4418 ; 1 ; 2 ; 0.5 ; 6 ; 1.5", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "138 ; 1 ; 2 ; 0.5 ; 6 ; 1.5", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -987,7 +981,7 @@ switch(iItemDefinitionIndex)
 	
 		case 308: // 로드 앤 로크✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4430 ; 1 ; 3 ; 0.6 ; 103 ; 2 ; 6 ; 0.5 ; 2 ; 1.5", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.6 ; 103 ; 2 ; 6 ; 0.5 ; 2 ; 1.5", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -997,7 +991,7 @@ switch(iItemDefinitionIndex)
 	
 		case 996: // 통제불능 대포✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.25 ; 99 ; 1.5 ; 4411 ; 1");
+		Handle itemOverride=PrepareItemHandle(item, _, _, "3 ; 0.25 ; 99 ; 1.5");
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1007,7 +1001,7 @@ switch(iItemDefinitionIndex)
 	
 		case 1151: // 무쇠 폭탄 발사기✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 103 ; 1.25 ; 6 ; 0.5 ; 4430 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 103 ; 1.25 ; 6 ; 0.5", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1130,14 +1124,8 @@ switch(iItemDefinitionIndex)
 	}
 	
 		
-		case 132, 482, 1082, 266: // 아이랜더, 아이언 9번 골프채✅
+		case 132, 482, 1082, 266: // 아이랜더, 아이언 9번 골프채✅ (적중시 이속버프 3초 → 코드로 처리)
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4477 ; 32 ; 4478 ; 3");
-		if(itemOverride!=null)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
 	}
 	
 		
@@ -1154,7 +1142,7 @@ switch(iItemDefinitionIndex)
 		
 		case 327: // 클레이브 모어✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 2 ; 264 ; 3 ; 4477 ; 32 ; 4478 ; 3", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 2 ; 264 ; 3", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1202,7 +1190,7 @@ switch(iItemDefinitionIndex)
 		
 		case 312: // 황동야수✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.3 ; 36 ; 1.25 ; 4347 ; 1 ; 183 ; 1 ; 86 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.3 ; 36 ; 1.25 ; 183 ; 1 ; 86 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1213,7 +1201,7 @@ switch(iItemDefinitionIndex)
 		
 		case 424: // 토미슬라프✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.2 ; 87 ; 0 ; 6 ; 1.3 ; 4347 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "106 ; 0.2 ; 87 ; 0 ; 6 ; 1.3", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1233,7 +1221,7 @@ switch(iItemDefinitionIndex)
 	}
 		case 41: // 나타샤✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 3 ; 103 ; 9999 ; 6 ; 3.5 ; 4430 ; 1 ; 1 ; 8.3 ; 77 ; 0.2 ; 86 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "280 ; 3 ; 103 ; 9999 ; 6 ; 3.5 ; 1 ; 8.3 ; 77 ; 0.2 ; 86 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1255,7 +1243,7 @@ switch(iItemDefinitionIndex)
 	
 		case 425: // 가족사업✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "4518 ; 1 ; 4519 ; 1 ; 45 ; 5 ; 36 ; 5 ; 96 ; 25 ; 79 ; 0.13 ; 1 ; 1", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 45 ; 5 ; 36 ; 5 ; 96 ; 25 ; 79 ; 0.13 ; 1 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1265,7 +1253,7 @@ switch(iItemDefinitionIndex)
 	
 		case 1153: // 공황공격✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 6 ; 0.25 ; 4 ; 5 ; 4519 ; 1 ; 78 ; 2 ; 96 ; 10 ; 1 ; 1 ; 45 ; 0.34 ; 106 ; 0.2", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "413 ; 1 ; 6 ; 0.25 ; 4 ; 5 ; 97 ; 0.1 ; 78 ; 2 ; 96 ; 10 ; 1 ; 1 ; 45 ; 0.34 ; 106 ; 0.2", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
@@ -1392,7 +1380,7 @@ switch(iItemDefinitionIndex)
 	
 		case 426: // 퇴거 통보✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 1 ; 0.05 ; 855 ; 0 ; 4477 ; 32 ; 4478 ; 3", false);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0 ; 1 ; 0.05 ; 855 ; 0", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;

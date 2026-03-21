@@ -524,7 +524,14 @@ public void OnMapStart()
 	doorCheckTimer=null;
 	RoundCount=0;
 
-	
+	// 유도 시스템 초기화
+	for(int i = 0; i < HOMING_LIMIT; i++)
+	{
+		g_iHomingOwner[i] = 0;
+		g_hHomingTimer[i] = INVALID_HANDLE;
+		g_flHomingProjStr[i] = 0.0;
+	}
+
 	for(int client = 0; client <= MaxClients; client++)
 	{
 		// FF2BasePlayer player = GetBasePlayer(client);
@@ -3073,6 +3080,43 @@ public Action ClientTimer(Handle timer)
 
 			if(!IsPlayerAlive(client)) continue;
 
+			// 투사체 유도 시스템: 플레이어 무기에 따라 활성화
+			g_bHomingEnabled[client] = false;
+			if(!IsBoss(client))
+			{
+				// 주 무기 체크: 통제불능 대포(996) 상시 치명타
+				int priWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
+				if(IsValidEntity(priWeapon))
+				{
+					int priIndex = GetEntProp(priWeapon, Prop_Send, "m_iItemDefinitionIndex");
+					if(priIndex == 996) // 통제불능 대포: 상시 치명타
+					{
+						TF2_AddCondition(client, TFCond_CritOnDamage, 0.5);
+					}
+				}
+
+				// 보조 무기 체크: 유도 + 가스패서 탄약
+				int secWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+				if(IsValidEntity(secWeapon))
+				{
+					int secIndex = GetEntProp(secWeapon, Prop_Send, "m_iItemDefinitionIndex");
+					if(secIndex == 39 || secIndex == 351 || secIndex == 1081) // 조명탄/기폭장치
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 500.0;
+					}
+					else if(secIndex == 1180) // 가스패서: 유도 + 탄약 3 고정
+					{
+						g_bHomingEnabled[client] = true;
+						g_flHomingStrength[client] = 500.0;
+
+						int ammoType = GetEntProp(secWeapon, Prop_Send, "m_iPrimaryAmmoType");
+						if(ammoType >= 0)
+							SetEntProp(client, Prop_Data, "m_iAmmo", 3, _, ammoType);
+					}
+				}
+			}
+
 			// Additional HUD Initialize
 			PlayerHudQueue[client].SetName("Player Additional");
 			SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
@@ -3198,7 +3242,6 @@ public Action ClientTimer(Handle timer)
 				{
 					SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
 				}
-				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.3);
 
 				if(lastPlayerGlow)
 				{
@@ -5311,6 +5354,32 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
 				}
 
+				// 가정파괴범: 적중 시 보스 3초 스턴
+				if(index == 153 && IsBoss(client))
+				{
+					TF2_StunPlayer(client, 3.0, 0.0, TF_STUNFLAGS_SMALLBONK, iAttacker);
+				}
+
+				// 아이랜더(132)/아이언9번골프채(482,1082)/반블리츠(266)/클레이브모어(327)/퇴거통보(426): 적중 시 이속버프 3초
+				if(index == 132 || index == 482 || index == 1082 || index == 266 || index == 327 || index == 426)
+				{
+					TF2_AddCondition(iAttacker, TFCond_SpeedBuffAlly, 3.0);
+				}
+
+				// 백버너(40/1146): 뒤에서 공격 시 데미지 x4
+				{
+					int activeWep = GetEntPropEnt(iAttacker, Prop_Send, "m_hActiveWeapon");
+					if(IsValidEntity(activeWep))
+					{
+						int activeIdx = GetEntProp(activeWep, Prop_Send, "m_iItemDefinitionIndex");
+						if((activeIdx == 40 || activeIdx == 1146) && IsBackAttack(iAttacker, client))
+						{
+							damage *= 4.0;
+							bChanged = true;
+						}
+					}
+				}
+
 				if(damagecustom==TF_WEAPON_SENTRY_BULLET)
 				{
 					damagetype |= DMG_PREVENT_PHYSICS_FORCE;
@@ -6935,6 +7004,66 @@ public int Native_GetTimerType(Handle plugin, int numParams)
 	return timeType;
 }
 
+// 네온전멸기 도발 힐 (2프레임당 1 힐, 범위 300)
+static int g_iNeonFrameCount = 0;
+public void OnGameFrame()
+{
+	if(!Enabled || CheckRoundState() == FF2RoundState_RoundEnd)
+		return;
+
+	g_iNeonFrameCount++;
+	if(g_iNeonFrameCount < 2)
+		return;
+	g_iNeonFrameCount = 0;
+
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		if(!IsClientInGame(client) || !IsPlayerAlive(client) || IsBoss(client))
+			continue;
+
+		if(!TF2_IsPlayerInCondition(client, TFCond_Taunting))
+			continue;
+
+		// 현재 활성 무기가 네온전멸기인지 확인
+		int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		if(!IsValidEntity(activeWeapon))
+			continue;
+
+		int index = GetEntProp(activeWeapon, Prop_Send, "m_iItemDefinitionIndex");
+		if(index != 813 && index != 834)
+			continue;
+
+		float clientPos[3];
+		GetClientAbsOrigin(client, clientPos);
+		int clientTeam = GetClientTeam(client);
+
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
+				continue;
+
+			if(GetClientTeam(i) != clientTeam)
+				continue;
+
+			float targetPos[3];
+			GetClientAbsOrigin(i, targetPos);
+
+			if(GetVectorDistance(clientPos, targetPos) <= 300.0)
+			{
+				int maxHealth = GetEntProp(i, Prop_Data, "m_iMaxHealth");
+				int currentHealth = GetClientHealth(i);
+				if(currentHealth < maxHealth)
+				{
+					int newHealth = currentHealth + 1;
+					if(newHealth > maxHealth)
+						newHealth = maxHealth;
+					SetEntityHealth(i, newHealth);
+				}
+			}
+		}
+	}
+}
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
 	if(cvarHealthBar.BoolValue)
@@ -6960,10 +7089,284 @@ public void OnEntityCreated(int entity, const char[] classname)
 	{
 		SDKHook(entity, SDKHook_Spawn, Spawn_Koth);
 	}
+
+	// 로드앤로크(308)/무쇠폭탄발사기(1151): 유탄 벽 접촉 시 즉시 폭발
+	if(StrEqual(classname, "tf_projectile_pipe"))
+	{
+		SDKHook(entity, SDKHook_SpawnPost, OnPipeSpawnPost);
+	}
+
+	// 유도 투사체: 조명탄, 로켓, 가스패서 (homing-rocket2.sp 방식 - Spawn 훅 + Timer)
+	if(StrEqual(classname, "tf_projectile_flare") || StrEqual(classname, "tf_projectile_rocket") || StrEqual(classname, "tf_projectile_jar_gas"))
+	{
+		SDKHook(entity, SDKHook_SpawnPost, Hook_OnHomingProjectileSpawnPost);
+	}
+}
+
+// =========================================================================
+// 로드앤로크(308)/무쇠폭탄발사기(1151) - 유탄 벽 접촉 시 즉시 폭발
+// =========================================================================
+public void OnPipeSpawnPost(int entity)
+{
+	if(!IsValidEntity(entity))
+		return;
+
+	int owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if(owner <= 0 || owner > MaxClients || !IsClientInGame(owner))
+		return;
+
+	if(IsBoss(owner))
+		return;
+
+	int weapon = GetPlayerWeaponSlot(owner, TFWeaponSlot_Primary);
+	if(!IsValidEntity(weapon))
+		return;
+
+	int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+	if(index == 308 || index == 1151) // 로드앤로크, 무쇠폭탄발사기
+	{
+		SDKHook(entity, SDKHook_Touch, OnPipeTouch);
+	}
+}
+
+public Action OnPipeTouch(int entity, int other)
+{
+	if(!IsValidEntity(entity))
+		return Plugin_Continue;
+
+	// 플레이어에 닿은 경우는 일반 처리
+	if(other > 0 && other <= MaxClients)
+		return Plugin_Continue;
+
+	// 벽/바닥/월드/브러쉬에 닿음 → 즉시 폭발 (detonation 타이머를 현재 시간으로)
+	SetEntPropFloat(entity, Prop_Send, "m_flDetonateTime", GetGameTime());
+	SDKUnhook(entity, SDKHook_Touch, OnPipeTouch);
+
+	return Plugin_Continue;
+}
+
+// =========================================================================
+// 백버너: 뒤에서 공격 판정
+// =========================================================================
+bool IsBackAttack(int attacker, int victim)
+{
+	float attackerPos[3], victimPos[3], victimAng[3], attackDir[3], fwd[3];
+	GetClientAbsOrigin(attacker, attackerPos);
+	GetClientAbsOrigin(victim, victimPos);
+	GetClientEyeAngles(victim, victimAng);
+
+	// 공격자 → 피격자 방향
+	SubtractVectors(victimPos, attackerPos, attackDir);
+
+	// 피격자가 바라보는 방향
+	GetAngleVectors(victimAng, fwd, NULL_VECTOR, NULL_VECTOR);
+
+	// Z축 무시 (2D 평면)
+	attackDir[2] = 0.0;
+	fwd[2] = 0.0;
+	NormalizeVector(attackDir, attackDir);
+	NormalizeVector(fwd, fwd);
+
+	// 내적 > 0이면 공격자가 피격자의 뒤쪽에 있음 (±90도)
+	float dot = GetVectorDotProduct(attackDir, fwd);
+	return (dot > 0.0);
+}
+
+// =========================================================================
+// 투사체 유도 시스템 (homing-rocket2.sp by Leonardo 방식 참조)
+// OnEntityCreated → SDKHook_Spawn → Timer 반복으로 유도
+// =========================================================================
+
+// SpawnPost 훅: 투사체 생성 후 owner 확인 → 유도 타이머 시작
+public void Hook_OnHomingProjectileSpawnPost(int entity)
+{
+	if(!Enabled || entity <= 0 || entity >= HOMING_LIMIT)
+		return;
+
+	int owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if(owner <= 0 || owner > MaxClients)
+		return;
+
+	if(!IsClientInGame(owner) || !IsPlayerAlive(owner))
+		return;
+
+	if(!g_bHomingEnabled[owner])
+		return;
+
+	float strength = g_flHomingStrength[owner];
+
+	// 투사체 데이터 저장
+	g_iHomingOwner[entity] = owner;
+	g_flHomingProjStr[entity] = strength;
+
+	// 0.01초(10ms) 간격 반복 타이머 시작
+	g_hHomingTimer[entity] = CreateTimer(0.01, Timer_HomingUpdate, EntIndexToEntRef(entity), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+// 타이머: 매 10ms마다 투사체를 가장 가까운 보스 쪽으로 유도
+public Action Timer_HomingUpdate(Handle timer, any entref)
+{
+	int entity = EntRefToEntIndex(entref);
+	if(entity == INVALID_ENT_REFERENCE || !IsValidEntity(entity))
+	{
+		// 엔티티 소멸 → 정리
+		int idx = entref & 0x7FF; // ref에서 entity index 추출 시도
+		if(idx > 0 && idx < HOMING_LIMIT)
+		{
+			g_hHomingTimer[idx] = INVALID_HANDLE;
+			g_iHomingOwner[idx] = 0;
+		}
+		return Plugin_Stop;
+	}
+
+	if(entity >= HOMING_LIMIT)
+	{
+		g_hHomingTimer[entity] = INVALID_HANDLE;
+		return Plugin_Stop;
+	}
+
+	int owner = g_iHomingOwner[entity];
+	if(owner <= 0 || owner > MaxClients || !IsClientInGame(owner) || !IsPlayerAlive(owner))
+	{
+		HomingCleanup(entity);
+		return Plugin_Stop;
+	}
+
+	// owner가 변경됐는지 확인 (에어블로 반사 등)
+	int curOwner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if(curOwner > 0 && curOwner <= MaxClients && curOwner != owner)
+	{
+		HomingCleanup(entity);
+		return Plugin_Stop;
+	}
+
+	// 가장 가까운 적 팀 보스 찾기 (범위 3000, 시야 체크)
+	int ownerTeam = GetClientTeam(owner);
+	int target = HomingGetClosestBoss(entity, ownerTeam);
+	if(target <= 0)
+		return Plugin_Continue; // 범위 내 보이는 보스 없으면 직진 유지
+
+	float projPos[3], targetPos[3], targetVec[3];
+	float projVel[3], projAng[3];
+
+	GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", projPos);
+	GetClientEyePosition(target, targetPos); // 보스 눈높이로 유도
+
+	GetEntPropVector(entity, Prop_Data, "m_vecAbsVelocity", projVel);
+	float projSpeed = GetVectorLength(projVel);
+	if(projSpeed < 1.0)
+		return Plugin_Continue;
+
+	// 타겟 방향 벡터 = 타겟위치 - 투사체위치 → 정규화 → strength 스케일
+	SubtractVectors(targetPos, projPos, targetVec);
+	NormalizeVector(targetVec, targetVec); // 거리 무관 일정한 방향 벡터
+	ScaleVector(targetVec, g_flHomingProjStr[entity]); // strength만큼 유도력
+
+	AddVectors(projVel, targetVec, projVel);
+	NormalizeVector(projVel, projVel);
+	GetVectorAngles(projVel, projAng);
+
+	SetEntPropVector(entity, Prop_Data, "m_angRotation", projAng);
+	ScaleVector(projVel, projSpeed);
+	SetEntPropVector(entity, Prop_Data, "m_vecAbsVelocity", projVel);
+
+	return Plugin_Continue;
+}
+
+// 투사체 유도 데이터 정리
+void HomingCleanup(int entity)
+{
+	if(entity <= 0 || entity >= HOMING_LIMIT)
+		return;
+
+	g_iHomingOwner[entity] = 0;
+	g_flHomingProjStr[entity] = 0.0;
+	if(g_hHomingTimer[entity] != INVALID_HANDLE)
+	{
+		KillTimer(g_hHomingTimer[entity]);
+		g_hHomingTimer[entity] = INVALID_HANDLE;
+	}
+}
+
+// 가장 가까운 적 팀 플레이어 찾기 (범위 3000, 시야 체크)
+int HomingGetClosestBoss(int entity, int ownerTeam)
+{
+	float entityPos[3];
+	GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", entityPos);
+
+	int closest = 0;
+	float closestDist = 999999.0;
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		if(!IsClientInGame(client) || !IsPlayerAlive(client))
+			continue;
+
+		// 같은 팀이면 스킵 (적 팀만 타겟)
+		if(GetClientTeam(client) == ownerTeam)
+			continue;
+
+		float pos[3];
+		GetClientEyePosition(client, pos); // 눈높이 기준
+		float dist = GetVectorDistance(entityPos, pos);
+
+		// 범위 3000 제한
+		if(dist > 3000.0)
+			continue;
+
+		// 벽/장애물 시야 체크: 투사체 → 적 사이에 벽이 있으면 스킵
+		Handle trace = TR_TraceRayFilterEx(entityPos, pos, MASK_SOLID, RayType_EndPoint, HomingTraceFilter, entity);
+		bool blocked = TR_DidHit(trace);
+		int hitEntity = -1;
+		if(blocked)
+			hitEntity = TR_GetEntityIndex(trace);
+		delete trace;
+
+		// 레이가 대상 자신에게 맞았거나 아무것도 안 맞았으면 OK (시야 확보)
+		if(blocked && hitEntity != client)
+			continue; // 벽이나 다른 물체에 막힘
+
+		if(dist < closestDist)
+		{
+			closest = client;
+			closestDist = dist;
+		}
+	}
+	return closest;
+}
+
+// 유도 시야 체크용 트레이스 필터: 투사체 자신은 무시
+public bool HomingTraceFilter(int entity, int contentsMask, any data)
+{
+	// data = 투사체 엔티티 → 무시
+	if(entity == data)
+		return false;
+
+	// 투사체 클래스들 무시
+	if(entity > 0 && IsValidEntity(entity))
+	{
+		char classname[64];
+		GetEntityClassname(entity, classname, sizeof(classname));
+		if(StrContains(classname, "tf_projectile") != -1)
+			return false;
+	}
+
+	return true;
 }
 
 public void OnEntityDestroyed(int entity)
 {
+	// 유도 투사체 정리
+	if(entity > 0 && entity < HOMING_LIMIT)
+	{
+		if(g_iHomingOwner[entity] != 0)
+		{
+			g_iHomingOwner[entity] = 0;
+			g_flHomingProjStr[entity] = 0.0;
+			// 타이머는 엔티티 소멸로 자동 중지되므로 KillTimer 하면 안됨
+			g_hHomingTimer[entity] = INVALID_HANDLE;
+		}
+	}
+
 	if(entity==g_Monoculus)
 	{
 		g_Monoculus=FindEntityByClassname(-1, MONOCULUS);
