@@ -7044,7 +7044,6 @@ public void OnGameFrame()
 		if(GetEntProp(ent, Prop_Send, "m_bTouched") == 1)
 		{
 			g_bPipeWallExplode[ent] = false;
-			PrintToChatAll("[DEBUG] OnGameFrame: ent=%d m_bTouched=1 → Detonate!", ent);
 			if(g_hSDKCallDetonate != null)
 			{
 				SDKCall(g_hSDKCallDetonate, ent);
@@ -7134,7 +7133,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 	// 로드앤로크(308)/무쇠폭탄발사기(1151): 유탄 벽 접촉 시 즉시 폭발
 	if(StrEqual(classname, "tf_projectile_pipe"))
 	{
-		PrintToChatAll("[DEBUG] tf_projectile_pipe 감지! ent=%d", entity);
 		SDKHook(entity, SDKHook_SpawnPost, OnPipeSpawnPost);
 	}
 
@@ -7170,7 +7168,6 @@ public void OnPipeSpawnPost(int entity)
 		if(entity > 0 && entity < HOMING_LIMIT)
 		{
 			g_bPipeWallExplode[entity] = true;
-			PrintToChatAll("[DEBUG] PipeSpawnPost: ent=%d 벽폭발 추적 등록!", entity);
 		}
 	}
 }
