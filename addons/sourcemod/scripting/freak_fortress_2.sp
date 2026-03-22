@@ -2968,20 +2968,30 @@ public Action OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 
-		// 부활한 플레이어가 보스가 아니면 보스에게 1 데미지 (HUD 갱신용)
+		// 부활 후 체력 회복 완료 후 보스에게 1 데미지 (HUD 갱신용)
 		if(IsValidClient(client) && !IsBoss(client))
 		{
-			for(int boss = 0; boss <= MaxClients; boss++)
-			{
-				if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
-				{
-					SDKHooks_TakeDamage(Boss[boss], client, client, 1.0, DMG_PREVENT_PHYSICS_FORCE);
-					break;
-				}
-			}
+			CreateTimer(0.5, Timer_RespawnBossDamage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 	return Plugin_Continue;
+}
+
+public Action Timer_RespawnBossDamage(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || IsBoss(client))
+		return Plugin_Stop;
+
+	for(int boss = 0; boss <= MaxClients; boss++)
+	{
+		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
+		{
+			SDKHooks_TakeDamage(Boss[boss], client, client, 1.0, DMG_PREVENT_PHYSICS_FORCE);
+			break;
+		}
+	}
+	return Plugin_Stop;
 }
 
 public Action OnPostInventoryApplication(Event event, const char[] name, bool dontBroadcast)
