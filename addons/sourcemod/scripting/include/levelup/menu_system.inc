@@ -265,33 +265,69 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
     Menu menu = CreateMenu(MenuHandler_ClassStatDetail);
 
     // 클래스별로 메뉴 구성
-    if (StrEqual(classID, "scout"))
+    if (StrEqual(classID, "scout") || StrEqual(classID, "scout_2"))
     {
-        menu.SetTitle("스카웃");
+        bool isPage2 = StrEqual(classID, "scout_2");
 
+        if (isPage2)
+            menu.SetTitle("스카웃 (2/2)");
+        else
+            menu.SetTitle("스카웃 (1/2)");
+
+        menu.Pagination = MENU_NO_PAGINATION;
+
+        // 활성 속성 인덱스 수집
+        int activeIndices[16];
+        int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_SCOUT]); i++)
         {
             if (!StrEqual(g_attributeTable[CLASS_SCOUT][i].uid, ""))
             {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SCOUT][i].title);
-
-                if (g_attributeTable[CLASS_SCOUT][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SCOUT][i].point,
-                           g_playerAttributes[client][CLASS_SCOUT][i].upgrade, g_attributeTable[CLASS_SCOUT][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SCOUT][i].value, g_attributeTable[CLASS_SCOUT][i].point,
-                           g_playerAttributes[client][CLASS_SCOUT][i].upgrade, g_attributeTable[CLASS_SCOUT][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "scout_%s", g_attributeTable[CLASS_SCOUT][i].uid);
-                menu.AddItem(key, buffer);
+                activeIndices[activeCount] = i;
+                activeCount++;
             }
         }
+
+        // 페이지 1: 첫 6개, 페이지 2: 나머지
+        int startIdx = isPage2 ? 6 : 0;
+        int endIdx = isPage2 ? activeCount : 6;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
+        {
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SCOUT][i].title);
+
+            if (g_attributeTable[CLASS_SCOUT][i].isDisableDrawValue)
+            {
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SCOUT][i].point,
+                       g_playerAttributes[client][CLASS_SCOUT][i].upgrade, g_attributeTable[CLASS_SCOUT][i].max);
+            }
+            else
+            {
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SCOUT][i].value, g_attributeTable[CLASS_SCOUT][i].point,
+                       g_playerAttributes[client][CLASS_SCOUT][i].upgrade, g_attributeTable[CLASS_SCOUT][i].max);
+            }
+
+            char key[64];
+            Format(key, sizeof(key), "scout%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
+        }
+
+        // 빈 슬롯 채우기 (7번까지)
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++)
+        {
+            menu.AddItem("", " ", ITEMDRAW_SPACER);
+        }
+
+        // 8번: 뒤로가기, 9번: 다음/이전
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2)
+            menu.AddItem("scout_prev", "이전 페이지");
+        else
+            menu.AddItem("scout_next", "다음 페이지");
     }
     else if (StrEqual(classID, "medic"))
     {
@@ -575,12 +611,21 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
         }
     }
 
-    menu.AddItem("back", "상위 메뉴로 돌아가기");
+    // 스카웃은 수동 페이지네이션으로 이미 back/nav 포함됨
+    if (!StrEqual(classID, "scout") && !StrEqual(classID, "scout_2"))
+    {
+        menu.AddItem("back", "상위 메뉴로 돌아가기");
+    }
 
     menu.ExitButton = true;
 
     // 메뉴 페이지 복원
-    if (g_prevOpenMenuPage == -1)
+    if (StrEqual(classID, "scout") || StrEqual(classID, "scout_2"))
+    {
+        // 스카웃은 수동 페이지네이션 - 항상 처음부터
+        menu.Display(client, MENU_TIME_FOREVER);
+    }
+    else if (g_prevOpenMenuPage == -1)
     {
         menu.Display(client, MENU_TIME_FOREVER);
     }
@@ -610,21 +655,35 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
         {
             Menu_ShowClassStat(client);
         }
+        else if (StrEqual(info, "scout_next"))
+        {
+            Menu_ShowClassStatDetail(client, "scout_2");
+        }
+        else if (StrEqual(info, "scout_prev"))
+        {
+            Menu_ShowClassStatDetail(client, "scout");
+        }
         else if (StrContains(info, "scout") != -1)
         {
-            if (g_attributeTable[CLASS_SCOUT][item].max > g_playerAttributes[client][CLASS_SCOUT][item].upgrade)
+            // 키에서 페이지와 배열 인덱스 파싱 (format: "scout1_<idx>" or "scout2_<idx>")
+            bool wasPage2 = (info[5] == '2');
+            char indexStr[8];
+            strcopy(indexStr, sizeof(indexStr), info[7]); // "scoutN_" 이후 부분
+            int idx = StringToInt(indexStr);
+
+            if (g_attributeTable[CLASS_SCOUT][idx].max > g_playerAttributes[client][CLASS_SCOUT][idx].upgrade)
             {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SCOUT][item].point)
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SCOUT][idx].point)
                 {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SCOUT][item].point;
-                    g_playerAttributes[client][CLASS_SCOUT][item].upgrade++;
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SCOUT][idx].point;
+                    g_playerAttributes[client][CLASS_SCOUT][idx].upgrade++;
 
                     // 즉시 저장
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
 
                     PrintToServer("스탯 찍음: Client %d - Scout[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_SCOUT][item].upgrade);
+                                 client, idx, g_playerAttributes[client][CLASS_SCOUT][idx].upgrade);
                 }
                 else
                 {
@@ -632,8 +691,7 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
                 }
             }
 
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "scout");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "scout_2" : "scout");
         }
         else if (StrContains(info, "medic") != -1)
         {
