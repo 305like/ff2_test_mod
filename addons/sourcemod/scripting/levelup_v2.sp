@@ -39,6 +39,7 @@
 #define REVIVE_POINT_ON_REVIVE 2
 #define HEAL_ON_REVIVE 2000
 #define SKILL_RESET_POINT 0
+#define AUTOSAVE_INTERVAL 600.0  // 자동저장 간격 (10분)
 
 #define MAX_UPGRADE 13
 #define EXP_TABLE_SIZE 80
@@ -223,6 +224,10 @@ public void OnPluginStart()
     RegConsoleCmd("sm_st", Command_LevelInfo, "레벨업 메뉴 열기");
     RegConsoleCmd("sm_level", Command_LevelInfo, "레벨업 메뉴 열기");
 
+    // 주기적 자동저장 타이머 (10분)
+    CreateTimer(AUTOSAVE_INTERVAL, Timer_AutoSave, _, TIMER_REPEAT);
+    PrintToServer("[✓] Auto-save timer started (%.0fs interval)", AUTOSAVE_INTERVAL);
+
     PrintToServer("===========================================");
     PrintToServer(" Plugin loaded successfully!");
     PrintToServer("===========================================");
@@ -291,6 +296,61 @@ stock void Levelup_SaveAllPlayers()
         }
     }
     PrintToServer("[Levelup] Saved %d player(s) data", saved);
+}
+
+// =============================================================================
+// 주기적 순차 자동저장
+// =============================================================================
+
+int g_iAutoSaveNextClient = 1;  // 다음 저장할 클라이언트 인덱스
+
+/**
+ * 10분마다 순차 자동저장 시작
+ */
+public Action Timer_AutoSave(Handle timer)
+{
+    g_iAutoSaveNextClient = 1;
+    AutoSave_NextPlayer();
+    return Plugin_Continue;
+}
+
+/**
+ * 다음 유효한 플레이어를 찾아 저장 (PlayerData → 콜백에서 Attributes → 다음 플레이어)
+ */
+void AutoSave_NextPlayer()
+{
+    while (g_iAutoSaveNextClient <= MaxClients)
+    {
+        int client = g_iAutoSaveNextClient;
+        g_iAutoSaveNextClient++;
+
+        if (IsClientConnected(client) && !IsFakeClient(client) && PlayerData_IsLoaded(client))
+        {
+            DB_SavePlayerData(client, AutoSave_OnPlayerDataSaved);
+            return;
+        }
+    }
+    // 전부 끝남
+    PrintToServer("[Levelup] Auto-save cycle complete");
+}
+
+/**
+ * PlayerData 저장 완료 콜백 → Attributes 저장 후 다음 플레이어로
+ */
+void AutoSave_OnPlayerDataSaved(int client)
+{
+    if (IsClientConnected(client) && !IsFakeClient(client) && PlayerData_IsLoaded(client))
+    {
+        DB_SaveAllAttributes(client);
+    }
+    // 0.1초 후 다음 플레이어 저장 (서버 부하 분산)
+    CreateTimer(0.1, Timer_AutoSaveNext, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_AutoSaveNext(Handle timer)
+{
+    AutoSave_NextPlayer();
+    return Plugin_Stop;
 }
 
 // =============================================================================
