@@ -288,9 +288,9 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
             }
         }
 
-        // 페이지 1: 첫 6개, 페이지 2: 나머지
-        int startIdx = isPage2 ? 6 : 0;
-        int endIdx = isPage2 ? activeCount : 6;
+        // 페이지 1: 첫 7개, 페이지 2: 나머지
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
         if (endIdx > activeCount) endIdx = activeCount;
 
         for (int j = startIdx; j < endIdx; j++)
