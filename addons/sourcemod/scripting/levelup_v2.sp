@@ -121,12 +121,16 @@ stock int Levelup_GetTotalPlayerLevels()
 public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
 {
     int totalLevels = Levelup_GetTotalPlayerLevels();
+    int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
+
+    // 총레벨 0이어도 메시지 출력
+    CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다! (총레벨 %d x %d)",
+        bonusHP, totalLevels, BOSS_HP_PER_LEVEL);
+
     if (totalLevels <= 0)
         return Plugin_Continue;
 
-    int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
     int bossMaxHP = FF2_GetBossMaxHealth(boss);
-
     if (bossMaxHP <= 0)
         return Plugin_Continue;
 
@@ -135,9 +139,6 @@ public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
 
     PrintToServer("[Levelup] Boss %d health correction: +%d HP (total levels: %d, multiplier: %.3f)",
         boss, bonusHP, totalLevels, multiplier);
-
-    CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다! (총레벨 %d x %d)",
-        bonusHP, totalLevels, BOSS_HP_PER_LEVEL);
 
     return Plugin_Changed;
 }
