@@ -139,9 +139,12 @@ public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
     int totalLevels = Levelup_GetTotalPlayerLevels();
     int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
 
-    // 메인 보스(0)일 때만 메시지 1회 출력
-    if (boss == 0)
+    // 라운드당 메시지 1회만 출력
+    static int lastMessageRound = -1;
+    int currentRound = GameRules_GetProp("m_nRoundCount");
+    if (lastMessageRound != currentRound)
     {
+        lastMessageRound = currentRound;
         DataPack data;
         CreateDataTimer(0.5, Timer_ShowBossHPMessage, data, TIMER_FLAG_NO_MAPCHANGE);
         data.WriteCell(bonusHP);
