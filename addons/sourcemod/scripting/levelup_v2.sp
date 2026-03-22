@@ -96,7 +96,7 @@ stock bool Levelup_IsBoss(int client)
 // FF2 보스 체력 보정 (플레이어 레벨 합산 * 10 추가)
 // =============================================================================
 
-#define BOSS_HP_PER_LEVEL 10
+#define BOSS_HP_PER_LEVEL 500
 
 /**
  * 모든 플레이어 레벨 합산
@@ -135,6 +135,9 @@ public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
 
     PrintToServer("[Levelup] Boss %d health correction: +%d HP (total levels: %d, multiplier: %.3f)",
         boss, bonusHP, totalLevels, multiplier);
+
+    CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다! (총레벨 %d x %d)",
+        bonusHP, totalLevels, BOSS_HP_PER_LEVEL);
 
     return Plugin_Changed;
 }

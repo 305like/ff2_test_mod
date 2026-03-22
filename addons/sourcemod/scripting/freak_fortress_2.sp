@@ -1937,11 +1937,6 @@ void CorrectionBossHealth()
 		{
 			BossHealthMax[boss] += healPerLife;
 			BossHealth[boss] = BossHealthMax[boss] * BossLivesMax[boss];
-
-			if(BossLivesMax[boss] > 1)
-				CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} x%d 증가했습니다!", healPerLife, BossLivesMax[boss]);
-			else
-				CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다!", healPerLife);
 		}
 	}
 }
