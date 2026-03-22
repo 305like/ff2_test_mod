@@ -96,7 +96,7 @@ stock bool Levelup_IsBoss(int client)
 // FF2 보스 체력 보정 (플레이어 레벨 합산 * 10 추가)
 // =============================================================================
 
-#define BOSS_HP_PER_LEVEL 500
+#define BOSS_HP_PER_LEVEL 20
 
 /**
  * 모든 플레이어 레벨 합산
@@ -115,6 +115,22 @@ stock int Levelup_GetTotalPlayerLevels()
 }
 
 /**
+ * 보스 체력 증가 메시지 지연 출력 타이머
+ */
+public Action Timer_ShowBossHPMessage(Handle timer, DataPack data)
+{
+    data.Reset();
+    int bonusHP = data.ReadCell();
+    int totalLevels = data.ReadCell();
+    int hpPerLevel = data.ReadCell();
+
+    CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다! (총레벨 %d x %d)",
+        bonusHP, totalLevels, hpPerLevel);
+
+    return Plugin_Stop;
+}
+
+/**
  * FF2 보스 체력 보정 포워드
  * 라운드 시작 시 FF2가 호출, multiplier를 조정하면 보스 체력에 반영됨
  */
@@ -123,9 +139,12 @@ public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
     int totalLevels = Levelup_GetTotalPlayerLevels();
     int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
 
-    // 총레벨 0이어도 메시지 출력
-    CPrintToChatAll("{olive}[FF2]{default} 플레이어 레벨에 의해 보스 체력이 {unusual}+%d{default} 증가했습니다! (총레벨 %d x %d)",
-        bonusHP, totalLevels, BOSS_HP_PER_LEVEL);
+    // Boss Info 메시지 이후에 출력되도록 0.5초 지연
+    DataPack data;
+    CreateDataTimer(0.5, Timer_ShowBossHPMessage, data, TIMER_FLAG_NO_MAPCHANGE);
+    data.WriteCell(bonusHP);
+    data.WriteCell(totalLevels);
+    data.WriteCell(BOSS_HP_PER_LEVEL);
 
     if (totalLevels <= 0)
         return Plugin_Continue;
