@@ -997,9 +997,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_ENGINEER][5].title = "디스펜서 범위 %.0f%% 증가 (%dpt)(%d/%d)";
 
 	g_attributeTable[CLASS_ENGINEER][6].class = CLASS_ENGINEER;
-	g_attributeTable[CLASS_ENGINEER][6].max = 2;
+	g_attributeTable[CLASS_ENGINEER][6].max = 0;
 	g_attributeTable[CLASS_ENGINEER][6].point = 1;
-	g_attributeTable[CLASS_ENGINEER][6].uid = "weapon spread bonus";
+	g_attributeTable[CLASS_ENGINEER][6].uid = "";
 	g_attributeTable[CLASS_ENGINEER][6].value = float(25);
 	g_attributeTable[CLASS_ENGINEER][6].defaultValue = float(100);
 	g_attributeTable[CLASS_ENGINEER][6].additiveMode = MINUS_PERCENT;		
@@ -1033,9 +1033,9 @@ void CreateAttributeTable()
 	g_attributeTable[CLASS_ENGINEER][9].title = "건설속도 %.0f%% 증가 (%dpt)(%d/%d)";	
 	
 	g_attributeTable[CLASS_ENGINEER][10].class = CLASS_ENGINEER;
-	g_attributeTable[CLASS_ENGINEER][10].max = 5;
+	g_attributeTable[CLASS_ENGINEER][10].max = 0;
 	g_attributeTable[CLASS_ENGINEER][10].point = 2;
-	g_attributeTable[CLASS_ENGINEER][10].uid = "max health additive bonus";
+	g_attributeTable[CLASS_ENGINEER][10].uid = "";
 	g_attributeTable[CLASS_ENGINEER][10].value = float(10);
 	g_attributeTable[CLASS_ENGINEER][10].defaultValue = float(0);
 	g_attributeTable[CLASS_ENGINEER][10].additiveMode = ADDITIVE_NUMBER;		
