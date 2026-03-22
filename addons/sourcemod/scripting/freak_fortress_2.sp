@@ -2968,20 +2968,20 @@ public Action OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 
-		// 부활 후 체력 회복 완료 후 보스에게 1 데미지 (HUD 갱신용)
+		// 부활 후 1프레임 뒤 보스에게 1 데미지 (HUD 갱신용)
 		if(IsValidClient(client) && !IsBoss(client))
 		{
-			CreateTimer(0.5, Timer_RespawnBossDamage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			RequestFrame(Frame_RespawnBossDamage, GetClientUserId(client));
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action Timer_RespawnBossDamage(Handle timer, int userid)
+void Frame_RespawnBossDamage(int userid)
 {
 	int client = GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || IsBoss(client))
-		return Plugin_Stop;
+		return;
 
 	for(int boss = 0; boss <= MaxClients; boss++)
 	{
@@ -2991,7 +2991,6 @@ public Action Timer_RespawnBossDamage(Handle timer, int userid)
 			break;
 		}
 	}
-	return Plugin_Stop;
 }
 
 public Action OnPostInventoryApplication(Event event, const char[] name, bool dontBroadcast)

@@ -692,7 +692,7 @@ void Revive_DoRevive(int client)
         if (bossClient > 0 && IsClientInGame(bossClient))
         {
             int curHP = FF2_GetBossHealth(0);
-            int maxHP = FF2_GetBossMaxHealth(0);
+            int maxHP = FF2_GetBossMaxHealth(0) * FF2_GetBossMaxLives(0);
             int newHP = curHP + healAmount;
             if (newHP > maxHP)
                 newHP = maxHP;
