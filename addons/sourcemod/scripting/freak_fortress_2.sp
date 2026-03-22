@@ -615,6 +615,7 @@ public void OnMapStart()
 	bossesArrayOriginal.Clear();
 
 	Goomba_OnMapStart();
+	SoldierBuff_Precache();
 }
 
 public void OnMapEnd()
@@ -1279,6 +1280,9 @@ public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 
 	healthcheckused=0;
 	firstBlood=true;
+
+	SoldierBuff_Start();
+
 	return Plugin_Continue;
 }
 
@@ -1385,6 +1389,7 @@ public void CheckArena()
 public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	RoundCount++;
+	SoldierBuff_Stop();
 
 	if(!Enabled)
 	{

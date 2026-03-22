@@ -2266,3 +2266,98 @@ stock Handle PrepareItemHandle(Handle item, char[] classname="", int index=-1, c
 	TF2Items_SetFlags(weapon, flags);
 	return weapon;
 }
+
+// =========================================================================
+// 솔져 버프 동기화 (배너 하나 사용 시 3종 버프 모두 적용)
+// =========================================================================
+
+#define SOLDIER_BUFF_CHECK_INTERVAL 0.5
+
+enum SoldierBuffState
+{
+	SoldierBuff_None,
+	SoldierBuff_Active
+};
+SoldierBuffState g_SoldierBuffState[MAXPLAYERS + 1];
+Handle g_hSoldierBuffTimer = null;
+
+void SoldierBuff_Precache()
+{
+	PrecacheSound("passtime/crowd_cheer.wav", true);
+	PrecacheSound("ambient/bumper_car_cheer1.wav", true);
+	PrecacheSound("ambient/bumper_car_cheer2.wav", true);
+}
+
+void SoldierBuff_Reset()
+{
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		g_SoldierBuffState[i] = SoldierBuff_None;
+	}
+}
+
+void SoldierBuff_Start()
+{
+	SoldierBuff_Reset();
+	if(g_hSoldierBuffTimer != null)
+	{
+		delete g_hSoldierBuffTimer;
+	}
+	g_hSoldierBuffTimer = CreateTimer(SOLDIER_BUFF_CHECK_INTERVAL, Timer_SoldierBuffSync, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void SoldierBuff_Stop()
+{
+	SoldierBuff_Reset();
+	if(g_hSoldierBuffTimer != null)
+	{
+		delete g_hSoldierBuffTimer;
+		g_hSoldierBuffTimer = null;
+	}
+}
+
+public Action Timer_SoldierBuffSync(Handle timer)
+{
+	if(!Enabled)
+	{
+		g_hSoldierBuffTimer = null;
+		return Plugin_Stop;
+	}
+
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		if(!IsClientInGame(client)
+			|| !IsPlayerAlive(client)
+			|| IsBoss(client)
+			|| TF2_GetPlayerClass(client) != TFClass_Soldier
+			|| GetClientTeam(client) != view_as<int>(TFTeam_Red))
+		{
+			continue;
+		}
+
+		bool hasBuff = TF2_IsPlayerInCondition(client, TFCond_Buffed);
+
+		if(hasBuff)
+		{
+			if(g_SoldierBuffState[client] == SoldierBuff_None)
+			{
+				EmitSoundToAll("passtime/crowd_cheer.wav", client);
+				EmitSoundToAll("ambient/bumper_car_cheer1.wav", client);
+				EmitSoundToAll("ambient/bumper_car_cheer2.wav", client);
+			}
+
+			TF2_AddCondition(client, TFCond_DefenseBuffed, SOLDIER_BUFF_CHECK_INTERVAL + 0.1);
+			TF2_AddCondition(client, TFCond_RegenBuffed, SOLDIER_BUFF_CHECK_INTERVAL + 0.1);
+
+			g_SoldierBuffState[client] = SoldierBuff_Active;
+		}
+		else if(g_SoldierBuffState[client] == SoldierBuff_Active)
+		{
+			TF2_RemoveCondition(client, TFCond_DefenseBuffed);
+			TF2_RemoveCondition(client, TFCond_RegenBuffed);
+
+			g_SoldierBuffState[client] = SoldierBuff_None;
+		}
+	}
+	return Plugin_Continue;
+}
