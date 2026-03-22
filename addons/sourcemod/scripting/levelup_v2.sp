@@ -139,12 +139,15 @@ public Action FF2_OnApplyBossHealthCorrection(int boss, float &multiplier)
     int totalLevels = Levelup_GetTotalPlayerLevels();
     int bonusHP = totalLevels * BOSS_HP_PER_LEVEL;
 
-    // Boss Info 메시지 이후에 출력되도록 0.5초 지연
-    DataPack data;
-    CreateDataTimer(0.5, Timer_ShowBossHPMessage, data, TIMER_FLAG_NO_MAPCHANGE);
-    data.WriteCell(bonusHP);
-    data.WriteCell(totalLevels);
-    data.WriteCell(BOSS_HP_PER_LEVEL);
+    // 메인 보스(0)일 때만 메시지 1회 출력
+    if (boss == 0)
+    {
+        DataPack data;
+        CreateDataTimer(0.5, Timer_ShowBossHPMessage, data, TIMER_FLAG_NO_MAPCHANGE);
+        data.WriteCell(bonusHP);
+        data.WriteCell(totalLevels);
+        data.WriteCell(BOSS_HP_PER_LEVEL);
+    }
 
     if (totalLevels <= 0)
         return Plugin_Continue;
