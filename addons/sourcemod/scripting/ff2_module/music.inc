@@ -209,6 +209,9 @@ public bool TryPlayNextPhase(int client, KeyValues characterKv, const char[] pat
 
 void PlayBGM(int client)
 {
+	if(CheckRoundState() != FF2RoundState_RoundRunning)
+		return;
+
 	KeyValues characterKv = GetCharacterKV(character[0]);
 	char temp[PLATFORM_MAX_PATH], buffer[PLATFORM_MAX_PATH], information[256], bossName[64];
 	float time2, startTime = 0.0, endTime = 0.0;
