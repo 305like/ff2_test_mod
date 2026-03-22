@@ -961,6 +961,10 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
  */
 void Menu_ShowRevive(int client)
 {
+    // FF2 라운드 진행 중이 아니면 부활 메뉴 안 띄움 (아레나 대기 라운드 등)
+    if (FF2_GetRoundState() != 2)
+        return;
+
     int team = GetClientTeam(client);
 
     if (team == 3)
