@@ -2967,6 +2967,19 @@ public Action OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+
+		// 부활한 플레이어가 보스가 아니면 보스에게 1 데미지 (HUD 갱신용)
+		if(IsValidClient(client) && !IsBoss(client))
+		{
+			for(int boss = 0; boss <= MaxClients; boss++)
+			{
+				if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
+				{
+					SDKHooks_TakeDamage(Boss[boss], client, client, 1.0, DMG_PREVENT_PHYSICS_FORCE);
+					break;
+				}
+			}
+		}
 	}
 	return Plugin_Continue;
 }
