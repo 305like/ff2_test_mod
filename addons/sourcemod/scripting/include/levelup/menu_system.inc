@@ -964,10 +964,7 @@ void Menu_ShowRevive(int client)
     int team = GetClientTeam(client);
 
     if (team == 3)
-    {
-        CPrintToChat(client, "{red}[경고]{default} 블루팀은 리스폰 메뉴를 사용할 수 없습니다!");
         return;
-    }
 
     Menu menu = CreateMenu(MenuHandler_Revive);
 
