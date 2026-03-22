@@ -329,230 +329,269 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
         else
             menu.AddItem("scout_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "medic"))
+    else if (StrEqual(classID, "medic") || StrEqual(classID, "medic_2"))
     {
-        menu.SetTitle("메딕");
+        bool isPage2 = StrEqual(classID, "medic_2");
+        if (isPage2) menu.SetTitle("메딕 (2/2)");
+        else menu.SetTitle("메딕 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_MEDIC]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_MEDIC][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_MEDIC][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_MEDIC][i].title);
-
-                if (g_attributeTable[CLASS_MEDIC][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_MEDIC][i].point,
-                           g_playerAttributes[client][CLASS_MEDIC][i].upgrade, g_attributeTable[CLASS_MEDIC][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_MEDIC][i].value, g_attributeTable[CLASS_MEDIC][i].point,
-                           g_playerAttributes[client][CLASS_MEDIC][i].upgrade, g_attributeTable[CLASS_MEDIC][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "medic_%s", g_attributeTable[CLASS_MEDIC][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_MEDIC][i].title);
+            if (g_attributeTable[CLASS_MEDIC][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_MEDIC][i].point, g_playerAttributes[client][CLASS_MEDIC][i].upgrade, g_attributeTable[CLASS_MEDIC][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_MEDIC][i].value, g_attributeTable[CLASS_MEDIC][i].point, g_playerAttributes[client][CLASS_MEDIC][i].upgrade, g_attributeTable[CLASS_MEDIC][i].max);
+            char key[64]; Format(key, sizeof(key), "medic%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("medic_prev", "이전 페이지");
+        else menu.AddItem("medic_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "soldier"))
+    else if (StrEqual(classID, "soldier") || StrEqual(classID, "soldier_2"))
     {
-        menu.SetTitle("솔져");
+        bool isPage2 = StrEqual(classID, "soldier_2");
+        if (isPage2) menu.SetTitle("솔져 (2/2)");
+        else menu.SetTitle("솔져 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_SOLDIER]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_SOLDIER][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_SOLDIER][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SOLDIER][i].title);
-
-                if (g_attributeTable[CLASS_SOLDIER][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SOLDIER][i].point,
-                           g_playerAttributes[client][CLASS_SOLDIER][i].upgrade, g_attributeTable[CLASS_SOLDIER][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SOLDIER][i].value, g_attributeTable[CLASS_SOLDIER][i].point,
-                           g_playerAttributes[client][CLASS_SOLDIER][i].upgrade, g_attributeTable[CLASS_SOLDIER][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "soldier_%s", g_attributeTable[CLASS_SOLDIER][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SOLDIER][i].title);
+            if (g_attributeTable[CLASS_SOLDIER][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SOLDIER][i].point, g_playerAttributes[client][CLASS_SOLDIER][i].upgrade, g_attributeTable[CLASS_SOLDIER][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SOLDIER][i].value, g_attributeTable[CLASS_SOLDIER][i].point, g_playerAttributes[client][CLASS_SOLDIER][i].upgrade, g_attributeTable[CLASS_SOLDIER][i].max);
+            char key[64]; Format(key, sizeof(key), "soldier%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("soldier_prev", "이전 페이지");
+        else menu.AddItem("soldier_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "pyro"))
+    else if (StrEqual(classID, "pyro") || StrEqual(classID, "pyro_2"))
     {
-        menu.SetTitle("파이로");
+        bool isPage2 = StrEqual(classID, "pyro_2");
+        if (isPage2) menu.SetTitle("파이로 (2/2)");
+        else menu.SetTitle("파이로 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_PYRO]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_PYRO][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_PYRO][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_PYRO][i].title);
-
-                if (g_attributeTable[CLASS_PYRO][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_PYRO][i].point,
-                           g_playerAttributes[client][CLASS_PYRO][i].upgrade, g_attributeTable[CLASS_PYRO][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_PYRO][i].value, g_attributeTable[CLASS_PYRO][i].point,
-                           g_playerAttributes[client][CLASS_PYRO][i].upgrade, g_attributeTable[CLASS_PYRO][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "pyro_%s", g_attributeTable[CLASS_PYRO][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_PYRO][i].title);
+            if (g_attributeTable[CLASS_PYRO][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_PYRO][i].point, g_playerAttributes[client][CLASS_PYRO][i].upgrade, g_attributeTable[CLASS_PYRO][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_PYRO][i].value, g_attributeTable[CLASS_PYRO][i].point, g_playerAttributes[client][CLASS_PYRO][i].upgrade, g_attributeTable[CLASS_PYRO][i].max);
+            char key[64]; Format(key, sizeof(key), "pyro%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("pyro_prev", "이전 페이지");
+        else menu.AddItem("pyro_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "spy"))
+    else if (StrEqual(classID, "spy") || StrEqual(classID, "spy_2"))
     {
-        menu.SetTitle("스파이");
+        bool isPage2 = StrEqual(classID, "spy_2");
+        if (isPage2) menu.SetTitle("스파이 (2/2)");
+        else menu.SetTitle("스파이 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_SPY]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_SPY][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_SPY][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SPY][i].title);
-
-                if (g_attributeTable[CLASS_SPY][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SPY][i].point,
-                           g_playerAttributes[client][CLASS_SPY][i].upgrade, g_attributeTable[CLASS_SPY][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SPY][i].value, g_attributeTable[CLASS_SPY][i].point,
-                           g_playerAttributes[client][CLASS_SPY][i].upgrade, g_attributeTable[CLASS_SPY][i].max);
-                }
-			
-
-                char key[64];
-                Format(key, sizeof(key), "spy_%s", g_attributeTable[CLASS_SPY][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SPY][i].title);
+            if (g_attributeTable[CLASS_SPY][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SPY][i].point, g_playerAttributes[client][CLASS_SPY][i].upgrade, g_attributeTable[CLASS_SPY][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SPY][i].value, g_attributeTable[CLASS_SPY][i].point, g_playerAttributes[client][CLASS_SPY][i].upgrade, g_attributeTable[CLASS_SPY][i].max);
+            char key[64]; Format(key, sizeof(key), "spy%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("spy_prev", "이전 페이지");
+        else menu.AddItem("spy_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "demoman"))
+    else if (StrEqual(classID, "demoman") || StrEqual(classID, "demoman_2"))
     {
-        menu.SetTitle("데모맨");
+        bool isPage2 = StrEqual(classID, "demoman_2");
+        if (isPage2) menu.SetTitle("데모맨 (2/2)");
+        else menu.SetTitle("데모맨 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_DEMOMAN]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_DEMOMAN][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_DEMOMAN][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_DEMOMAN][i].title);
-
-                if (g_attributeTable[CLASS_DEMOMAN][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_DEMOMAN][i].point,
-                           g_playerAttributes[client][CLASS_DEMOMAN][i].upgrade, g_attributeTable[CLASS_DEMOMAN][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_DEMOMAN][i].value, g_attributeTable[CLASS_DEMOMAN][i].point,
-                           g_playerAttributes[client][CLASS_DEMOMAN][i].upgrade, g_attributeTable[CLASS_DEMOMAN][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "demoman_%s", g_attributeTable[CLASS_DEMOMAN][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_DEMOMAN][i].title);
+            if (g_attributeTable[CLASS_DEMOMAN][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_DEMOMAN][i].point, g_playerAttributes[client][CLASS_DEMOMAN][i].upgrade, g_attributeTable[CLASS_DEMOMAN][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_DEMOMAN][i].value, g_attributeTable[CLASS_DEMOMAN][i].point, g_playerAttributes[client][CLASS_DEMOMAN][i].upgrade, g_attributeTable[CLASS_DEMOMAN][i].max);
+            char key[64]; Format(key, sizeof(key), "demoman%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("demoman_prev", "이전 페이지");
+        else menu.AddItem("demoman_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "sniper"))
+    else if (StrEqual(classID, "sniper") || StrEqual(classID, "sniper_2"))
     {
-        menu.SetTitle("스나이퍼");
+        bool isPage2 = StrEqual(classID, "sniper_2");
+        if (isPage2) menu.SetTitle("스나이퍼 (2/2)");
+        else menu.SetTitle("스나이퍼 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_SNIPER]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_SNIPER][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_SNIPER][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SNIPER][i].title);
-
-                if (g_attributeTable[CLASS_SNIPER][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SNIPER][i].point,
-                           g_playerAttributes[client][CLASS_SNIPER][i].upgrade, g_attributeTable[CLASS_SNIPER][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SNIPER][i].value, g_attributeTable[CLASS_SNIPER][i].point,
-                           g_playerAttributes[client][CLASS_SNIPER][i].upgrade, g_attributeTable[CLASS_SNIPER][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "sniper_%s", g_attributeTable[CLASS_SNIPER][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SNIPER][i].title);
+            if (g_attributeTable[CLASS_SNIPER][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SNIPER][i].point, g_playerAttributes[client][CLASS_SNIPER][i].upgrade, g_attributeTable[CLASS_SNIPER][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SNIPER][i].value, g_attributeTable[CLASS_SNIPER][i].point, g_playerAttributes[client][CLASS_SNIPER][i].upgrade, g_attributeTable[CLASS_SNIPER][i].max);
+            char key[64]; Format(key, sizeof(key), "sniper%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("sniper_prev", "이전 페이지");
+        else menu.AddItem("sniper_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "engineer"))
+    else if (StrEqual(classID, "engineer") || StrEqual(classID, "engineer_2"))
     {
-        menu.SetTitle("엔지니어");
+        bool isPage2 = StrEqual(classID, "engineer_2");
+        if (isPage2) menu.SetTitle("엔지니어 (2/2)");
+        else menu.SetTitle("엔지니어 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_ENGINEER]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_ENGINEER][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_ENGINEER][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_ENGINEER][i].title);
-
-                if (g_attributeTable[CLASS_ENGINEER][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_ENGINEER][i].point,
-                           g_playerAttributes[client][CLASS_ENGINEER][i].upgrade, g_attributeTable[CLASS_ENGINEER][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_ENGINEER][i].value, g_attributeTable[CLASS_ENGINEER][i].point,
-                           g_playerAttributes[client][CLASS_ENGINEER][i].upgrade, g_attributeTable[CLASS_ENGINEER][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "engineer_%s", g_attributeTable[CLASS_ENGINEER][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_ENGINEER][i].title);
+            if (g_attributeTable[CLASS_ENGINEER][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_ENGINEER][i].point, g_playerAttributes[client][CLASS_ENGINEER][i].upgrade, g_attributeTable[CLASS_ENGINEER][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_ENGINEER][i].value, g_attributeTable[CLASS_ENGINEER][i].point, g_playerAttributes[client][CLASS_ENGINEER][i].upgrade, g_attributeTable[CLASS_ENGINEER][i].max);
+            char key[64]; Format(key, sizeof(key), "engineer%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("engineer_prev", "이전 페이지");
+        else menu.AddItem("engineer_next", "다음 페이지");
     }
-    else if (StrEqual(classID, "heavy"))
+    else if (StrEqual(classID, "heavy") || StrEqual(classID, "heavy_2"))
     {
-        menu.SetTitle("헤비");
+        bool isPage2 = StrEqual(classID, "heavy_2");
+        if (isPage2) menu.SetTitle("헤비 (2/2)");
+        else menu.SetTitle("헤비 (1/2)");
+        menu.Pagination = MENU_NO_PAGINATION;
 
+        int activeIndices[20]; int activeCount = 0;
         for (int i = 0; i < sizeof(g_attributeTable[CLASS_HEAVY]); i++)
+            if (!StrEqual(g_attributeTable[CLASS_HEAVY][i].uid, "")) activeIndices[activeCount++] = i;
+
+        int startIdx = isPage2 ? 7 : 0;
+        int endIdx = isPage2 ? activeCount : 7;
+        if (endIdx > activeCount) endIdx = activeCount;
+
+        for (int j = startIdx; j < endIdx; j++)
         {
-            if (!StrEqual(g_attributeTable[CLASS_HEAVY][i].uid, ""))
-            {
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_HEAVY][i].title);
-
-                if (g_attributeTable[CLASS_HEAVY][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HEAVY][i].point,
-                          g_playerAttributes[client][CLASS_HEAVY][i].upgrade, g_attributeTable[CLASS_HEAVY][i].max);
-                }
-                else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HEAVY][i].value, g_attributeTable[CLASS_HEAVY][i].point,
-                          g_playerAttributes[client][CLASS_HEAVY][i].upgrade, g_attributeTable[CLASS_HEAVY][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "heavy_%s", g_attributeTable[CLASS_HEAVY][i].uid);
-                menu.AddItem(key, buffer);
-            }
+            int i = activeIndices[j];
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_HEAVY][i].title);
+            if (g_attributeTable[CLASS_HEAVY][i].isDisableDrawValue)
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HEAVY][i].point, g_playerAttributes[client][CLASS_HEAVY][i].upgrade, g_attributeTable[CLASS_HEAVY][i].max);
+            else
+                Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HEAVY][i].value, g_attributeTable[CLASS_HEAVY][i].point, g_playerAttributes[client][CLASS_HEAVY][i].upgrade, g_attributeTable[CLASS_HEAVY][i].max);
+            char key[64]; Format(key, sizeof(key), "heavy%d_%d", isPage2 ? 2 : 1, i);
+            menu.AddItem(key, buffer);
         }
+        int itemsOnPage = endIdx - startIdx;
+        for (int j = itemsOnPage; j < 7; j++) menu.AddItem("", " ", ITEMDRAW_SPACER);
+        menu.AddItem("back", "뒤로가기");
+        if (isPage2) menu.AddItem("heavy_prev", "이전 페이지");
+        else menu.AddItem("heavy_next", "다음 페이지");
     }
     else if (StrEqual(classID, "hale"))
     {
@@ -564,20 +603,11 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
             {
                 char buffer[128];
                 Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_HALE][i].title);
-
                 if (g_attributeTable[CLASS_HALE][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HALE][i].point,
-                           g_playerAttributes[client][CLASS_HALE][i].upgrade, g_attributeTable[CLASS_HALE][i].max);
-                }
+                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HALE][i].point, g_playerAttributes[client][CLASS_HALE][i].upgrade, g_attributeTable[CLASS_HALE][i].max);
                 else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HALE][i].value, g_attributeTable[CLASS_HALE][i].point,
-                           g_playerAttributes[client][CLASS_HALE][i].upgrade, g_attributeTable[CLASS_HALE][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "hale_%s", g_attributeTable[CLASS_HALE][i].uid);
+                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_HALE][i].value, g_attributeTable[CLASS_HALE][i].point, g_playerAttributes[client][CLASS_HALE][i].upgrade, g_attributeTable[CLASS_HALE][i].max);
+                char key[64]; Format(key, sizeof(key), "hale_%s", g_attributeTable[CLASS_HALE][i].uid);
                 menu.AddItem(key, buffer);
             }
         }
@@ -592,37 +622,39 @@ void Menu_ShowClassStatDetail(int client, const char[] classID)
             {
                 char buffer[128];
                 Format(buffer, sizeof(buffer), "%s", g_attributeTable[CLASS_SHARED][i].title);
-
                 if (g_attributeTable[CLASS_SHARED][i].isDisableDrawValue)
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SHARED][i].point,
-                           g_playerAttributes[client][CLASS_SHARED][i].upgrade, g_attributeTable[CLASS_SHARED][i].max);
-                }
+                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SHARED][i].point, g_playerAttributes[client][CLASS_SHARED][i].upgrade, g_attributeTable[CLASS_SHARED][i].max);
                 else
-                {
-                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SHARED][i].value, g_attributeTable[CLASS_SHARED][i].point,
-                           g_playerAttributes[client][CLASS_SHARED][i].upgrade, g_attributeTable[CLASS_SHARED][i].max);
-                }
-
-                char key[64];
-                Format(key, sizeof(key), "shared_%s", g_attributeTable[CLASS_SHARED][i].uid);
+                    Format(buffer, sizeof(buffer), buffer, g_attributeTable[CLASS_SHARED][i].value, g_attributeTable[CLASS_SHARED][i].point, g_playerAttributes[client][CLASS_SHARED][i].upgrade, g_attributeTable[CLASS_SHARED][i].max);
+                char key[64]; Format(key, sizeof(key), "shared_%s", g_attributeTable[CLASS_SHARED][i].uid);
                 menu.AddItem(key, buffer);
             }
         }
     }
 
-    // 스카웃은 수동 페이지네이션으로 이미 back/nav 포함됨
-    if (!StrEqual(classID, "scout") && !StrEqual(classID, "scout_2"))
+    // 수동 페이지네이션 클래스는 이미 back/nav/display 처리됨
+    // hale, shared만 공통 back/display 사용
+    bool isManualPagination = (
+        StrEqual(classID, "scout") || StrEqual(classID, "scout_2") ||
+        StrEqual(classID, "medic") || StrEqual(classID, "medic_2") ||
+        StrEqual(classID, "soldier") || StrEqual(classID, "soldier_2") ||
+        StrEqual(classID, "pyro") || StrEqual(classID, "pyro_2") ||
+        StrEqual(classID, "spy") || StrEqual(classID, "spy_2") ||
+        StrEqual(classID, "demoman") || StrEqual(classID, "demoman_2") ||
+        StrEqual(classID, "sniper") || StrEqual(classID, "sniper_2") ||
+        StrEqual(classID, "engineer") || StrEqual(classID, "engineer_2") ||
+        StrEqual(classID, "heavy") || StrEqual(classID, "heavy_2")
+    );
+
+    if (!isManualPagination)
     {
         menu.AddItem("back", "상위 메뉴로 돌아가기");
     }
 
     menu.ExitButton = true;
 
-    // 메뉴 페이지 복원
-    if (StrEqual(classID, "scout") || StrEqual(classID, "scout_2"))
+    if (isManualPagination)
     {
-        // 스카웃은 수동 페이지네이션 - 항상 처음부터
         menu.Display(client, MENU_TIME_FOREVER);
     }
     else if (g_prevOpenMenuPage == -1)
@@ -693,206 +725,192 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
 
             Menu_ShowClassStatDetail(client, wasPage2 ? "scout_2" : "scout");
         }
+        // ---- 페이지 네비게이션 ----
+        else if (StrEqual(info, "medic_next")) { Menu_ShowClassStatDetail(client, "medic_2"); }
+        else if (StrEqual(info, "medic_prev")) { Menu_ShowClassStatDetail(client, "medic"); }
+        else if (StrEqual(info, "soldier_next")) { Menu_ShowClassStatDetail(client, "soldier_2"); }
+        else if (StrEqual(info, "soldier_prev")) { Menu_ShowClassStatDetail(client, "soldier"); }
+        else if (StrEqual(info, "pyro_next")) { Menu_ShowClassStatDetail(client, "pyro_2"); }
+        else if (StrEqual(info, "pyro_prev")) { Menu_ShowClassStatDetail(client, "pyro"); }
+        else if (StrEqual(info, "spy_next")) { Menu_ShowClassStatDetail(client, "spy_2"); }
+        else if (StrEqual(info, "spy_prev")) { Menu_ShowClassStatDetail(client, "spy"); }
+        else if (StrEqual(info, "demoman_next")) { Menu_ShowClassStatDetail(client, "demoman_2"); }
+        else if (StrEqual(info, "demoman_prev")) { Menu_ShowClassStatDetail(client, "demoman"); }
+        else if (StrEqual(info, "sniper_next")) { Menu_ShowClassStatDetail(client, "sniper_2"); }
+        else if (StrEqual(info, "sniper_prev")) { Menu_ShowClassStatDetail(client, "sniper"); }
+        else if (StrEqual(info, "engineer_next")) { Menu_ShowClassStatDetail(client, "engineer_2"); }
+        else if (StrEqual(info, "engineer_prev")) { Menu_ShowClassStatDetail(client, "engineer"); }
+        else if (StrEqual(info, "heavy_next")) { Menu_ShowClassStatDetail(client, "heavy_2"); }
+        else if (StrEqual(info, "heavy_prev")) { Menu_ShowClassStatDetail(client, "heavy"); }
+        // ---- 메딕 스탯 업그레이드 (키: "medicN_<idx>") ----
         else if (StrContains(info, "medic") != -1)
         {
-            if (g_attributeTable[CLASS_MEDIC][item].max > g_playerAttributes[client][CLASS_MEDIC][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_MEDIC][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_MEDIC][item].point;
-                    g_playerAttributes[client][CLASS_MEDIC][item].upgrade++;
+            bool wasPage2 = (info[5] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[7]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_MEDIC][idx].max > g_playerAttributes[client][CLASS_MEDIC][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_MEDIC][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_MEDIC][idx].point;
+                    g_playerAttributes[client][CLASS_MEDIC][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Medic[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_MEDIC][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Medic[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_MEDIC][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "medic");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "medic_2" : "medic");
         }
+        // ---- 솔져 스탯 업그레이드 (키: "soldierN_<idx>") ----
         else if (StrContains(info, "soldier") != -1)
         {
-            if (g_attributeTable[CLASS_SOLDIER][item].max > g_playerAttributes[client][CLASS_SOLDIER][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SOLDIER][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SOLDIER][item].point;
-                    g_playerAttributes[client][CLASS_SOLDIER][item].upgrade++;
+            bool wasPage2 = (info[7] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[9]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_SOLDIER][idx].max > g_playerAttributes[client][CLASS_SOLDIER][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SOLDIER][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SOLDIER][idx].point;
+                    g_playerAttributes[client][CLASS_SOLDIER][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Soldier[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_SOLDIER][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Soldier[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_SOLDIER][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "soldier");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "soldier_2" : "soldier");
         }
+        // ---- 파이로 스탯 업그레이드 (키: "pyroN_<idx>") ----
         else if (StrContains(info, "pyro") != -1)
         {
-            if (g_attributeTable[CLASS_PYRO][item].max > g_playerAttributes[client][CLASS_PYRO][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_PYRO][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_PYRO][item].point;
-                    g_playerAttributes[client][CLASS_PYRO][item].upgrade++;
+            bool wasPage2 = (info[4] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[6]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_PYRO][idx].max > g_playerAttributes[client][CLASS_PYRO][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_PYRO][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_PYRO][idx].point;
+                    g_playerAttributes[client][CLASS_PYRO][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Pyro[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_PYRO][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Pyro[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_PYRO][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "pyro");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "pyro_2" : "pyro");
         }
+        // ---- 스파이 스탯 업그레이드 (키: "spyN_<idx>") ----
         else if (StrContains(info, "spy") != -1)
         {
-            if (g_attributeTable[CLASS_SPY][item].max > g_playerAttributes[client][CLASS_SPY][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SPY][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SPY][item].point;
-                    g_playerAttributes[client][CLASS_SPY][item].upgrade++;
+            bool wasPage2 = (info[3] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[5]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_SPY][idx].max > g_playerAttributes[client][CLASS_SPY][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SPY][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SPY][idx].point;
+                    g_playerAttributes[client][CLASS_SPY][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Spy[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_SPY][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Spy[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_SPY][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "spy");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "spy_2" : "spy");
         }
+        // ---- 데모맨 스탯 업그레이드 (키: "demomanN_<idx>") ----
         else if (StrContains(info, "demoman") != -1)
         {
-            if (g_attributeTable[CLASS_DEMOMAN][item].max > g_playerAttributes[client][CLASS_DEMOMAN][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_DEMOMAN][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_DEMOMAN][item].point;
-                    g_playerAttributes[client][CLASS_DEMOMAN][item].upgrade++;
+            bool wasPage2 = (info[7] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[9]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_DEMOMAN][idx].max > g_playerAttributes[client][CLASS_DEMOMAN][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_DEMOMAN][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_DEMOMAN][idx].point;
+                    g_playerAttributes[client][CLASS_DEMOMAN][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Demoman[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_DEMOMAN][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Demoman[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_DEMOMAN][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "demoman");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "demoman_2" : "demoman");
         }
+        // ---- 스나이퍼 스탯 업그레이드 (키: "sniperN_<idx>") ----
         else if (StrContains(info, "sniper") != -1)
         {
-            if (g_attributeTable[CLASS_SNIPER][item].max > g_playerAttributes[client][CLASS_SNIPER][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SNIPER][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SNIPER][item].point;
-                    g_playerAttributes[client][CLASS_SNIPER][item].upgrade++;
+            bool wasPage2 = (info[6] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[8]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_SNIPER][idx].max > g_playerAttributes[client][CLASS_SNIPER][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_SNIPER][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SNIPER][idx].point;
+                    g_playerAttributes[client][CLASS_SNIPER][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Sniper[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_SNIPER][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Sniper[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_SNIPER][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "sniper");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "sniper_2" : "sniper");
         }
+        // ---- 엔지니어 스탯 업그레이드 (키: "engineerN_<idx>") ----
         else if (StrContains(info, "engineer") != -1)
         {
-            if (g_attributeTable[CLASS_ENGINEER][item].max > g_playerAttributes[client][CLASS_ENGINEER][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_ENGINEER][item].point)
-                {
-                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_ENGINEER][item].point;
-                    g_playerAttributes[client][CLASS_ENGINEER][item].upgrade++;
+            bool wasPage2 = (info[8] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[10]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_ENGINEER][idx].max > g_playerAttributes[client][CLASS_ENGINEER][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_ENGINEER][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_ENGINEER][idx].point;
+                    g_playerAttributes[client][CLASS_ENGINEER][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Engineer[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_ENGINEER][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Engineer[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_ENGINEER][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "engineer");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "engineer_2" : "engineer");
         }
+        // ---- 헤비 스탯 업그레이드 (키: "heavyN_<idx>") ----
         else if (StrContains(info, "heavy") != -1)
         {
-            if (g_attributeTable[CLASS_HEAVY][item].max > g_playerAttributes[client][CLASS_HEAVY][item].upgrade)
-            {
-                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_HEAVY][item].point)
-                {
-                   g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_HEAVY][item].point;
-                   g_playerAttributes[client][CLASS_HEAVY][item].upgrade++;
+            bool wasPage2 = (info[5] == '2');
+            char indexStr[8]; strcopy(indexStr, sizeof(indexStr), info[7]);
+            int idx = StringToInt(indexStr);
 
-                    // 즉시 저장
+            if (g_attributeTable[CLASS_HEAVY][idx].max > g_playerAttributes[client][CLASS_HEAVY][idx].upgrade)
+            {
+                if (g_playerDataList[client].skillpoint >= g_attributeTable[CLASS_HEAVY][idx].point)
+                {
+                    g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_HEAVY][idx].point;
+                    g_playerAttributes[client][CLASS_HEAVY][idx].upgrade++;
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Heavy[%d] upgrade=%d",
-                                 client, item,g_playerAttributes[client][CLASS_HEAVY][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Heavy[%d] upgrade=%d", client, idx, g_playerAttributes[client][CLASS_HEAVY][idx].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
-            g_prevOpenMenuPage = GetMenuSelectionPosition();
-            Menu_ShowClassStatDetail(client, "heavy");
+            Menu_ShowClassStatDetail(client, wasPage2 ? "heavy_2" : "heavy");
         }
+        // ---- 헤일 (수동 페이지네이션 없음, 원래 방식) ----
         else if (StrContains(info, "hale") != -1)
         {
             if (g_attributeTable[CLASS_HALE][item].max > g_playerAttributes[client][CLASS_HALE][item].upgrade)
@@ -901,23 +919,16 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
                 {
                     g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_HALE][item].point;
                     g_playerAttributes[client][CLASS_HALE][item].upgrade++;
-
-                    // 즉시 저장
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Hale[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_HALE][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Hale[%d] upgrade=%d", client, item, g_playerAttributes[client][CLASS_HALE][item].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
             g_prevOpenMenuPage = GetMenuSelectionPosition();
             Menu_ShowClassStatDetail(client, "hale");
         }
+        // ---- 공용 (수동 페이지네이션 없음, 원래 방식) ----
         else if (StrContains(info, "shared") != -1)
         {
             if (g_attributeTable[CLASS_SHARED][item].max > g_playerAttributes[client][CLASS_SHARED][item].upgrade)
@@ -926,20 +937,12 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
                 {
                     g_playerDataList[client].skillpoint -= g_attributeTable[CLASS_SHARED][item].point;
                     g_playerAttributes[client][CLASS_SHARED][item].upgrade++;
-
-                    // 즉시 저장
                     DB_SavePlayerData(client);
                     DB_SaveAllAttributes(client);
-
-                    PrintToServer("스탯 찍음: Client %d - Shared[%d] upgrade=%d",
-                                 client, item, g_playerAttributes[client][CLASS_SHARED][item].upgrade);
+                    PrintToServer("스탯 찍음: Client %d - Shared[%d] upgrade=%d", client, item, g_playerAttributes[client][CLASS_SHARED][item].upgrade);
                 }
-                else
-                {
-                    PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다.");
-                }
+                else { PrintToChat(client, "스킬 포인트가 모자라 강화할 수 없습니다."); }
             }
-
             g_prevOpenMenuPage = GetMenuSelectionPosition();
             Menu_ShowClassStatDetail(client, "shared");
         }
