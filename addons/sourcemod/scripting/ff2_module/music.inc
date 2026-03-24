@@ -78,7 +78,16 @@ public int GetRandomBGM(int client, KeyValues characterKv, char[] path, int buff
 	characterKv.Rewind();
 	characterKv.GetString("name", bossName, sizeof(bossName));
 
-	if(!characterKv.JumpToKey("sounds"))		return -1;
+	// Try "sounds" section first (original format), then "sound_bgm" (FF2R format)
+	bool isFF2RFormat = false;
+	if(!characterKv.JumpToKey("sounds"))
+	{
+		characterKv.Rewind();
+		if(!characterKv.JumpToKey("sound_bgm"))
+			return -1;
+
+		isFF2RFormat = true;
+	}
 
 	KeyValues kv = new KeyValues("sounds");
 	ArrayList musicArray = new ArrayList();
@@ -124,7 +133,12 @@ public int GetRandomBGM(int client, KeyValues characterKv, char[] path, int buff
 
 	kv.GetSectionName(path, buffer);
 	time = kv.GetFloat("time");
-	kv.GetString("information", information, informationBuffer);
+
+	// FF2R format uses "name" key, original uses "information"
+	if(isFF2RFormat)
+		kv.GetString("name", information, informationBuffer);
+	else
+		kv.GetString("information", information, informationBuffer);
 
 	if(kv.JumpToKey("phase"))
 	{
@@ -144,7 +158,11 @@ public bool TryPlayNextPhase(int client, KeyValues characterKv, const char[] pat
 {
 	characterKv.Rewind();
 	if(!characterKv.JumpToKey("sounds"))
-		return false;
+	{
+		characterKv.Rewind();
+		if(!characterKv.JumpToKey("sound_bgm"))
+			return false;
+	}
 
 	// Yes, JumpToKey does't work on the names with slash.
 	// Linear solution

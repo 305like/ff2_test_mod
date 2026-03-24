@@ -130,8 +130,10 @@ public void LoadCharacter(const char[] characterName)
 	bossesArrayOriginal.Push(kv);
 	kv.ImportFromFile(config);
 
-	int version=kv.GetNum("version", 1);
-	// if(version!=StringToInt(MAJOR_REVISION))
+	int version=kv.GetNum("version", 0);
+	if(version <= 0)
+		version = kv.GetNum("fversion", 0); // FF2R format uses "fversion"
+
 	if(version<=1)
 	{
 		LogError("[FF2 Bosses] Character %s is only compatible with FF2 v%i!", characterName, version);
@@ -195,6 +197,42 @@ public void LoadCharacter(const char[] characterName)
 			}
 		}
 		while(kv.GotoNextKey());
+	}
+	else
+	{
+		// FF2R format: precache sounds from individual sound_* sections
+		static char ff2rSoundSections[][] = {
+			"sound_bgm", "sound_ability", "sound_begin", "sound_death",
+			"sound_kill", "sound_kspree", "sound_lastman", "sound_stabbed", "sound_win"
+		};
+
+		for(int s = 0; s < sizeof(ff2rSoundSections); s++)
+		{
+			kv.Rewind();
+			if(kv.JumpToKey(ff2rSoundSections[s]))
+			{
+				if(kv.GotoFirstSubKey(false))
+				{
+					do
+					{
+						kv.GetSectionName(file, sizeof(file));
+						if(file[0] != '\0')
+						{
+							Format(filePath, sizeof(filePath), "sound/%s", file);
+							if(FileExists(filePath, true))
+							{
+								PrecacheSound(file);
+							}
+							else
+							{
+								LogError("[FF2 Bosses] Character %s is missing file '%s'!", characterName, filePath);
+							}
+						}
+					}
+					while(kv.GotoNextKey(false));
+				}
+			}
+		}
 	}
 
 	kv.Rewind();
@@ -284,13 +322,59 @@ public void LoadCharacter(const char[] characterName)
 		}
 		while(kv.GotoNextKey());
 	}
-/*
-	kv.Rewind();
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "data/ff2_dumps/%s.txt", characterName);
-	OpenFile(path, "w");
-	kv.ExportToFile(path);
-*/
+	else
+	{
+		// FF2R format: "download" section with "path" "type" pairs
+		kv.Rewind();
+		if(kv.JumpToKey("download"))
+		{
+			if(kv.GotoFirstSubKey(false))
+			{
+				char dlType[16];
+				do
+				{
+					kv.GetSectionName(file, sizeof(file));
+					kv.GetString(NULL_STRING, dlType, sizeof(dlType));
+
+					if(StrEqual(dlType, "mdl"))
+					{
+						for(int extension; extension<sizeof(extensions); extension++)
+						{
+							Format(filePath, sizeof(filePath), "%s%s", file, extensions[extension]);
+							if(extension == 0)
+								PrecacheModel(filePath);
+							if(FileExists(filePath, true))
+								AddFileToDownloadsTable(filePath);
+						}
+					}
+					else if(StrEqual(dlType, "mat"))
+					{
+						Format(filePath, sizeof(filePath), "%s.vmt", file);
+						if(FileExists(filePath, true))
+							AddFileToDownloadsTable(filePath);
+
+						Format(filePath, sizeof(filePath), "%s.vtf", file);
+						if(FileExists(filePath, true))
+							AddFileToDownloadsTable(filePath);
+					}
+					else
+					{
+						// Single file (no extension type or empty)
+						if(FileExists(file, true))
+							AddFileToDownloadsTable(file);
+
+						// Also precache sounds
+						if(StrContains(file, "sound/") == 0)
+						{
+							strcopy(filePath, sizeof(filePath), file[6]); // Skip "sound/"
+							PrecacheSound(filePath);
+						}
+					}
+				}
+				while(kv.GotoNextKey(false));
+			}
+		}
+	}
 }
 
 public bool PickCharacter(int boss, int companion)
