@@ -1457,7 +1457,7 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 			}
 		}
 
-		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
+		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
 		for(int client=1; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client) && !IsFakeClient(client))
@@ -1542,7 +1542,7 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 		}
 	}
 
-	SetHudTextParams(-1.0, 0.3, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.3, 10.0, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
 	PrintCenterTextAll("");
 
 	char text[128];  //Do not decl this
@@ -5385,7 +5385,7 @@ public Action OnTakeDamageAlive(int client, int& iAttacker, int& inflictor, floa
 
 	if(iAttacker <= 0 || client == iAttacker)
 	{
-		if(IsBoss(client))
+		if(IsBoss(client) && TF2_GetClientTeam(client) == BossTeam)
 		{
 			int boss = GetBossIndex(client);
 			KeyValues bossKv = GetBossKV(boss);

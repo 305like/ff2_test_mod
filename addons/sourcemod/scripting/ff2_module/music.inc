@@ -282,12 +282,12 @@ void PlayBGM(int client)
 			{
 				if(information[0] != '\0')
 				{
-					CPrintToChat(client, "{olive}[FF2]{default} Now Playing: %s", information);
+					CPrintToChat(client, "{olive}[FF2]{default} 현재 재생: %s", information);
 				}
 				else
 				{
 					GetBossName(GetBossIndex(Boss[0]), information, sizeof(information), client);
-					CPrintToChat(client, "{olive}[FF2]{default} Now Playing: %T", "Boss Music Info", client, information, index + 1);
+					CPrintToChat(client, "{olive}[FF2]{default} 현재 재생: %T", "Boss Music Info", client, information, index + 1);
 				}
 			}
 		}
