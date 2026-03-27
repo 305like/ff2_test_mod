@@ -147,6 +147,7 @@ int MaxPlayersAlive[TFTeam_MAXLimit];
 int Charset;
 bool Enabled;
 int RoundStatus;
+bool SetupFinished;	// teamplay_setup_finished 이후 true (게이트 열림)
 bool PluginsEnabled;
 Handle PlayerHud;
 Handle ThisPlugin;

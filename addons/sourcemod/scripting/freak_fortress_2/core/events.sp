@@ -27,7 +27,7 @@ void Events_PluginStart()
 	HookEvent("teamplay_broadcast_audio", Events_BroadcastAudio, EventHookMode_Pre);
 	HookEvent("teamplay_point_captured", Events_PointCaptured, EventHookMode_Post);
 	HookEvent("teamplay_round_win", Events_RoundEnd, EventHookMode_Post);
-	HookEvent("teamplay_setup_finished", Events_RoundStart, EventHookMode_Post);
+	HookEvent("teamplay_setup_finished", Events_SetupFinished, EventHookMode_Post);
 }
 
 void Events_RoundSetup()
@@ -166,6 +166,24 @@ static Action Events_RoundStart(Event event, const char[] name, bool dontBroadca
 	// Disables the siren noise
 	event.BroadcastDisabled = true;
 	return Plugin_Changed;
+}
+
+static void Events_SetupFinished(Event event, const char[] name, bool dontBroadcast)
+{
+	SetupFinished = true;
+
+	// 게이트 열림 → 어트리뷰 적용을 위해 모든 비보스 플레이어 리젠
+	if(Enabled)
+	{
+		for(int client = 1; client <= MaxClients; client++)
+		{
+			if(IsClientInGame(client) && IsPlayerAlive(client) && !Client(client).IsBoss && !Client(client).MinionType)
+			{
+				TF2Tools_RegeneratePlayer(client);
+				TF2_RefillMaxAmmo(client);
+			}
+		}
+	}
 }
 
 static void Events_RoundEnd(Event event, const char[] name, bool dontBroadcast)
