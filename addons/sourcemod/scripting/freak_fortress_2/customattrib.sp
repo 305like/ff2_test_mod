@@ -1062,7 +1062,7 @@ void WeaponSpecial_HomingSetup(int client)
 	g_flHomingStrength[client] = 0.0;
 	g_bHomingBodyTarget[client] = false;
 
-	if(Client(client).IsBoss || !SetupFinished)
+	if(Client(client).IsBoss || !IsRoundActive())
 		return;
 
 	// Secondary weapons: Flare Gun / Detonator / Scorch Shot

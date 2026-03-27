@@ -119,7 +119,6 @@ void Gamemode_RoundSetup()
 {
 	HealingFor = 0.0;
 	RoundStatus = 0;
-	SetupFinished = false;
 	WinnerOverride = -1;
 	
 	Gamemode_RoundReset();

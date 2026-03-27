@@ -10,7 +10,7 @@
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle& item)
 {
-	if(!Enabled || !SetupFinished || GameRules_GetProp("m_bInWaitingForPlayers", 1))
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -2226,7 +2226,7 @@ static float g_flLastCharge[MAXPLAYERS+1]; // 이전 프레임 m_flChargeMeter �
 // =========================================================================
 void WeaponSpecial_OnGameFrame()
 {
-	if(!Enabled || !SetupFinished)
+	if(!Enabled || !IsRoundActive())
 		return;
 
 	for(int client = 1; client <= MaxClients; client++)
@@ -2252,7 +2252,7 @@ void WeaponSpecial_OnGameFrame()
 
 Action WeaponSpecial_PlayerRunCmd(int client, int &buttons, int &impulse)
 {
-	if(!Enabled || !SetupFinished || !IsClientInGame(client) || !IsPlayerAlive(client))
+	if(!Enabled || !IsRoundActive() || !IsClientInGame(client) || !IsPlayerAlive(client))
 		return Plugin_Continue;
 
 	// 방패 차지미터 저장 (돌격 감지용)
@@ -2898,7 +2898,7 @@ void WeaponSpecial_DetectShield(int client)
 // 1초마다 과충전 증가 (+5/sec, 최대 100)
 public Action WeaponSpecial_OverChargeTimer(Handle timer)
 {
-	if(!Enabled || !SetupFinished)
+	if(!Enabled || !IsRoundActive())
 		return Plugin_Continue;
 
 	for(int client = 1; client <= MaxClients; client++)
