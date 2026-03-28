@@ -1039,9 +1039,9 @@ bool WeaponSpecial_IsBackAttack(int attacker, int victim)
 // ============================================================
 #define HOMING_LIMIT 2049
 
-static bool g_bHomingEnabled[MAXTF2PLAYERS];
-static float g_flHomingStrength[MAXTF2PLAYERS];
-static bool g_bHomingBodyTarget[MAXTF2PLAYERS];	// true = 몸통 유도, false = 머리(눈) 유도
+bool g_bHomingEnabled[MAXTF2PLAYERS];
+float g_flHomingStrength[MAXTF2PLAYERS];
+bool g_bHomingBodyTarget[MAXTF2PLAYERS];	// true = 몸통 유도, false = 머리(눈) 유도
 static int g_iHomingOwner[HOMING_LIMIT];
 static Handle g_hHomingTimer[HOMING_LIMIT];
 static float g_flHomingProjStr[HOMING_LIMIT];
@@ -1065,6 +1065,7 @@ static bool IsHomingProjectileClass(const char[] classname)
 	return (StrContains(classname, "tf_projectile_flare") != -1 ||
 		StrContains(classname, "tf_projectile_arrow") != -1 ||
 		StrContains(classname, "tf_projectile_energy_ball") != -1 ||
+		StrContains(classname, "tf_projectile_energy_ring") != -1 ||
 		StrContains(classname, "tf_projectile_rocket") != -1 ||
 		StrContains(classname, "tf_projectile_sentryrocket") != -1 ||
 		StrEqual(classname, "tf_projectile_jar_gas") ||

@@ -142,13 +142,15 @@ void Gamemode_RoundSetup()
 		}
 		else if(!GameRules_GetProp("m_bInWaitingForPlayers", 1))
 		{
+			Cvar[MovementFreeze].BoolValue = false;
 			MercTeam = TFTeam_Red;
 
 			Dome_RoundSetup();
 			Goomba_RoundSetup();
 			
+			Cvar[PreroundTime].SetInt(6);
 			float preround = Cvar[PreroundTime].FloatValue;
-			CreateTimer(preround / 2.857143, Gamemode_IntroTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.5, Gamemode_IntroTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(preround - 0.1, Gamemode_SetControlPoint, _, TIMER_FLAG_NO_MAPCHANGE);
 			
 			int bosses = Cvar[BossVsBoss].IntValue;
@@ -192,6 +194,9 @@ void Gamemode_RoundSetup()
 						}
 					}
 				}
+
+				// BvB 보스 선정 완료 → 어트리뷰/특수무기코드 활성화
+				CombatActive = true;
 			}
 			else	// Standard FF2
 			{
@@ -242,6 +247,8 @@ void Gamemode_RoundSetup()
 						ChangeClientTeam(players[i], MercTeam);
 						SetEntProp(players[i], Prop_Send, "m_lifeState", 0);
 					}
+					// Standard FF2 보스 선정 완료 → 어트리뷰/특수무기코드 활성화
+					CombatActive = true;
 				}
 				else	// No boss, normal Arena time
 				{
@@ -272,7 +279,23 @@ void Gamemode_RoundSetup()
 				}
 			}
 		}
+
+		// 프리라운드: 0.1초 간격 반복 타이머로 이동 봉인 (자살/리스폰 대응)
+		CreateTimer(0.1, Gamemode_FreezePlayers, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
+}
+
+static Action Gamemode_FreezePlayers(Handle timer)
+{
+	if(RoundStatus == 1)
+		return Plugin_Stop;
+
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		if(IsClientInGame(client) && IsPlayerAlive(client))
+			SetEntityMoveType(client, MOVETYPE_NONE);
+	}
+	return Plugin_Continue;
 }
 
 public void TF2_OnWaitingForPlayersStart()
@@ -425,11 +448,18 @@ void Gamemode_RoundStart()
 	// Rare map instances of round start being called multiple times
 	if(RoundStatus == 1)
 		return;
-	
+
 	RoundStatus = 1;
-	
+
+	// 카운트다운 끝 → 모든 플레이어 이동 해제
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && IsPlayerAlive(i))
+			SetEntityMoveType(i, MOVETYPE_WALK);
+	}
+
 	Events_CheckAlivePlayers(_, _, true);
-	
+
 	if(Enabled && !GameRules_GetProp("m_bInWaitingForPlayers", 1))
 	{
 		WeaponSpecial_BannerStart();
@@ -456,7 +486,7 @@ void Gamemode_RoundStart()
 				else
 				{
 					merc[mercs++] = client;
-					
+
 					if(IsPlayerAlive(client))
 					{
 						if(!bvb && team != MercTeam)
@@ -555,7 +585,7 @@ void Gamemode_RoundStart()
 
 		delete teams;
 	}
-	
+
 	Music_RoundStart();
 }
 

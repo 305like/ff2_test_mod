@@ -163,9 +163,6 @@ static Action Events_RoundStart(Event event, const char[] name, bool dontBroadca
 	LastMann = false;
 	Gamemode_RoundStart();
 
-	// RoundState가 Stalemate으로 전환된 후 regenerate (어트리뷰트 적용)
-	CreateTimer(0.5, Timer_ApplyWeaponAttributes, _, TIMER_FLAG_NO_MAPCHANGE);
-
 	// Disables the siren noise
 	event.BroadcastDisabled = true;
 	return Plugin_Changed;
@@ -348,7 +345,6 @@ static Action Events_InventoryApplication(Event event, const char[] name, bool d
 		if(Client(client).IsBoss)
 		{
 			Bosses_Equip(client);
-			Weapons_ChangeMenu(client, Cvar[PreroundTime].IntValue);
 		}
 		else if(Enabled && !Client(client).MinionType)
 		{
@@ -393,9 +389,6 @@ static Action Events_InventoryApplication(Event event, const char[] name, bool d
 			// Because minion plugins don't swap em back
 			SetVariantString(NULL_STRING);
 			AcceptEntityInput(client, "SetCustomModelWithClassAnimations");
-			
-			if(!Client(client).NoChanges && RoundStatus == 0 && GetClientMenu(client) == MenuSource_None)
-				Weapons_ChangeMenu(client, Cvar[PreroundTime].IntValue);
 		}
 		
 		CustomAttrib_OnInventoryApplication(userid);
@@ -404,6 +397,9 @@ static Action Events_InventoryApplication(Event event, const char[] name, bool d
 			WeaponSpecial_HomingSetup(client);
 		}
 		WeaponSpecial_DetectShield(client);
+
+		// 보스라운드: 스파이 제외 모든 클래스 근접무기 크리
+		WeaponSpecial_MeleeCritSetup(client);
 	}
 	return Plugin_Continue;
 }

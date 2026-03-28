@@ -10,7 +10,7 @@
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle& item)
 {
-	if(!Enabled || !IsRoundActive())
+	if(!CombatActive)
 	{
 		return Plugin_Continue;
 	}
@@ -2274,6 +2274,9 @@ Action WeaponSpecial_PlayerRunCmd(int client, int &buttons, int &impulse)
 		}
 	}
 
+	// 근접무기 크리
+	WeaponSpecial_MeleeCritCheck(client);
+
 	// 자토이치 명예의 구속
 	Action zatoResult = WeaponSpecial_ZatoichiRunCmd(client, buttons, impulse);
 	if(zatoResult != Plugin_Continue)
@@ -2856,6 +2859,33 @@ void WeaponSpecial_ResetCozy(int client)
 }
 
 // =========================================================================
+// 근접무기 크리 — 스파이 제외, 보스라운드에서 근접무기 장착 시 크리 부여
+// =========================================================================
+static bool g_bMeleeCrit[MAXTF2PLAYERS];
+
+void WeaponSpecial_MeleeCritSetup(int client)
+{
+	// 보스라운드, 비보스, 스파이 제외일 때 활성화
+	g_bMeleeCrit[client] = (CombatActive && !Client(client).IsBoss && TF2_GetPlayerClass(client) != TFClass_Spy);
+}
+
+void WeaponSpecial_MeleeCritCheck(int client)
+{
+	if(!g_bMeleeCrit[client])
+		return;
+
+	int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(!IsValidEntity(activeWeapon))
+		return;
+
+	int meleeWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+	if(IsValidEntity(meleeWeapon) && activeWeapon == meleeWeapon)
+	{
+		TF2_AddCondition(client, TFCond_CritCanteen, 0.2);
+	}
+}
+
+// =========================================================================
 // 호밍(유도) 설정 — 무기별 호밍 강도 정의
 // =========================================================================
 void WeaponSpecial_HomingSetup(int client)
@@ -2918,12 +2948,12 @@ void WeaponSpecial_HomingSetup(int client)
 		else if(priIdx == 527)	// 과부 제조기
 		{
 			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.8;
+			g_flHomingStrength[client] = 0.9;
 		}
 		else if(priIdx == 588)	// 폼슨 6000
 		{
 			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.4;
+			g_flHomingStrength[client] = 0.9;
 		}
 	}
 }

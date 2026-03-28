@@ -1,0 +1,1316 @@
+"Phrases"
+{
+	"Prefix"
+	{
+		"en"		"{olive}[FF2]{default} "
+		"ko"		"{olive}[FF2]{default} "
+	}
+	"Available Commands"
+	{
+		"en"		"ff2 - Main Menu\nff2boss - Boss Listing\nff2queue - View Boss Queue\nff2music - Music Settings\nff2voice - Toggle Boss Voicelines\nff2weapons - View Weapon Changes\nff2hud - Toggle Round Stats HUD\nff2modifier - Modifier Listing"
+		"ko"		"ff2 - 메인 메뉴\nff2boss - 보스 목록\nff2queue - 보스 대기열\nff2music - 음악 설정\nff2voice - 보스 음성 토글\nff2weapons - 무기 변경 확인\nff2hud - 라운드 통계 HUD 토글\nff2modifier - 난이도 목록"
+	}
+
+	"Boss Spawned As"
+	{
+		"#format"	"{1:N},{2:s},{3:d}"
+		"en"		"{teamcolor}{1} {default}became {olive}{2} {default}with {olive}{3} {default}HP."
+		"ko"		"{teamcolor}{1} {default}님의 {olive}{2}{default}(으)로 등장! HP : {olive}{3}"
+	}
+	"Boss Spawned As Lives"
+	{
+		"#format"	"{1:N},{2:s},{3:d},{4:d}"
+		"en"		"{teamcolor}{1} {default}became {olive}{2} {default}with {olive}{3} (x{4}) {default}HP."
+		"ko"		"{teamcolor}{1} {default}님의 {olive}{2}{default}(으)로 등장! HP : {olive}{3} {default}(x{4})"
+	}
+	"Boss Spawn Hud"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{1} as {2}"
+		"ko"		"{1} 님의 {2}"
+	}
+	"You Dealt Damage"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"You dealt {olive}{1} {default}damage, healed {olive}{2} {default}health, and assisted in {olive}{3} {default}points."
+		"ko"		"피해량: {olive}{1}{default}, 치료량: {olive}{2}{default}, 어시스트: {olive}{3}"
+	}
+	"You Dealt Damage Hud"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"You dealt {1} damage, healed {2} health, and assisted in {3} points."
+		"ko"		"피해량: {1}, 치료량: {2}, 어시스트: {3}"
+	}
+	"Top 3"
+	{
+		"en"		"Most damage dealt by"
+		"ko"		"이번라운드 MVP"
+	}
+	"Round End Damage"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"Damage: {1} | Heal: {2} | Assist: {3}"
+		"ko"		"피해량: {1} | 치료량: {2} | 어시스트: {3}"
+	}
+	"Round End Boss HP"
+	{
+		"#format"	"{1:s},{2:d},{3:d}"
+		"en"		"{1} had {2} / {3} HP left."
+		"ko"		"{1} 남은 체력: {2} / {3}"
+	}
+	"Round End Players"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"Players alive: {1} / {2}"
+		"ko"		"생존한 플레이어: {1} / {2}"
+	}
+	"Boss Victory"
+	{
+		"en"		"Congratulations! You won!"
+		"ko"		"축하합니다! 승리했습니다!"
+	}
+	"Boss Defeat"
+	{
+		"en"		"You lost! Better luck next time."
+		"ko"		"아쉽습니다! 패배했습니다."
+	}
+	"Boss Had Health Left"
+	{
+		"#format"	"{1:s},{2:N},{3:d},{4:d}"
+		"en"		"{olive}{1} {default}({teamcolor}{2}{default}) had {olive}{3} {default}/ {olive}{4} {default}HP left."
+		"ko"		"{olive}{1} {default}({teamcolor}{2}{default}) 남은 체력: {olive}{3} {default}/ {olive}{4}"
+	}
+	"Boss Had Health Left Hud"
+	{
+		"#format"	"{1:s},{2:N},{3:d},{4:d}"
+		"en"		"{1} ({2}) had {3} / {4} HP left."
+		"ko"		"{1} ({2}) 남은 체력: {3} / {4}"
+	}
+	"Team Had Health Left Hud"
+	{
+		"#format"	"{1:t},{2:d},{3:d}"
+		"en"		"{1} had {2} / {3} HP left."
+		"ko"		"{1} 남은 체력: {2} / {3}"
+	}
+	"Team Had Players Left Hud"
+	{
+		"#format"	"{1:t},{2:d},{3:d}"
+		"en"		"{1} had {2} / {3} players alive."
+		"ko"		"{1} 생존: {2} / {3}명"
+	}
+	"Team 0"
+	{
+		"en"		"YLW Team"
+		"ko"		"노란팀"
+	}
+	"Team 1"
+	{
+		"en"		"GRN Team"
+		"ko"		"초록팀"
+	}
+	"Team 2"
+	{
+		"en"		"RED Team"
+		"ko"		"레드팀"
+	}
+	"Team 3"
+	{
+		"en"		"BLU Team"
+		"ko"		"블루팀"
+	}
+	"Team 4"
+	{
+		"en"		"GRN Team"
+		"ko"		"초록팀"
+	}
+	"Team 5"
+	{
+		"en"		"YLW Team"
+		"ko"		"노란팀"
+	}
+	"Point Unlocked"
+	{
+		"en"		"Control Point Unlocked"
+		"ko"		"점령 지점이 해제되었습니다"
+	}
+	"Lost Life"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} has 1 life left!"
+		"ko"		"{1}의 남은 목숨: 1!"
+	}
+	"Lost Lives"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"{1} has {2} lives left!"
+		"ko"		"{1}의 남은 목숨: {2}!"
+	}
+	"Boss Lives Left"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"Lives: {1} / {2}"
+		"ko"		"남은 목숨: {1} / {2}"
+	}
+	"Boss Rage Charge"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"RAGE: {1}％ / 100％ | ({2} / {3})"
+		"ko"		"분노 게이지: {1}％ / 100％ | ({2} / {3})"
+	}
+	"Boss Rage Ready"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"RAGE READY: {1}％ / 100％ | ({2} / {3})"
+		"ko"		"분노 준비 완료: {1}％ / 100％ | ({2} / {3})"
+	}
+	"Boss Rage Medic"
+	{
+		"en"		" | Call for Medic"
+		"ko"		" | 메딕 호출"
+	}
+	"Boss Mobility Time"
+	{
+		"#format"	"{1:.1f}"
+		"en"		"Mobility is not ready. {1}s"
+		"ko"		"이동기 쿨타임 {1}초"
+	}
+	"Boss Mobility Charge"
+	{
+		"#format"	"{1:d}"
+		"en"		"Mobility is not ready. {1}％"
+		"ko"		"이동기 준비중 {1}％"
+	}
+	"Boss Jump Time"
+	{
+		"#format"	"{1:.1f}"
+		"en"		"Super Jump is not ready. {1}s"
+		"ko"		"슈퍼점프 쿨타임 {1}초"
+	}
+	"Boss Jump Charge"
+	{
+		"#format"	"{1:d}"
+		"en"		"Super Jump is not ready. {1}％"
+		"ko"		"슈퍼점프 준비 {1}％"
+	}
+	"Boss Jump Ready"
+	{
+		"#format"	"{1:d}"
+		"en"		"Super Jump is ready. {1}％"
+		"ko"		"슈퍼점프 준비 완료 {1}％"
+	}
+	"Boss Jump Look"
+	{
+		"en"		" | Look Upwards & Release"
+		"ko"		" | 위를 보고 우클릭을 놓으세요"
+	}
+	"Boss Tele Time"
+	{
+		"#format"	"{1:.1f}"
+		"en"		"Teleport is not ready. {1}s"
+		"ko"		"텔레포트 쿨타임중 {1}초"
+	}
+	"Boss Tele Charge"
+	{
+		"#format"	"{1:d}"
+		"en"		"Teleport is not ready. {1}％"
+		"ko"		"텔레포트 준비중 {1}％"
+	}
+	"Boss Tele Ready"
+	{
+		"#format"	"{1:d}"
+		"en"		"Teleport is ready. {1}％"
+		"ko"		"텔레포트 발동준비 완료 {1}％"
+	}
+	"Boss Tele Look"
+	{
+		"en"		" | Look at Target & Release"
+		"ko"		" | 가까운 대상 또는 바라보고 있는 대상에게 텔레포트 됩니다"
+	}
+	"Boss Mobility 0"
+	{
+		"en"		" | Hold Primary Attack"
+		"ko"		" | 좌클릭 유지"
+	}
+	"Boss Mobility 1"
+	{
+		"en"		" | Hold Jump"
+		"ko"		" | 점프 유지"
+	}
+	"Boss Mobility 2"
+	{
+		"en"		" | Hold Duck"
+		"ko"		" | 앉기 유지"
+	}
+	"Boss Mobility 3"
+	{
+		"en"		" | Move Forward"
+		"ko"		" | 앞으로 이동"
+	}
+	"Boss Mobility 4"
+	{
+		"en"		" | Move Back"
+		"ko"		" | 뒤로 이동"
+	}
+	"Boss Mobility 9"
+	{
+		"en"		" | Move Left"
+		"ko"		" | 왼쪽 이동"
+	}
+	"Boss Mobility 10"
+	{
+		"en"		" | Move Right"
+		"ko"		" | 오른쪽 이동"
+	}
+	"Boss Mobility 11"
+	{
+		"en"		" | Hold Secondary Attack"
+		"ko"		" | 우클릭을 눌러 충전하세요"
+	}
+	"Boss Mobility 13"
+	{
+		"en"		" | Hold Reload"
+		"ko"		" | 재장전 유지"
+	}
+	"Boss Mobility 25"
+	{
+		"en"		" | Hold Special Attack"
+		"ko"		" | 특수 공격 유지"
+	}
+	"Current Stats Hud"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"Damage: {1} | Healing: {2} | Assisting: {3}"
+		"ko"		"피해량: {1} | 치료량: {2} | 어시스트: {3}"
+	}
+	"Viewing Stats Hud"
+	{
+		"#format"	"{1:N},{2:d},{3:d},{4:d}"
+		"en"		"{1} - Damage: {2} | Healing: {3} | Assisting: {4}"
+		"ko"		"{1} - 피해량: {2} | 치료량: {3} | 어시스트: {4}"
+	}
+	"Sapper Cooldown"
+	{
+		"#format"	"{1:d}"
+		"en"		"Sapper: {1}％"
+		"ko"		"교란기: {1}％"
+	}
+	"RPS Queue Win"
+	{
+		"#format"	"{1:d},{2:N}"
+		"en"		"You won {olive}{1} {default}queue points from {teamcolor}{2}{default}!"
+		"ko"		"{teamcolor}{2}{default}에게서 대기열 포인트 {olive}{1}{default}점을 획득했습니다!"
+	}
+	"RPS Queue Lost"
+	{
+		"#format"	"{1:d},{2:N}"
+		"en"		"You lost {olive}{1} {default}queue points to {teamcolor}{2}{default}!"
+		"ko"		"{teamcolor}{2}{default}에게 대기열 포인트 {olive}{1}{default}점을 잃었습니다!"
+	}
+
+	"Preference Updated"
+	{
+		"en"		"Your preferences and queue points were updated."
+		"ko"		"설정과 대기열 포인트가 업데이트되었습니다."
+	}
+	"Next Pack Vote"
+	{
+		"en"		"Boss Pack for Freak Fortress 2:\n "
+		"ko"		"FF2 보스 팩 투표:\n "
+	}
+	"Next Pack Voted"
+	{
+		"#format"	"{1:s}"
+		"en"		"The next boss pack will be {olive}{1}"
+		"ko"		"다음 보스 팩은 {olive}{1}{default}입니다"
+	}
+
+	"Command Selection"
+	{
+		"en"		"Boss Listing (/ff2boss)"
+		"ko"		"보스 목록 (/ff2boss)"
+	}
+	"Command Queue"
+	{
+		"en"		"View Boss Queue (/ff2queue)"
+		"ko"		"보스 대기열 (/ff2queue)"
+	}
+	"Command Music"
+	{
+		"en"		"Music Settings (/ff2music)"
+		"ko"		"음악 설정 (/ff2music)"
+	}
+	"Command Voice"
+	{
+		"en"		"Toggle Boss Voicelines (/ff2voice)"
+		"ko"		"보스 음성 토글 (/ff2voice)"
+	}
+	"Command Weapon"
+	{
+		"en"		"View Weapon Changes (/ff2weapons)"
+		"ko"		"무기 변경 확인 (/ff2weapons)"
+	}
+	"Command Hud"
+	{
+		"en"		"Toggle Round Stats HUD (/ff2hud)"
+		"ko"		"라운드 통계 HUD 토글 (/ff2hud)"
+	}
+	"Command Difficulty"
+	{
+		"en"		"Modifier Listing (/ff2modifier)"
+		"ko"		"난이도 목록 (/ff2modifier)"
+	}
+
+	"Boss Voices Disabled"
+	{
+		"en"		"Boss voices are now disabled."
+		"ko"		"보스 음성이 비활성화되었습니다."
+	}
+	"Boss Voices Enabled"
+	{
+		"en"		"Boss voices are now enabled."
+		"ko"		"보스 음성이 활성화되었습니다."
+	}
+
+	"Queue Menu"
+	{
+		"en"		"FF2 Boss Queue\n "
+		"ko"		"FF2 보스 대기열\n "
+	}
+	"Reset Queue Points"
+	{
+		"#format"	"{1:d}"
+		"en"		"{1} Queue Points"
+		"ko"		"대기열 포인트: {1}"
+	}
+	"Reset Queue Points Confirm"
+	{
+		"en"		"Reset your Queue Points?\n "
+		"ko"		"대기열 포인트를 초기화하시겠습니까?\n "
+	}
+
+	"Damage Hud Disabled"
+	{
+		"en"		"Round stats HUD is now disabled."
+		"ko"		"라운드 통계 HUD가 비활성화되었습니다."
+	}
+	"Damage Hud Enabled"
+	{
+		"en"		"Round stats HUD is now enabled."
+		"ko"		"라운드 통계 HUD가 활성화되었습니다."
+	}
+
+	"Add Points To"
+	{
+		"#format"	"{1:d},{2:t}"
+		"en"		"Gave {1} queue points to {2}."
+		"ko"		"{2}에게 대기열 포인트 {1}점을 지급했습니다."
+	}
+	"Remove Points From"
+	{
+		"#format"	"{1:d},{2:t}"
+		"en"		"Removed {1} queue points from {2}."
+		"ko"		"{2}에게서 대기열 포인트 {1}점을 제거했습니다."
+	}
+
+	"Target must be boss"
+	{
+		"en"		"This command can only be used on Freak Fortress 2 boss players."
+		"ko"		"이 명령어는 FF2 보스 플레이어에게만 사용할 수 있습니다."
+	}
+	"Created Boss On"
+	{
+		"#format"	"{1:t}"
+		"en"		"Toggled being a boss on {1}."
+		"ko"		"{1}의 보스 상태를 전환했습니다."
+	}
+	"Set Charge On"
+	{
+		"#format"	"{1:t}"
+		"en"		"Changed charge amount on {1}."
+		"ko"		"{1}의 차지량을 변경했습니다."
+	}
+
+	"Boss Override Command"
+	{
+		"en"		"FF2 Boss Override\n "
+		"ko"		"FF2 보스 강제 선택\n "
+	}
+	"No Override"
+	{
+		"en"		"No Override"
+		"ko"		"강제 선택 없음"
+	}
+	"Boss Not Found"
+	{
+		"en"		"Boss not found"
+		"ko"		"보스를 찾을 수 없습니다"
+	}
+	"Boss Overriden"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} will now be played next round"
+		"ko"		"다음 라운드에 {1}(이)가 등장합니다"
+	}
+	"Boss No Access"
+	{
+		"#format"	"{1:s}"
+		"en"		"You don't have permission to select {1}"
+		"ko"		"{1}을(를) 선택할 권한이 없습니다"
+	}
+	"No Boss Overriden"
+	{
+		"en"		"Removed queued boss override"
+		"ko"		"보스 강제 선택이 해제되었습니다"
+	}
+	"No Description"
+	{
+		"en"		"No Description"
+		"ko"		"설명 없음"
+	}
+
+	"Boss Selection Command"
+	{
+		"en"		"FF2 Boss Listing\n "
+		"ko"		"FF2 보스 목록\n "
+	}
+	"Clear Whitelist"
+	{
+		"en"		"Clear Whitelist"
+		"ko"		"화이트리스트 초기화"
+	}
+	"Clear Blacklist"
+	{
+		"en"		"Clear Blacklist"
+		"ko"		"블랙리스트 초기화"
+	}
+	"Clear All"
+	{
+		"en"		"Clear All"
+		"ko"		"전체 초기화"
+	}
+	"Disable Playing Boss"
+	{
+		"en"		"Disable Playing Boss"
+		"ko"		"이 보스 비활성화"
+	}
+	"Disable Playing Boss All"
+	{
+		"en"		"Disable Playing All Bosses"
+		"ko"		"모든 보스 비활성화"
+	}
+	"Enable Playing Boss"
+	{
+		"en"		"Enable Playing Boss"
+		"ko"		"이 보스 활성화"
+	}
+	"Enable Playing Boss All"
+	{
+		"en"		"Enable Playing All Bosses"
+		"ko"		"모든 보스 활성화"
+	}
+	"Boss No View"
+	{
+		"en"		"You may not have access to this boss or does not exist."
+		"ko"		"이 보스에 접근 권한이 없거나 존재하지 않습니다."
+	}
+	"Charset No View"
+	{
+		"en"		"You may not have access to this pack or does not exist."
+		"ko"		"이 팩에 접근 권한이 없거나 존재하지 않습니다."
+	}
+	"Boss Whitelist"
+	{
+		"#format"	"{1:s}"
+		"en"		"Whitelist {1}"
+		"ko"		"{1} 화이트리스트 추가"
+	}
+	"Boss Blacklist"
+	{
+		"#format"	"{1:s}"
+		"en"		"Blacklist {1}"
+		"ko"		"{1} 블랙리스트 추가"
+	}
+	"Boss Party"
+	{
+		"#format"	"{1:s}"
+		"en"		"Create Team for {1}"
+		"ko"		"{1} 파티 생성"
+	}
+	"Boss Party Menu"
+	{
+		"#format"	"{1:s}"
+		"en"		"FF2 Boss Party\n {1}\n "
+		"ko"		"FF2 보스 파티\n {1}\n "
+	}
+	"Boss Party Invited"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{1} invited you to join their party to play as {2}\n "
+		"ko"		"{1}님이 {2} 파티에 초대했습니다\n "
+	}
+	"Boss Party Accept"
+	{
+		"en"		"Accept"
+		"ko"		"수락"
+	}
+	"Boss Party Decline"
+	{
+		"en"		"Decline"
+		"ko"		"거절"
+	}
+	"Boss Party Block"
+	{
+		"en"		"Block (Use the TF2 mute menu)"
+		"ko"		"차단 (TF2 음소거 메뉴 사용)"
+	}
+	"Boss Party Leave"
+	{
+		"en"		"Leave Party"
+		"ko"		"파티 탈퇴"
+	}
+	"Boss Party Blank"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1}: ???"
+		"ko"		"{1}: ???"
+	}
+	"Boss Party Member"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1}: {2}"
+		"ko"		"{1}: {2}"
+	}
+	"Boss Party Invite"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1}: ??? (Invite)"
+		"ko"		"{1}: ??? (초대)"
+	}
+	"Boss Party Kick"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1}: {2} (Kick)"
+		"ko"		"{1}: {2} (추방)"
+	}
+	"Boss Party Pending"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1}: {2} (Pending)"
+		"ko"		"{1}: {2} (대기중)"
+	}
+	"Party You Kicked"
+	{
+		"#format"	"{1:s}"
+		"en"		"{red}You were kicked from the party as {olive}{1}{red}."
+		"ko"		"{red}{olive}{1}{red} 파티에서 추방되었습니다."
+	}
+	"Party You Left"
+	{
+		"#format"	"{1:s}"
+		"en"		"You have left the party as {olive}{1}{default}."
+		"ko"		"{olive}{1}{default} 파티에서 탈퇴했습니다."
+	}
+	"Party Member Invited"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{olive}{1} {red}invited you to their party to play as {olive}{2}{red}. Use {olive}/ff2boss {red}to accept the invite."
+		"ko"		"{olive}{1}{red}님이 {olive}{2}{red} 파티에 초대했습니다. {olive}/ff2boss{red}로 수락하세요."
+	}
+	"Party Member Joined"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{olive}{1} {red}joined the party as {olive}{2}{red}."
+		"ko"		"{olive}{1}{red}님이 {olive}{2}{red} 파티에 참가했습니다."
+	}
+	"Party Member Kicked"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{olive}{1} {red}was kicked from party as {olive}{2}{red}."
+		"ko"		"{olive}{1}{red}님이 {olive}{2}{red} 파티에서 추방되었습니다."
+	}
+	"Party Member Left"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"{olive}{1} {red}left the party as {olive}{2}{red}."
+		"ko"		"{olive}{1}{red}님이 {olive}{2}{red} 파티에서 탈퇴했습니다."
+	}
+	"Party Leader Left"
+	{
+		"#format"	"{1:N},{2:s},{3:N}"
+		"en"		"{olive}{1} {red}left the party as {olive}{2}{red}. {olive}{2} {red}now controls the party."
+		"ko"		"{olive}{1}{red}님이 {olive}{2}{red} 파티에서 탈퇴했습니다. {olive}{2}{red}님이 파티장이 됩니다."
+	}
+	"Legacy Boss Menu Command"
+	{
+		"en"		"This command will be removed in the near future, use /ff2boss instead."
+		"ko"		"이 명령어는 곧 제거됩니다. /ff2boss를 사용하세요."
+	}
+	"Boss Whitelisted"
+	{
+		"#format"	"{1:s}"
+		"en"		"Whitelisted {1}"
+		"ko"		"{1}을(를) 화이트리스트에 추가했습니다"
+	}
+	"Boss Blacklisted"
+	{
+		"#format"	"{1:s}"
+		"en"		"Blacklisted {1}"
+		"ko"		"{1}을(를) 블랙리스트에 추가했습니다"
+	}
+	"Boss Blacklist Full"
+	{
+		"#format"	"{1:d}"
+		"en"		"Blacklist is full with {1} bosses."
+		"ko"		"블랙리스트가 {1}개로 가득 찼습니다."
+	}
+	"View Creators"
+	{
+		"en"		"View Creators"
+		"ko"		"제작자 보기"
+	}
+	"Created By"
+	{
+		"en"		"Created By"
+		"ko"		"제작자"
+	}
+
+	"Now Playing"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"Now Playing: {orange}{2}{default}"
+		"ko"		"현재 재생중: {orange}{2}{default}"
+	}
+	"Unknown Song"
+	{
+		"en"		"Unknown Song"
+		"ko"		"알 수 없는 곡"
+	}
+	"Unknown Artist"
+	{
+		"en"		"Unknown Artist"
+		"ko"		"알 수 없는 아티스트"
+	}
+	"Music Disabled"
+	{
+		"en"		"Disabled boss music."
+		"ko"		"보스 음악이 비활성화되었습니다."
+	}
+	"Music Unknown Arg"
+	{
+		"#format"	"{1:s}"
+		"en"		"Unknown argument '{1}'\nArguments Available: 'on', 'off', 'next', 'shuffle', 'list', '#<song id>'"
+		"ko"		"알 수 없는 인자 '{1}'\n사용 가능한 인자: 'on', 'off', 'next', 'shuffle', 'list', '#<곡 번호>'"
+	}
+	"Music Menu"
+	{
+		"en"		"FF2 Music Settings\n "
+		"ko"		"FF2 음악 설정\n "
+	}
+	"Music Boss Pack"
+	{
+		"#format"	"{1:s}"
+		"en"		"Playlist: {1}\n "
+		"ko"		"재생 목록: {1}\n "
+	}
+	"Music Enable"
+	{
+		"en"		"Enable Boss Music"
+		"ko"		"보스 음악 활성화"
+	}
+	"Music Disable"
+	{
+		"en"		"Disable Boss Music"
+		"ko"		"보스 음악 비활성화"
+	}
+	"Music Random"
+	{
+		"en"		"Randomize Boss Music"
+		"ko"		"보스 음악 랜덤 재생"
+	}
+	"Music Skip"
+	{
+		"en"		"Play Next Song"
+		"ko"		"다음 곡 재생"
+	}
+	"Music Shuffle"
+	{
+		"en"		"Play Random Song"
+		"ko"		"랜덤 곡 재생"
+	}
+	"Music List"
+	{
+		"en"		"View Playlist"
+		"ko"		"재생 목록 보기"
+	}
+	"Music Downloading"
+	{
+		"en"		"Downloading"
+		"ko"		"다운로드 중"
+	}
+
+	"Difficulty Menu"
+	{
+		"en"		"FF2 Boss Modifiers\n "
+		"ko"		"FF2 보스 난이도\n "
+	}
+	"Disable Special Rounds"
+	{
+		"en"		"Disable Random Modifiers"
+		"ko"		"랜덤 난이도 비활성화"
+	}
+	"Enable Special Rounds"
+	{
+		"en"		"Enable Random Modifiers"
+		"ko"		"랜덤 난이도 활성화"
+	}
+	"Disabled Special Rounds"
+	{
+		"en"		"Random modifiers are now disabled."
+		"ko"		"랜덤 난이도가 비활성화되었습니다."
+	}
+	"Enabled Special Rounds"
+	{
+		"en"		"Random modifiers are now enabled."
+		"ko"		"랜덤 난이도가 활성화되었습니다."
+	}
+	"Unknown Difficulty"
+	{
+		"en"		"This difficulty does not exist."
+		"ko"		"존재하지 않는 난이도입니다."
+	}
+
+	"Current Rank"
+	{
+		"#format"	"{1:d}"
+		"en"		"Current Rank: {1}"
+		"ko"		"현재 랭크: {1}"
+	}
+	"Boss Rank"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"{1} Rank: {2}"
+		"ko"		"{1} 랭크: {2}"
+	}
+	"As Rank"
+	{
+		"#format"	"{1:d}"
+		"en"		"Rank {1}"
+		"ko"		"랭크 {1}"
+	}
+	"Rank Debuff"
+	{
+		"#format"	"{1:d}"
+		"en"		"({1}％ HP)"
+		"ko"		"({1}％ HP)"
+	}
+	"Boss Rank Increased"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"{teamcolor}{1} {default}rank increased to {olive}{2}{default}!"
+		"ko"		"{teamcolor}{1}{default}의 랭크가 {olive}{2}{default}로 상승했습니다!"
+	}
+	"Boss Rank Decreased"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"{teamcolor}{1} {default}rank decreased to {olive}{2}{default}!"
+		"ko"		"{teamcolor}{1}{default}의 랭크가 {olive}{2}{default}로 하락했습니다!"
+	}
+	"Boss Rank Decreased Score"
+	{
+		"#format"	"{1:s},{2:d},{3:d},{4:d}"
+		"en"		"{teamcolor}{1} {default}rank decreased to {olive}{2}{default}! ({3} of {4} kills)"
+		"ko"		"{teamcolor}{1}{default}의 랭크가 {olive}{2}{default}로 하락! ({4}킬 중 {3}킬)"
+	}
+	"Boss Rank Saved Score"
+	{
+		"#format"	"{1:s},{2:d},{3:d},{4:d}"
+		"en"		"{teamcolor}{1} {default}rank kept at {olive}{2}{default}! ({3} of {4} kills)"
+		"ko"		"{teamcolor}{1}{default}의 랭크 {olive}{2}{default} 유지! ({4}킬 중 {3}킬)"
+	}
+
+	"Boss Solo Rage"
+	{
+		"#format"	"{1:s}"
+		"en"		"{teamcolor}{1}{default} used solo rage!"
+		"ko"		"{teamcolor}{1}{default}이(가) 단독 분노를 사용했습니다!"
+	}
+	"Boss Solo Rage Success"
+	{
+		"en"		"{blue}It's super effective!"
+		"ko"		"{blue}효과는 굉장했다!"
+	}
+	"Boss Solo Rage Failure"
+	{
+		"en"		"{red}It's not very effective..."
+		"ko"		"{red}효과가 별로 없는 것 같다..."
+	}
+
+	"Rage Needs Summon"
+	{
+		"en"		"Needs Summonable Player"
+		"ko"		"소환 가능한 플레이어 필요"
+	}
+	"Rage Needs Partner"
+	{
+		"en"		"Needs Ally Boss"
+		"ko"		"아군 보스 필요"
+	}
+	"Rage Needs One Life"
+	{
+		"en"		"Last Life"
+		"ko"		"마지막 목숨"
+	}
+	"Rage Needs Ground"
+	{
+		"en"		"Ground"
+		"ko"		"지상"
+	}
+	"Boss HP"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"{1} / {2} HP"
+		"ko"		"{1} / {2} HP"
+	}
+	"Boss Lives"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"{1} / {2} Lives"
+		"ko"		"{1} / {2} 목숨"
+	}
+	"Ability Delay"
+	{
+		"#format"	"{1:.1f}"
+		"en"		"{1}s"
+		"ko"		"{1}초"
+	}
+	"Boss Rage"
+	{
+		"#format"	"{1:d}"
+		"en"		"{1}$ RAGE"
+		"ko"		"분노 {1}$"
+	}
+	"Boss Wall Jump"
+	{
+		"en"		"Wall Jumps - Jump while nearby a solid wall"
+		"ko"		"벽 점프 - 벽 근처에서 점프"
+	}
+	"Boss Weapon Pickups"
+	{
+		"en"		"Weapon Pickups - Pickup non-melee weapons to use them in combat"
+		"ko"		"무기 줍기 - 근접 외 무기를 주워 전투에 사용"
+	}
+	"Boss AMS Description"
+	{
+		"en"		"AMS - Press inspect key to see ability's description"
+		"ko"		"AMS - 검사 키를 눌러 능력 설명 확인"
+	}
+	"Button E"
+	{
+		"en"		"Call for Medic"
+		"ko"		"메딕 호출"
+	}
+	"Button 11"
+	{
+		"en"		"Secondary Attack"
+		"ko"		"보조 공격"
+	}
+	"Button 13"
+	{
+		"en"		"Reload"
+		"ko"		"재장전"
+	}
+	"Button 25"
+	{
+		"en"		"Special Attack"
+		"ko"		"특수 공격"
+	}
+	"Short E"
+	{
+		"en"		"E"
+		"ko"		"E"
+	}
+	"Short 11"
+	{
+		"en"		"M2"
+		"ko"		"M2"
+	}
+	"Short 13"
+	{
+		"en"		"R"
+		"ko"		"R"
+	}
+	"Short 25"
+	{
+		"en"		"M3"
+		"ko"		"M3"
+	}
+	"Boss Demo Charge 11"
+	{
+		"en"		"Demo Charge - Secondary Attack"
+		"ko"		"돌격 - 보조 공격"
+	}
+	"Boss Demo Charge 13"
+	{
+		"en"		"Demo Charge - Reload"
+		"ko"		"돌격 - 재장전"
+	}
+	"Boss Demo Charge 25"
+	{
+		"en"		"Demo Charge - Special Attack"
+		"ko"		"돌격 - 특수 공격"
+	}
+	"Gray Mann Bomb Spawned"
+	{
+		"en"		"A bomb has spawned!"
+		"ko"		"폭탄이 생성되었습니다!"
+	}
+	"Gray Mann Bomb Hint"
+	{
+		"en"		"Capture the control point with the bomb!"
+		"ko"		"폭탄을 들고 점령 지점을 점령하세요!"
+	}
+	"Gray Mann Engineer Bot Spawned"
+	{
+		"en"		"An Engineer has spawned in!"
+		"ko"		"엔지니어가 생성되었습니다!"
+	}
+	"Gray Mann Spy Bots Spawned"
+	{
+		"en"		"Spies has spawned in!"
+		"ko"		"스파이가 생성되었습니다!"
+	}
+	"Gray Mann Sentry Buster Spawned"
+	{
+		"en"		"Sentry Busters has spawned in!"
+		"ko"		"센트리 파괴자가 생성되었습니다!"
+	}
+	"Gray Mann Refund"
+	{
+		"#format"	"{1:d}"
+		"en"		"Refunded {1} resources for killing an ally"
+		"ko"		"아군 처치로 자원 {1}이(가) 환불되었습니다"
+	}
+
+	"Weapon Menu"
+	{
+		"en"		"FF2 Weapon Changes\n "
+		"ko"		"FF2 무기 변경사항\n "
+	}
+	"Weapon Menu Variant"
+	{
+		"#format"	"{1:s}"
+		"en"		"FF2 Weapon Changes\nVariant: {1} "
+		"ko"		"FF2 무기 변경사항\n변형: {1} "
+	}
+	"Disable Weapon Changes"
+	{
+		"en"		"Disable Pop-Up Menu"
+		"ko"		"팝업 메뉴 비활성화"
+	}
+	"Enable Weapon Changes"
+	{
+		"en"		"Enable Pop-Up Menu"
+		"ko"		"팝업 메뉴 활성화"
+	}
+	"Weapon Stripped"
+	{
+		"en"		"Stripped Existing Attributes"
+		"ko"		"기존 속성 제거됨"
+	}
+	"Primary"
+	{
+		"en"		"Primary"
+		"ko"		"주무기"
+	}
+	"Secondary"
+	{
+		"en"		"Secondary"
+		"ko"		"보조무기"
+	}
+	"Melee"
+	{
+		"en"		"Melee"
+		"ko"		"근접무기"
+	}
+	"PDA"
+	{
+		"en"		"PDA"
+		"ko"		"PDA"
+	}
+	"Utility"
+	{
+		"en"		"Utility"
+		"ko"		"유틸리티"
+	}
+	"Building"
+	{
+		"en"		"Building"
+		"ko"		"구조물"
+	}
+	"Action"
+	{
+		"en"		"Action"
+		"ko"		"액션"
+	}
+	"custom DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"{4}"
+		"ko"		"{4}"
+	}
+	"damage vs bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"+{1}%% damage vs bosses"
+		"ko"		"보스에게 +{1}%% 피해"
+	}
+	"primary damage vs bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"+{1}%% primary weapon damage vs bosses"
+		"ko"		"주무기 보스에게 +{1}%% 피해"
+	}
+	"secondary damage vs bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"+{1}%% secondary weapon damage vs bosses"
+		"ko"		"보조무기 보스에게 +{1}%% 피해"
+	}
+	"melee damage vs bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"+{1}%% melee weapon damage vs bosses"
+		"ko"		"근접무기 보스에게 +{1}%% 피해"
+	}
+	"mid-air damage vs bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"+{1}%% damage vs bosses while blast jumping"
+		"ko"		"폭발 점프 중 보스에게 +{1}%% 피해"
+	}
+	"mod crit type glow"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"100%% critical hit"
+		"ko"		"100%% 치명타"
+	}
+	"mod crit type on bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"100%% critical hit vs bosses"
+		"ko"		"보스에게 100%% 치명타"
+	}
+	"charge outlines bosses"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Damage outlines bosses based on charge time"
+		"ko"		"충전 시간에 따라 보스 외곽선 표시"
+	}
+	"primary ammo from damage"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Gains ammo for every {4} damage dealt to a boss"
+		"ko"		"보스에게 {4} 피해마다 탄약 획득"
+	}
+	"secondary ammo from damage"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Gains ammo for every {4} damage dealt to a boss"
+		"ko"		"보스에게 {4} 피해마다 탄약 획득"
+	}
+	"multi boss rage"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Decreases rage gained by bosses by {2}%%"
+		"ko"		"보스의 분노 획득량 {2}%% 감소"
+	}
+	"backstab damage percent"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Backstabs deal {2}%% of a boss's max health"
+		"ko"		"백스탭 시 보스 최대 체력의 {2}%% 피해"
+	}
+	"mod airblast stale"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive airblasts on a boss increases airblast cooldown"
+		"ko"		"보스에게 연속 에어블라스트 시 쿨다운 증가"
+	}
+	"mod airblast rage"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Airblasting a boss gives {4}%% RAGE"
+		"ko"		"보스 에어블라스트 시 분노 {4}%% 부여"
+	}
+	"mod fire rate hit stale"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive hits on a boss decreases fire rate by {3}%%"
+		"ko"		"보스에게 연속 타격 시 연사속도 {3}%% 감소"
+	}
+	"mod reload time hit stale"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive hits on a boss increases reload time by {3}%%"
+		"ko"		"보스에게 연속 타격 시 재장전 시간 {3}%% 증가"
+	}
+	"mod recharge time hit stale"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive hits on a boss increases recharge time by {3}%%"
+		"ko"		"보스에게 연속 타격 시 재충전 시간 {3}%% 증가"
+	}
+	"mod stun boss on hit"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Stuns boss for {4} seconds"
+		"ko"		"보스를 {4}초간 기절시킴"
+	}
+	"mod rage loss on hit"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Drain {4}%% RAGE from a boss on hit"
+		"ko"		"타격 시 보스의 분노 {4}%% 감소"
+	}
+	"jarate is rage loss"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Jarate effect instead drains {4}%% RAGE from a boss"
+		"ko"		"자라테 효과가 보스의 분노 {4}%% 감소로 대체"
+	}
+	"melee sickle climb"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Climb walls by hitting them but consumes {4} health"
+		"ko"		"벽을 타격하면 벽 오르기 가능 (체력 {4} 소모)"
+	}
+	"milk limit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Milk effect only lasts {4} seconds when applied to a boss"
+		"ko"		"보스에게 우유 효과 지속시간 {4}초로 제한"
+	}
+	"hit stale DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive hits on a boss increases reload time"
+		"ko"		"보스에게 연속 타격 시 재장전 시간 증가"
+	}
+	"sentry death DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"On Death: Sentry explodes spectacularly"
+		"ko"		"사망 시: 센트리가 대폭발"
+	}
+	"jarate limit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Jarate effect only boosts the next {4} damage dealt to a boss"
+		"ko"		"자라테 효과는 보스에게 다음 {4} 피해에만 적용"
+	}
+	"boost limit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Successive hits on a boss decreases boost over time"
+		"ko"		"보스에게 연속 타격 시 증폭 효과 감소"
+	}
+	"teleport no spawn DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Unable to teleport to spawn"
+		"ko"		"스폰 지역으로 텔레포트 불가"
+	}
+	"vaccinator DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Resistances effect boss melee hits"
+		"ko"		"저항 효과가 보스 근접 타격에 적용"
+	}
+	"cloak on hit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Disables cloaking for {4} seconds when backstabbing a boss"
+		"ko"		"보스 백스탭 시 {4}초간 은폐 불가"
+	}
+	"cloak and dagger no DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Cloak Type: Normal."
+		"ko"		"은폐 유형: 일반"
+	}
+	"laugh is slow DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Slows targets by 50%% on hit instead of laughing"
+		"ko"		"타격 시 웃음 대신 50%% 감속 적용"
+	}
+	"caber boss crit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"100%% critical hit vs bosses on detonation"
+		"ko"		"폭발 시 보스에게 100%% 치명타"
+	}
+	"start with uber DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Start the round with full organ count"
+		"ko"		"라운드 시작 시 장기 수 최대"
+	}
+	"mark limit DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Mark-for-Death effect only boosts the next {4} damage dealt to a boss"
+		"ko"		"죽음의 표식 효과는 보스에게 다음 {4} 피해에만 적용"
+	}
+	"health drop on damage DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"A small health pack is dropped every {4} damage dealt to a boss"
+		"ko"		"보스에게 {4} 피해마다 소형 치료킷 드롭"
+	}
+	"resist effects stuns DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Ranged resistances effect boss stun duration (x{4})"
+		"ko"		"원거리 저항이 보스 기절 시간에 적용 (x{4})"
+	}
+	"kill effects boss hits DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"On kill effects trigger when hitting a boss"
+		"ko"		"처치 효과가 보스 타격 시 발동"
+	}
+	"backstabs DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Backstabs deal a large amount of damage to a boss"
+		"ko"		"백스탭 시 보스에게 대량의 피해"
+	}
+	"disguise resistance DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Reduces damage from a boss while disguised"
+		"ko"		"변장 중 보스로부터 받는 피해 감소"
+	}
+	"sapper boss effect DISPLAY ONLY"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Can be applied to a boss to reduce their damage for a short time"
+		"ko"		"보스에게 부착하면 일시적으로 공격력 감소"
+	}
+	"Yes"
+	{
+		"en"		"Yes"
+		"ko"		"예"
+	}
+	"No"
+	{
+		"en"		"No"
+		"ko"		"아니오"
+	}
+	"Back"
+	{
+		"en"		"Back"
+		"ko"		"뒤로"
+	}
+}

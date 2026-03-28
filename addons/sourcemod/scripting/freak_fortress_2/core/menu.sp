@@ -10,12 +10,8 @@ void Menu_PluginStart()
 	RegConsoleCmd("vsh", Menu_MainMenuCmd, "Freak Fortress 2 Main Menu", FCVAR_HIDDEN);
 	RegConsoleCmd("pony", Menu_MainMenuCmd, "Freak Fortress 2 Main Menu", FCVAR_HIDDEN);
 	
-	RegFreakCmd("voice", Menu_VoiceToggle, "Freak Fortress 2 Voices Preference");
-	
 	RegFreakCmd("queue", Menu_QueueMenuCmd, "Freak Fortress 2 Queue Menu");
 	RegFreakCmd("next", Menu_QueueMenuCmd, "Freak Fortress 2 Queue Menu", FCVAR_HIDDEN);
-	
-	RegFreakCmd("hud", Menu_HudToggle, "Freak Fortress 2 HUD Preference");
 	
 	RegAdminCmd("ff2_addpoints", Menu_AddPointsCmd, ADMFLAG_CHEATS, "Add Queue Points to a Player");
 }
@@ -115,24 +111,6 @@ void Menu_MainMenu(int client)
 	FormatEx(buffer, sizeof(buffer), "%t", "Command Music");
 	menu.AddItem("2", buffer);
 	
-	FormatEx(buffer, sizeof(buffer), "%t", "Command Voice");
-	menu.AddItem("3", buffer);
-	
-	if(Weapons_ConfigEnabled())
-	{
-		FormatEx(buffer, sizeof(buffer), "%t", "Command Weapon");
-		menu.AddItem("4", buffer);
-	}
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Command Hud");
-	menu.AddItem("5", buffer);
-	
-	if(Preference_HasDifficulties())
-	{
-		FormatEx(buffer, sizeof(buffer), "%t", "Command Difficulty");
-		menu.AddItem("6", buffer);
-	}
-	
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -163,42 +141,11 @@ static int Menu_MainMenuH(Menu menu, MenuAction action, int client, int choice)
 				{
 					Music_MainMenu(client);
 				}
-				case 3:
-				{
-					Menu_VoiceToggle(client, 0);
-					Menu_MainMenu(client);
-				}
-				case 4:
-				{
-					Weapons_ChangeMenu(client);
-				}
-				case 5:
-				{
-					Menu_HudToggle(client, 0);
-					Menu_MainMenu(client);
-				}
-				case 6:
-				{
-					Preference_DifficultyMenu(client);
-				}
+
 			}
 		}
 	}
 	return 0;
-}
-
-static Action Menu_VoiceToggle(int client, int args)
-{
-	if(client)
-	{
-		Client(client).NoVoice = !Client(client).NoVoice;
-		FReplyToCommand(client, "%t", Client(client).NoVoice ? "Boss Voices Disabled" : "Boss Voices Enabled");
-	}
-	else
-	{
-		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
-	}
-	return Plugin_Handled;
 }
 
 static Action Menu_QueueMenuCmd(int client, int args)
@@ -331,20 +278,6 @@ static int ResetQueueMenuH(Menu menu, MenuAction action, int client, int choice)
 		}
 	}
 	return 0;
-}
-
-static Action Menu_HudToggle(int client, int args)
-{
-	if(client)
-	{
-		Client(client).NoDmgHud = !Client(client).NoDmgHud;
-		FReplyToCommand(client, "%t", Client(client).NoDmgHud ? "Damage Hud Disabled" : "Damage Hud Enabled");
-	}
-	else
-	{
-		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
-	}
-	return Plugin_Handled;
 }
 
 static Action Menu_AddPointsCmd(int client, int args)

@@ -20,7 +20,7 @@
 #define PLUGIN_VERSION		"1.2"
 #define PLUGIN_VERSION_REVISION	"custom"
 #define PLUGIN_VERSION_FULL	"Rewrite " ... PLUGIN_VERSION ... "." ... PLUGIN_VERSION_REVISION
-#define CUSTOM_BUILD_VERSION	"1.0019"
+#define CUSTOM_BUILD_VERSION	"1.0021"
 #define IS_MAIN_FF2
 
 #define FILE_CHARACTERS	"data/freak_fortress_2/characters.cfg"
@@ -327,6 +327,16 @@ public void OnMapEnd()
 
 public void OnPluginEnd()
 {
+	// 플레이어 상태 초기화 (이동속도, 어트리뷰 등 복원)
+	CombatActive = false;
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && IsPlayerAlive(i))
+		{
+			TF2_RegeneratePlayer(i);
+		}
+	}
+
 	Bosses_PluginEnd();
 	ConVar_Disable();
 	Database_PluginEnd();
