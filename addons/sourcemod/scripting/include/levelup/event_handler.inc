@@ -736,15 +736,6 @@ void Revive_DoRevive(int client)
     EmitSoundToAll("misc/point_revive.mp3");
     TF2_AddCondition(client, TFCond_Ubercharged, 3.0);
 
-    // 블루팀 회복 (보스 제외)
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientInGame(i) && GetClientTeam(i) == 3 && !Levelup_IsBoss(i))
-        {
-            HealClient(i, REVIVE_HEAL_AMOUNT);
-        }
-    }
-
     // 부활 메시지
     char respawnText[256];
     Format(respawnText, sizeof(respawnText), "%s님이 부활권을 사용하여 부활하였습니다.",
