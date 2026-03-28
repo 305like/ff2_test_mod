@@ -109,6 +109,8 @@ void Menu_MainMenu(int client)
 	FormatEx(buffer, sizeof(buffer), "%t", "Command Settings");
 	menu.AddItem("1", buffer);
 
+	menu.AddItem("2", "MOTD");
+
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -134,6 +136,10 @@ static int Menu_MainMenuH(Menu menu, MenuAction action, int client, int choice)
 				case 1:
 				{
 					Menu_SettingsMenu(client);
+				}
+				case 2:
+				{
+					ShowMOTDPanel(client, "MOTD", "motd", MOTDPANEL_TYPE_INDEX);
 				}
 			}
 		}

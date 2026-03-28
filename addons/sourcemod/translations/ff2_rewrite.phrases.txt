@@ -331,8 +331,8 @@
 	}
 	"Command Queue"
 	{
-		"en"		"View Boss Queue (/ff2queue)"
-		"ko"		"보스 대기열 (/ff2queue)"
+		"en"		"View Boss Queue"
+		"ko"		"보스 대기열"
 	}
 	"Command Music"
 	{
