@@ -569,8 +569,8 @@ void CustomAttrib_OnHitBossPre(int attacker, int victim, float &damage, int &dam
 			TF2_StunPlayer(victim, 3.0, 0.0, TF_STUNFLAGS_SMALLBONK, attacker);
 		}
 
-		// 아이랜더(132)/아이언9번골프채(482,1082)/반블리츠(266)/클레이브모어(327)/퇴거통보(426): 적중 시 이속버프 3초
-		if(weaponIdx == 132 || weaponIdx == 482 || weaponIdx == 1082 || weaponIdx == 266 || weaponIdx == 327 || weaponIdx == 426)
+		// 아이랜더(132)/아이언9번골프채(482,1082)/반블리츠(266)/클레이브모어(327)/퇴거통보(426)/계집애같은사내의소형권총(773): 적중 시 이속버프 3초
+		if(weaponIdx == 132 || weaponIdx == 482 || weaponIdx == 1082 || weaponIdx == 266 || weaponIdx == 327 || weaponIdx == 426 || weaponIdx == 773)
 		{
 			TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 3.0);
 		}
