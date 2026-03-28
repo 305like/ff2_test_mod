@@ -7,8 +7,8 @@
 	}
 	"Available Commands"
 	{
-		"en"		"ff2 - Main Menu\nff2boss - Boss Listing\nff2queue - View Boss Queue\nff2music - Music Settings\nff2voice - Toggle Boss Voicelines\nff2weapons - View Weapon Changes\nff2hud - Toggle Round Stats HUD\nff2modifier - Modifier Listing"
-		"ko"		"ff2 - 메인 메뉴\nff2boss - 보스 목록\nff2queue - 보스 대기열\nff2music - 음악 설정\nff2voice - 보스 음성 토글\nff2weapons - 무기 변경 확인\nff2hud - 라운드 통계 HUD 토글\nff2modifier - 난이도 목록"
+		"en"		"ff2 - Main Menu\nff2queue - View Boss Queue\nff2music - Music Settings"
+		"ko"		"ff2 - 메인 메뉴\nff2queue - 보스 대기열\nff2music - 음악 설정"
 	}
 
 	"Boss Spawned As"
@@ -338,6 +338,51 @@
 	{
 		"en"		"Music Settings (/ff2music)"
 		"ko"		"음악 설정 (/ff2music)"
+	}
+	"Command Settings"
+	{
+		"en"		"Settings"
+		"ko"		"설정"
+	}
+	"Settings Music Enable"
+	{
+		"en"		"Music: OFF → Enable"
+		"ko"		"음악: 꺼짐 → 활성화"
+	}
+	"Settings Music Disable"
+	{
+		"en"		"Music: ON → Disable"
+		"ko"		"음악: 켜짐 → 비활성화"
+	}
+	"Settings Boss Enable"
+	{
+		"en"		"Boss: OFF → Enable"
+		"ko"		"보스: 꺼짐 → 활성화"
+	}
+	"Settings Boss Disable"
+	{
+		"en"		"Boss: ON → Disable"
+		"ko"		"보스: 켜짐 → 비활성화"
+	}
+	"Settings Music Disabled Msg"
+	{
+		"en"		"Music has been disabled."
+		"ko"		"음악이 비활성화되었습니다."
+	}
+	"Settings Music Enabled Msg"
+	{
+		"en"		"Music has been enabled."
+		"ko"		"음악이 활성화되었습니다."
+	}
+	"Settings Boss Disabled Msg"
+	{
+		"en"		"Boss mode has been disabled. You will no longer be selected as boss."
+		"ko"		"보스가 비활성화되었습니다. 더 이상 보스로 선정되지 않습니다."
+	}
+	"Settings Boss Enabled Msg"
+	{
+		"en"		"Boss mode has been enabled. You can now be selected as boss."
+		"ko"		"보스가 활성화되었습니다. 이제 보스로 선정될 수 있습니다."
 	}
 	"Command Voice"
 	{

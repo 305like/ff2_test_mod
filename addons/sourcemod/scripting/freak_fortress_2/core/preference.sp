@@ -19,10 +19,6 @@ static ArrayList DiffListing[MAXTF2PLAYERS];
 
 void Preference_PluginStart()
 {
-	RegFreakCmd("boss", Preference_BossMenuCmd, "Freak Fortress 2 Boss Selection");
-	RegFreakCmd("party", Preference_BossMenuCmd, "Freak Fortress 2 Boss Selection", FCVAR_HIDDEN);
-	RegConsoleCmd("sm_boss", Preference_BossMenuLegacy, "Freak Fortress 2 Boss Selection", FCVAR_HIDDEN);
-	RegConsoleCmd("sm_setboss", Preference_BossMenuLegacy, "Freak Fortress 2 Boss Selection", FCVAR_HIDDEN);
 	RegAdminCmd("ff2_override", Preference_ForceBossCmd, ADMFLAG_CHEATS, "Force a specific boss to appear");
 	
 	for(int a; a < sizeof(PartyInvite); a++)
@@ -120,6 +116,31 @@ bool Preference_DisabledBoss(int client, int charset)
 			return true;
 	}
 	return false;
+}
+
+void Preference_DisableBoss(int client, int charset)
+{
+	if(!BossListing[client])
+		BossListing[client] = new ArrayList();
+
+	if(BossListing[client].FindValue(-1-charset) == -1)
+	{
+		BossListing[client].Push(-1-charset);
+		UpdateDataBase[client] = true;
+	}
+}
+
+void Preference_EnableBoss(int client, int charset)
+{
+	if(BossListing[client])
+	{
+		int index = BossListing[client].FindValue(-1-charset);
+		if(index != -1)
+		{
+			BossListing[client].Erase(index);
+			UpdateDataBase[client] = true;
+		}
+	}
 }
 
 bool Preference_ValidBossSelection(int client, int team = -1)

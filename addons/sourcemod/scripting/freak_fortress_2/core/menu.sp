@@ -9,11 +9,12 @@ void Menu_PluginStart()
 	RegConsoleCmd("hale", Menu_MainMenuCmd, "Freak Fortress 2 Main Menu", FCVAR_HIDDEN);
 	RegConsoleCmd("vsh", Menu_MainMenuCmd, "Freak Fortress 2 Main Menu", FCVAR_HIDDEN);
 	RegConsoleCmd("pony", Menu_MainMenuCmd, "Freak Fortress 2 Main Menu", FCVAR_HIDDEN);
-	
+
 	RegFreakCmd("queue", Menu_QueueMenuCmd, "Freak Fortress 2 Queue Menu");
 	RegFreakCmd("next", Menu_QueueMenuCmd, "Freak Fortress 2 Queue Menu", FCVAR_HIDDEN);
-	
+
 	RegAdminCmd("ff2_addpoints", Menu_AddPointsCmd, ADMFLAG_CHEATS, "Add Queue Points to a Player");
+	RegAdminCmd("ff2boss", Menu_AdminBossCmd, ADMFLAG_CHEATS, "Admin Boss Selection Menu");
 }
 
 void Menu_Command(int client)
@@ -98,19 +99,16 @@ void Menu_MainMenu(int client)
 {
 	Menu menu = new Menu(Menu_MainMenuH);
 	menu.SetTitle("Freak Fortress 2: Rewrite (" ... PLUGIN_VERSION ... "." ... PLUGIN_VERSION_REVISION ... ")\n" ... GITHUB_URL ... "\n ");
-	
+
 	char buffer[64];
 	SetGlobalTransTarget(client);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Command Selection");
-	menu.AddItem("0", buffer);
-	
+
 	FormatEx(buffer, sizeof(buffer), "%t", "Command Queue");
+	menu.AddItem("0", buffer);
+
+	FormatEx(buffer, sizeof(buffer), "%t", "Command Settings");
 	menu.AddItem("1", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Command Music");
-	menu.AddItem("2", buffer);
-	
+
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -131,21 +129,107 @@ static int Menu_MainMenuH(Menu menu, MenuAction action, int client, int choice)
 			{
 				case 0:
 				{
-					Preference_BossMenu(client);
+					QueueMenu(client);
 				}
 				case 1:
 				{
-					QueueMenu(client);
+					Menu_SettingsMenu(client);
 				}
-				case 2:
-				{
-					Music_MainMenu(client);
-				}
-
 			}
 		}
 	}
 	return 0;
+}
+
+static void Menu_SettingsMenu(int client)
+{
+	Menu menu = new Menu(Menu_SettingsMenuH);
+
+	SetGlobalTransTarget(client);
+
+	menu.SetTitle("%t", "Command Settings");
+
+	char buffer[64];
+
+	FormatEx(buffer, sizeof(buffer), "%t", Client(client).NoMusic ? "Settings Music Enable" : "Settings Music Disable");
+	menu.AddItem("0", buffer);
+
+	FormatEx(buffer, sizeof(buffer), "%t", Preference_DisabledBoss(client, Enabled ? Charset : 0) ? "Settings Boss Enable" : "Settings Boss Disable");
+	menu.AddItem("1", buffer);
+
+	menu.ExitBackButton = Menu_BackButton(client);
+	menu.ExitButton = true;
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+static int Menu_SettingsMenuH(Menu menu, MenuAction action, int client, int choice)
+{
+	switch(action)
+	{
+		case MenuAction_End:
+		{
+			delete menu;
+		}
+		case MenuAction_Cancel:
+		{
+			if(choice == MenuCancel_ExitBack)
+				Menu_MainMenu(client);
+		}
+		case MenuAction_Select:
+		{
+			char buffer[16];
+			menu.GetItem(choice, buffer, sizeof(buffer));
+			switch(StringToInt(buffer))
+			{
+				case 0:
+				{
+					Client(client).NoMusic = !Client(client).NoMusic;
+					if(Client(client).NoMusic)
+					{
+						Music_PlaySongToClient(client);
+						FPrintToChat(client, "%t", "Settings Music Disabled Msg");
+					}
+					else
+					{
+						if(Enabled && RoundStatus == 1)
+							Music_PlayNextSong(client);
+
+						FPrintToChat(client, "%t", "Settings Music Enabled Msg");
+					}
+				}
+				case 1:
+				{
+					int charset = Enabled ? Charset : 0;
+					if(Preference_DisabledBoss(client, charset))
+					{
+						Preference_EnableBoss(client, charset);
+						FPrintToChat(client, "%t", "Settings Boss Enabled Msg");
+					}
+					else
+					{
+						Preference_DisableBoss(client, charset);
+						FPrintToChat(client, "%t", "Settings Boss Disabled Msg");
+					}
+				}
+			}
+			Menu_SettingsMenu(client);
+		}
+	}
+	return 0;
+}
+
+static Action Menu_AdminBossCmd(int client, int args)
+{
+	if(client)
+	{
+		InMainMenu[client] = false;
+		Preference_BossMenu(client);
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
+	}
+	return Plugin_Handled;
 }
 
 static Action Menu_QueueMenuCmd(int client, int args)
