@@ -98,7 +98,7 @@ static Action Menu_MainMenuCmd(int client, int args)
 void Menu_MainMenu(int client)
 {
 	Menu menu = new Menu(Menu_MainMenuH);
-	menu.SetTitle("Freak Fortress 2: Rewrite (" ... PLUGIN_VERSION ... "." ... PLUGIN_VERSION_REVISION ... ")\n" ... GITHUB_URL ... "\n ");
+	menu.SetTitle("Freak Fortress2 RPG&Skill (1.0)\n만든이 : 이름없음\n ");
 
 	char buffer[64];
 	SetGlobalTransTarget(client);
