@@ -44,7 +44,7 @@ switch(iItemDefinitionIndex)
 	
 	case 772: // 동안의 총✅
 	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.3 ; 45 ; 0.1 ; 4 ; 3 ; 96 ; 0.25 ; 2 ; 2.2 ; 76 ; 3.13", true);
+		Handle itemOverride=PrepareItemHandle(item, _, _, "6 ; 0.3 ; 45 ; 0.1 ; 4 ; 3 ; 96 ; 0.25 ; 2 ; 2.2 ; 76 ; 3.13 ; 418 ; 1", false);
 		if(itemOverride!=null)
 		{
 			item=itemOverride;
