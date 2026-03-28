@@ -283,7 +283,8 @@ void Attributes_OnHitBoss(int attacker, int victim, int inflictor, float fdamage
 
 	int i;
 	int entity = -1;
-	while(TF2_GetItem(attacker, entity, i))
+	// boost on damage drain 비활성화 (동안의총 추진력 감소 방지)
+	/*while(TF2_GetItem(attacker, entity, i))
 	{
 		if(Attrib_Get(entity, "boost on damage", 418, value) && value > 0.0)
 		{
@@ -308,7 +309,7 @@ void Attributes_OnHitBoss(int attacker, int victim, int inflictor, float fdamage
 
 			break;
 		}
-	}
+	}*/
 	
 	if(damagetype & DMG_CLUB)
 	{
