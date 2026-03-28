@@ -361,31 +361,8 @@ public Action TF2_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 		{
 			bool changed;
 			bool melee = ((damagetype & DMG_CLUB) || (damagetype & DMG_SLASH)) && damagecustom != TF_CUSTOM_BASEBALL;
-			if(melee && SDKCall_CheckBlockBackstab(victim, attacker))
-			{
-				if(TF2_IsPlayerInCondition(victim, TFCond_RuneResist))
-					TF2Tools_RemoveCondition(victim, TFCond_RuneResist);
-				
-				float pos[3];
-				GetClientAbsOrigin(victim, pos);
-				ScreenShake(pos, 25.0, 150.0, 1.0, 50.0);
-				
-				EmitGameSoundToAll("Player.Spy_Shield_Break", victim, _, victim, pos);
-				
-				TF2Tools_RemoveCondition(victim, TFCond_Zoomed);
-				
-				int entity = -1;
-				while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield")) != -1)
-				{
-					if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == victim && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-						TF2Tools_RemoveWearable(victim, entity);
-				}
-				
-				damage = 0.0;
-				return Plugin_Handled;
-			}
 
-			// 방패 과충전 방어: 보스 공격 흡수
+			// 방패 과충전 방어: 보스 공격 흡수 (CheckBlockBackstab 보다 먼저 실행)
 			Action shieldAction = WeaponSpecial_ShieldDefense(victim, damage, damagePosition);
 			if(shieldAction == Plugin_Handled)
 			{
@@ -393,7 +370,34 @@ public Action TF2_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 				return Plugin_Handled;
 			}
 			if(shieldAction == Plugin_Changed)
+			{
+				// 과충전이 대미지를 흡수 → 방패 파괴 건너뜀
 				changed = true;
+			}
+			else if(melee && SDKCall_CheckBlockBackstab(victim, attacker))
+			{
+				// 과충전 없는 경우에만 기존 방패 파괴 로직 실행
+				if(TF2_IsPlayerInCondition(victim, TFCond_RuneResist))
+					TF2Tools_RemoveCondition(victim, TFCond_RuneResist);
+
+				float pos[3];
+				GetClientAbsOrigin(victim, pos);
+				ScreenShake(pos, 25.0, 150.0, 1.0, 50.0);
+
+				EmitGameSoundToAll("Player.Spy_Shield_Break", victim, _, victim, pos);
+
+				TF2Tools_RemoveCondition(victim, TFCond_Zoomed);
+
+				int entity = -1;
+				while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield")) != -1)
+				{
+					if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == victim && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+						TF2Tools_RemoveWearable(victim, entity);
+				}
+
+				damage = 0.0;
+				return Plugin_Handled;
+			}
 
 			if(damage <= 160.0 && Client(attacker).Triple)
 			{

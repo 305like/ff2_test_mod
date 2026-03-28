@@ -182,7 +182,7 @@ public Action Timer_ApplySharedAttribute(Handle timer, any client)
         return Plugin_Continue;
 
     // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
         return Plugin_Continue;
 
     int team = GetClientTeam(client);
@@ -350,7 +350,7 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
         return Plugin_Continue;
 
     // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
         return Plugin_Continue;
 
     // 데이터 로드 안됐으면 스킵
@@ -486,7 +486,7 @@ public Action Event_OnPlayerRegenerate(Event event, const char[] name, bool dont
         return Plugin_Continue;
 
     // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
         return Plugin_Continue;
 
     int team = GetClientTeam(client);
@@ -531,7 +531,7 @@ public Action Event_OnPlayerChangeClass(Event event, const char[] name, bool don
         return Plugin_Continue;
 
     // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && !FF2_IsFF2Enabled())
+    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
         return Plugin_Continue;
 
     int team = GetClientTeam(client);

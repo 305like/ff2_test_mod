@@ -10,7 +10,7 @@
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle& item)
 {
-	if(!Enabled)
+	if(!Enabled || RoundStatus < 1)
 	{
 		return Plugin_Continue;
 	}
@@ -2898,7 +2898,7 @@ void WeaponSpecial_DetectShield(int client)
 // 1초마다 과충전 증가 (+5/sec, 최대 100)
 public Action WeaponSpecial_OverChargeTimer(Handle timer)
 {
-	if(!Enabled || !IsRoundActive())
+	if(!Enabled)
 		return Plugin_Continue;
 
 	for(int client = 1; client <= MaxClients; client++)
@@ -2985,22 +2985,30 @@ Action WeaponSpecial_ShieldDefense(int victim, float &damage, float position[3])
 		return Plugin_Continue;
 	}
 
-	// 데모 방패: 차지미터 감소 + 과충전으로 대미지 흡수
-	float charge = GetEntPropFloat(victim, Prop_Send, "m_flChargeMeter") - damage;
-	SetEntPropFloat(victim, Prop_Send, "m_flChargeMeter",
-		charge > 0.0 ? charge : 0.0);
-
+	// 데모 방패: 과충전으로 대미지 흡수
 	if(g_flOverCharge[victim] > 0.0)
 	{
+		// 차지미터도 대미지만큼 감소
+		float charge = GetEntPropFloat(victim, Prop_Send, "m_flChargeMeter") - damage;
+		SetEntPropFloat(victim, Prop_Send, "m_flChargeMeter",
+			charge > 0.0 ? charge : 0.0);
+
 		float absorbed = (damage < g_flOverCharge[victim]) ? damage : g_flOverCharge[victim];
 		g_flOverCharge[victim] -= absorbed;
 		damage -= absorbed;
 
 		WeaponSpecial_PlayShieldBreakSound(position, 0.7);
+
+		if(damage <= 0.0)
+		{
+			damage = 0.0;
+			return Plugin_Handled;
+		}
 		return Plugin_Changed;
 	}
 
-	return Plugin_Changed;
+	// 과충전 없음 → Plugin_Continue 반환하여 기존 CheckBlockBackstab 로직 진행
+	return Plugin_Continue;
 }
 
 // 방패 돌격 → 보스 공격 (sdkhooks.sp에서 호출)
