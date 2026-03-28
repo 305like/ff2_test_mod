@@ -181,9 +181,16 @@ public Action Timer_ApplySharedAttribute(Handle timer, any client)
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return Plugin_Continue;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return Plugin_Continue;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return Plugin_Continue;
+    }
 
     int team = GetClientTeam(client);
 
@@ -349,9 +356,16 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return Plugin_Continue;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return Plugin_Continue;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return Plugin_Continue;
+    }
 
     // 데이터 로드 안됐으면 스킵
     if (!PlayerData_IsLoaded(client))
@@ -485,9 +499,16 @@ public Action Event_OnPlayerRegenerate(Event event, const char[] name, bool dont
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return Plugin_Continue;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return Plugin_Continue;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return Plugin_Continue;
+    }
 
     int team = GetClientTeam(client);
 
@@ -530,9 +551,16 @@ public Action Event_OnPlayerChangeClass(Event event, const char[] name, bool don
     if (Levelup_IsBoss(client))
         return Plugin_Continue;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return Plugin_Continue;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return Plugin_Continue;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return Plugin_Continue;
+    }
 
     int team = GetClientTeam(client);
 
@@ -708,10 +736,10 @@ void Revive_DoRevive(int client)
     EmitSoundToAll("misc/point_revive.mp3");
     TF2_AddCondition(client, TFCond_Ubercharged, 3.0);
 
-    // 블루팀 회복
+    // 블루팀 회복 (보스 제외)
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i) && GetClientTeam(i) == 3)
+        if (IsClientInGame(i) && GetClientTeam(i) == 3 && !Levelup_IsBoss(i))
         {
             HealClient(i, REVIVE_HEAL_AMOUNT);
         }

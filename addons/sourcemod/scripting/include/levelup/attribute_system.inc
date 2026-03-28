@@ -148,9 +148,16 @@ stock void Attribute_ApplyToPlayer(int client, TFClassType tfClass)
     if (Levelup_IsBoss(client))
         return;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return;
+    }
 
     // 팀 확인
     int team = GetClientTeam(client);
@@ -216,9 +223,16 @@ public Action Timer_ApplySharedAttribute2(Handle timer, any client)
     if (Levelup_IsBoss(client))
         return Plugin_Stop;
 
-    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음
-    if (LibraryExists("freak_fortress_2") && (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1))
-        return Plugin_Stop;
+    // FF2 아레나 준비 라운드에서는 속성 적용하지 않음 (GameRules 직접 체크)
+    if (LibraryExists("freak_fortress_2"))
+    {
+        if (!FF2_IsFF2Enabled())
+            return Plugin_Stop;
+
+        RoundState rs = GameRules_GetRoundState();
+        if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
+            return Plugin_Stop;
+    }
 
     // SHARED 클래스 속성 적용
     int sharedCount = g_attributeCount[CLASS_SHARED];

@@ -962,7 +962,11 @@ public int MenuHandler_ClassStatDetail(Menu menu, MenuAction action, int client,
 void Menu_ShowRevive(int client)
 {
     // FF2 보스전이 아니거나 라운드 진행 중이 아니면 부활 메뉴 안 띄움
-    if (!FF2_IsFF2Enabled() || FF2_GetRoundState() != 1)
+    if (!FF2_IsFF2Enabled())
+        return;
+
+    RoundState rs = GameRules_GetRoundState();
+    if (rs != RoundState_RoundRunning && rs != RoundState_Stalemate)
         return;
 
     int team = GetClientTeam(client);

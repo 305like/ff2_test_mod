@@ -106,6 +106,7 @@ void Gamemode_MapInit()
 void Gamemode_MapStart()
 {
 	RoundStatus = -1;
+	CombatActive = false;
 	Waiting = GameRules_GetRoundState() < RoundState_StartGame;
 	PrecacheScriptSound("Announcer.AM_CapEnabledRandom");
 }
@@ -119,6 +120,7 @@ void Gamemode_RoundSetup()
 {
 	HealingFor = 0.0;
 	RoundStatus = 0;
+	CombatActive = false;
 	WinnerOverride = -1;
 	
 	Gamemode_RoundReset();
@@ -457,18 +459,19 @@ void Gamemode_RoundStart()
 					
 					if(IsPlayerAlive(client))
 					{
-						if(!bvb && IsFakeClient(client) && team != MercTeam)
+						if(!bvb && team != MercTeam)
 						{
 							SetEntProp(client, Prop_Send, "m_lifeState", 2);
 							ChangeClientTeam(client, MercTeam);
 							SetEntProp(client, Prop_Send, "m_lifeState", 0);
+							TF2Tools_RespawnPlayer(client);
 						}
 						else
 						{
 							TF2Tools_RegeneratePlayer(client);
 							TF2_RefillMaxAmmo(client);
 						}
-						
+
 						int entity = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 						if(IsValidEntity(entity) && HasEntProp(entity, Prop_Send, "m_flChargeLevel"))
 							SetEntPropFloat(entity, Prop_Send, "m_flChargeLevel", Attrib_FindOnPlayer(client, "ubercharge_preserved_on_spawn_max", 811));
@@ -584,6 +587,7 @@ void Gamemode_OverrideWinner(int team = -1)
 void Gamemode_RoundEnd(int winteam)
 {
 	RoundStatus = 2;
+	CombatActive = false;
 	WeaponSpecial_BannerStop();
 	WeaponSpecial_HomingReset();
 

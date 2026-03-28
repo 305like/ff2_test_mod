@@ -1056,75 +1056,8 @@ void WeaponSpecial_HomingReset()
 	}
 }
 
-void WeaponSpecial_HomingSetup(int client)
-{
-	g_bHomingEnabled[client] = false;
-	g_flHomingStrength[client] = 0.0;
-	g_bHomingBodyTarget[client] = false;
-
-	if(Client(client).IsBoss || !IsRoundActive())
-		return;
-
-	// Secondary weapons: Flare Gun / Detonator / Scorch Shot
-	int secWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if(IsValidEntity(secWeapon))
-	{
-		int secIdx = GetEntProp(secWeapon, Prop_Send, "m_iItemDefinitionIndex");
-		if(secIdx == 39 || secIdx == 351 || secIdx == 1081)	// Flare Gun / Detonator / Scorch Shot
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.5;
-		}
-		else if(secIdx == 1180)	// Gas Passer: 유도 + 탄약 3 고정
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.5;
-
-			int ammoType = GetEntProp(secWeapon, Prop_Send, "m_iPrimaryAmmoType");
-			if(ammoType >= 0)
-				SetEntProp(client, Prop_Data, "m_iAmmo", 3, _, ammoType);
-		}
-		else if(secIdx == 812)	// 혈적자(Flying Guillotine): 탄약 3 고정
-		{
-			int ammoType = GetEntProp(secWeapon, Prop_Send, "m_iPrimaryAmmoType");
-			if(ammoType >= 0)
-				SetEntProp(client, Prop_Data, "m_iAmmo", 3, _, ammoType);
-		}
-	}
-
-	// Primary weapons: Huntsman / Crusader Crossbow / Pomson / Widowmaker / etc.
-	int priWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	if(IsValidEntity(priWeapon))
-	{
-		int priIdx = GetEntProp(priWeapon, Prop_Send, "m_iItemDefinitionIndex");
-		if(priIdx == 56 || priIdx == 1005)	// Huntsman
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.25;
-			g_bHomingBodyTarget[client] = true;	// 몸통 유도
-		}
-		else if(priIdx == 1092)	// Fortified Compound
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.9;
-		}
-		else if(priIdx == 305)	// Crusader's Crossbow
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.2;
-		}
-		else if(priIdx == 527)	// Widowmaker
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.8;
-		}
-		else if(priIdx == 588)	// Pomson 6000
-		{
-			g_bHomingEnabled[client] = true;
-			g_flHomingStrength[client] = 0.4;
-		}
-	}
-}
+// WeaponSpecial_HomingSetup은 weapon.sp로 이동됨
+// 호밍 인프라(타이머, 투사체 추적)는 여기 유지
 
 // 유도 대상 투사체인지 확인 (SpawnPost 안 불리는 경우를 위해 별도 함수)
 static bool IsHomingProjectileClass(const char[] classname)

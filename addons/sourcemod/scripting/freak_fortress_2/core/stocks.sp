@@ -1072,9 +1072,12 @@ any Clamp(any value, any min, any max)
 }
 
 // 실제 전투 진행 중인지 확인 (프리라운드/대기시간 제외)
-// fork의 CheckRoundState() == FF2RoundState_RoundRunning 방식
 bool IsRoundActive()
 {
+	// 플레이어 대기 중이면 항상 비활성
+	if(GameRules_GetProp("m_bInWaitingForPlayers", 1))
+		return false;
+
 	RoundState state = GameRules_GetRoundState();
 	return state == RoundState_RoundRunning || state == RoundState_Stalemate;
 }

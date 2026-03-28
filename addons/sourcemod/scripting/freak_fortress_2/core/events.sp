@@ -27,7 +27,7 @@ void Events_PluginStart()
 	HookEvent("teamplay_broadcast_audio", Events_BroadcastAudio, EventHookMode_Pre);
 	HookEvent("teamplay_point_captured", Events_PointCaptured, EventHookMode_Post);
 	HookEvent("teamplay_round_win", Events_RoundEnd, EventHookMode_Post);
-	HookEvent("teamplay_setup_finished", Events_RoundStart, EventHookMode_Post);
+	HookEvent("teamplay_setup_finished", Events_SetupFinished, EventHookMode_Post);
 }
 
 void Events_RoundSetup()
@@ -163,9 +163,37 @@ static Action Events_RoundStart(Event event, const char[] name, bool dontBroadca
 	LastMann = false;
 	Gamemode_RoundStart();
 
+	// RoundState가 Stalemate으로 전환된 후 regenerate (어트리뷰트 적용)
+	CreateTimer(0.5, Timer_ApplyWeaponAttributes, _, TIMER_FLAG_NO_MAPCHANGE);
+
 	// Disables the siren noise
 	event.BroadcastDisabled = true;
 	return Plugin_Changed;
+}
+
+static void Events_SetupFinished(Event event, const char[] name, bool dontBroadcast)
+{
+	// 아레나가 아닌 맵에서 필요 (아레나에서는 가드로 무시됨)
+	Gamemode_RoundStart();
+
+	// setup 종료 후 regenerate
+	CreateTimer(0.5, Timer_ApplyWeaponAttributes, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_ApplyWeaponAttributes(Handle timer)
+{
+	if(!Enabled || !IsRoundActive())
+		return Plugin_Stop;
+
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		if(IsClientInGame(client) && IsPlayerAlive(client) && !Client(client).IsBoss)
+		{
+			TF2Tools_RegeneratePlayer(client);
+			TF2_RefillMaxAmmo(client);
+		}
+	}
+	return Plugin_Stop;
 }
 
 static void Events_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -371,7 +399,10 @@ static Action Events_InventoryApplication(Event event, const char[] name, bool d
 		}
 		
 		CustomAttrib_OnInventoryApplication(userid);
-		WeaponSpecial_HomingSetup(client);
+		if(IsRoundActive())
+		{
+			WeaponSpecial_HomingSetup(client);
+		}
 		WeaponSpecial_DetectShield(client);
 	}
 	return Plugin_Continue;

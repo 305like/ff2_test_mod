@@ -10,7 +10,7 @@
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle& item)
 {
-	if(!Enabled || RoundStatus < 1)
+	if(!Enabled || !IsRoundActive())
 	{
 		return Plugin_Continue;
 	}
@@ -2856,6 +2856,79 @@ void WeaponSpecial_ResetCozy(int client)
 }
 
 // =========================================================================
+// 호밍(유도) 설정 — 무기별 호밍 강도 정의
+// =========================================================================
+void WeaponSpecial_HomingSetup(int client)
+{
+	g_bHomingEnabled[client] = false;
+	g_flHomingStrength[client] = 0.0;
+	g_bHomingBodyTarget[client] = false;
+
+	if(Client(client).IsBoss || !IsRoundActive())
+		return;
+
+	// === 보조무기 (Secondary) ===
+	int secWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+	if(IsValidEntity(secWeapon))
+	{
+		int secIdx = GetEntProp(secWeapon, Prop_Send, "m_iItemDefinitionIndex");
+		if(secIdx == 39 || secIdx == 351 || secIdx == 1081)	// 조명탄 / 폭죽탄 / 전갈탄
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.5;
+		}
+		else if(secIdx == 1180)	// 가스통: 유도 + 탄약 3 고정
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.5;
+
+			int ammoType = GetEntProp(secWeapon, Prop_Send, "m_iPrimaryAmmoType");
+			if(ammoType >= 0)
+				SetEntProp(client, Prop_Data, "m_iAmmo", 3, _, ammoType);
+		}
+		else if(secIdx == 812)	// 혈적자: 탄약 3 고정 (호밍 없음)
+		{
+			int ammoType = GetEntProp(secWeapon, Prop_Send, "m_iPrimaryAmmoType");
+			if(ammoType >= 0)
+				SetEntProp(client, Prop_Data, "m_iAmmo", 3, _, ammoType);
+		}
+	}
+
+	// === 주무기 (Primary) ===
+	int priWeapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
+	if(IsValidEntity(priWeapon))
+	{
+		int priIdx = GetEntProp(priWeapon, Prop_Send, "m_iItemDefinitionIndex");
+		if(priIdx == 56 || priIdx == 1005)	// 헌츠맨
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.25;
+			g_bHomingBodyTarget[client] = true;
+		}
+		else if(priIdx == 1092)	// 강화 합성궁
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.9;
+		}
+		else if(priIdx == 305)	// 십자군의 석궁
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.2;
+		}
+		else if(priIdx == 527)	// 과부 제조기
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.8;
+		}
+		else if(priIdx == 588)	// 폼슨 6000
+		{
+			g_bHomingEnabled[client] = true;
+			g_flHomingStrength[client] = 0.4;
+		}
+	}
+}
+
+// =========================================================================
 // 방패 과충전(OverCharge) 시스템
 // =========================================================================
 
@@ -2985,14 +3058,9 @@ Action WeaponSpecial_ShieldDefense(int victim, float &damage, float position[3])
 		return Plugin_Continue;
 	}
 
-	// 데모 방패: 과충전으로 대미지 흡수
+	// 데모 방패: 과충전으로 대미지 흡수 (방패는 파괴되지 않음)
 	if(g_flOverCharge[victim] > 0.0)
 	{
-		// 차지미터도 대미지만큼 감소
-		float charge = GetEntPropFloat(victim, Prop_Send, "m_flChargeMeter") - damage;
-		SetEntPropFloat(victim, Prop_Send, "m_flChargeMeter",
-			charge > 0.0 ? charge : 0.0);
-
 		float absorbed = (damage < g_flOverCharge[victim]) ? damage : g_flOverCharge[victim];
 		g_flOverCharge[victim] -= absorbed;
 		damage -= absorbed;
@@ -3007,7 +3075,6 @@ Action WeaponSpecial_ShieldDefense(int victim, float &damage, float position[3])
 		return Plugin_Changed;
 	}
 
-	// 과충전 없음 → Plugin_Continue 반환하여 기존 CheckBlockBackstab 로직 진행
 	return Plugin_Continue;
 }
 
@@ -3050,19 +3117,15 @@ bool WeaponSpecial_GetOverChargeHud(int client, char[] buffer, int maxlen)
 
 	int index = GetEntProp(g_iShield[client], Prop_Send, "m_iItemDefinitionIndex");
 
-	if(index == 57) // Razorback
-	{
-		float razorCharge = GetEntPropFloat(client, Prop_Send, "m_flItemChargeMeter", TFWeaponSlot_Secondary);
-		FormatEx(buffer, maxlen, "Shield: %d%%", RoundFloat(razorCharge));
-		return true;
-	}
+	// Razorback는 과충전 없음
+	if(index == 57)
+		return false;
 
-	// 데모 방패
-	float charge = GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
+	// 데모 방패: 과충전만 표시
 	if(g_flOverCharge[client] > 0.0)
-		FormatEx(buffer, maxlen, "Shield: %d%% | Overcharge: %d", RoundFloat(charge), RoundFloat(g_flOverCharge[client]));
+		FormatEx(buffer, maxlen, "Overcharge: %d%%", RoundFloat(g_flOverCharge[client]));
 	else
-		FormatEx(buffer, maxlen, "Shield: %d%%", RoundFloat(charge));
+		FormatEx(buffer, maxlen, "Overcharge: 0%%");
 
 	return true;
 }

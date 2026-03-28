@@ -20,7 +20,7 @@
 #define PLUGIN_VERSION		"1.2"
 #define PLUGIN_VERSION_REVISION	"custom"
 #define PLUGIN_VERSION_FULL	"Rewrite " ... PLUGIN_VERSION ... "." ... PLUGIN_VERSION_REVISION
-#define CUSTOM_BUILD_VERSION	"1.0017"
+#define CUSTOM_BUILD_VERSION	"1.0019"
 #define IS_MAIN_FF2
 
 #define FILE_CHARACTERS	"data/freak_fortress_2/characters.cfg"
@@ -146,6 +146,7 @@ int PlayersAlive[TFTeam_MAXLimit];
 int MaxPlayersAlive[TFTeam_MAXLimit];
 int Charset;
 bool Enabled;
+bool CombatActive;	// 실제 전투 중 (프리라운드 종료 후 true)
 int RoundStatus;
 bool PluginsEnabled;
 Handle PlayerHud;
@@ -423,7 +424,6 @@ public void TF2_OnConditionAdded(int client, TFCond cond)
 
 public Action Timer_VersionHud(Handle timer)
 {
-	// 오른쪽 중앙 옆에 작게 버전 표시
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i))

@@ -669,7 +669,7 @@ static void Weapons_Spawn(int entity)
 
 static void Weapons_SpawnFrame(int ref)
 {
-	if(!Weapons_ConfigEnabled())
+	if(!Weapons_ConfigEnabled() || !IsRoundActive())
 		return;
 	
 	int entity = EntRefToEntIndex(ref);
@@ -719,69 +719,9 @@ static void Weapons_SpawnFrame(int ref)
 
 	if(temp)
 		SetEntProp(entity, Prop_Send, "m_iAccountID", 0);
-	
-	switch(cfg.GetKeyValType("attributes"))
-	{
-		case KeyValType_Value:
-		{
-			current = 0;
-			char value[16];
 
-			char attributes[512];
-			cfg.Get("attributes", attributes, sizeof(attributes));
-
-			do
-			{
-				int add = SplitString(attributes[current], ";", value, sizeof(value));
-				if(add == -1)
-					break;
-				
-				int attrib = StringToInt(value);
-				if(!attrib)
-					break;
-				
-				current += add;
-				add = SplitString(attributes[current], ";", value, sizeof(value));
-				found = add != -1;
-
-				if(found)
-					current += add;
-				else
-					strcopy(value, sizeof(value), attributes[current]);
-				
-				Attrib_Set(entity, _, attrib, StringToFloat(value));
-				
-			} while(found);
-		}
-		case KeyValType_Section:
-		{
-			cfg = cfg.GetSection("attributes");
-
-			StringMapSnapshot snap = cfg.Snapshot();
-			int entries = snap.Length;
-
-			PackVal attributeValue;
-
-			for(int i = 0; i < entries; i++)
-			{
-				int length = snap.KeyBufferSize(i) + 1;
-				char[] key = new char[length];
-
-				snap.GetKey(i, key, length);
-				
-				cfg.GetArray(key, attributeValue, sizeof(attributeValue));
-
-				if(attributeValue.tag == KeyValType_Value)
-					Attrib_SetString(entity, key, _, attributeValue.data);
-			}
-
-			delete snap;
-		}
-	}
-	
-	cfg = cfg.GetSection("custom");
-	if(cfg)
-		CustomAttrib_ApplyFromCfg(entity, cfg);
+	// 어트리뷰 적용은 weapon.sp의 TF2Items_OnGiveNamedItem에서 통합 관리
+	// config 기반 어트리뷰 적용 제거 (중복 방지)
 }
 
 static ConfigMap FindMatchingLoadout(const char[] loadou)
